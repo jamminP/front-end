@@ -3,8 +3,8 @@ import kakaoIcon from "../login/img/kakao-icon.png";
 
 export default function Login() {
   return (
-    <section className="w-full h-full max-w-[1400px] m-auto flex flex-col justify-center items-center">
-      <h1 className="mb-[30px] text-4xl tracking-[-.15rem] font-bold text-[#313131]">
+    <section className="w-full h-screen max-w-[1400px] m-auto flex flex-col justify-center items-center">
+      <h1 className="mb-[30px] text-3xl md:text-4xl tracking-[-.15rem] font-bold text-[#313131]">
         로그인
       </h1>
       <div className="w-full flex flex-col items-center">

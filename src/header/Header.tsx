@@ -5,7 +5,7 @@ import { useState } from "react";
 export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <header className="fixed flex justify-between items-center w-full p-[20px_30px] md:p-[30px_60px] bg-[#ffffff]">
+    <header className="fixed flex justify-between items-center w-full p-[20px_30px] md:p-[30px_60px] bg-[#ffffff] z-[999]">
       <Link to="/">
         <h1 className="text-[#0180F5] text-2xl font-extrabold">LOGO</h1>
       </Link>
