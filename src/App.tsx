@@ -1,14 +1,17 @@
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
-import MypageRoutes from "./mypage/MypageRoutes";
+import Header from "./header/Header";
 
 function App() {
   return (
-    <>
-      <BrowserRouter>
-        <MypageRoutes />
-      </BrowserRouter>
-    </>
+    <BrowserRouter>
+      <Header />
+      <main>
+        <Routes>
+          <Route path="/mypage" />
+        </Routes>
+      </main>
+    </BrowserRouter>
   );
 }
 
