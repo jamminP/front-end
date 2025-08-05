@@ -12,5 +12,6 @@
       "@landing/*": ["./src/landing/*"]
     }
   },
-  "types": ["node"]
+  "types": ["node"],
+  "include": ["src", "src/types/global.d.ts"]
 }
