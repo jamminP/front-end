@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
+import CommunityLayout from "./community/CommunityLayout";
 import Header from "./header/Header";
 import MyPage from "./mypage/Mypage";
 import MypageContent from "./mypage/components/MypageContent";
@@ -13,6 +14,7 @@ function App() {
       <Header />
       <main>
         <Routes>
+<!--      <CommunityLayout />  추후에 라우터 연결 작업 필요-->
           <Route path="/login" element={<Login />} />
           <Route path="/mypage" element={<MyPage />}>
             <Route index element={<MypageContent />} />
