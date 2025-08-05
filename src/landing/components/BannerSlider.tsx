@@ -8,9 +8,10 @@ import { motion, useAnimation } from "framer-motion";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { VscDebugStart } from "react-icons/vsc";
 import { CiStop1 } from "react-icons/ci";
+import type { Swiper as SwiperType } from "swiper";
 
 export default function BannerSlider() {
-  const [swiperRef, setSwiperRef] = useState<any>(null);
+  const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(1);
   const [progressKey, setProgressKey] = useState(0);
@@ -59,8 +60,8 @@ export default function BannerSlider() {
           <SwiperSlide key={index}>
             <div className="flex items-center justify-between px-40 pt-4 bg-white rounded-2xl">
               <div className="max-w-lg">
-                <h2 className="text-3xl font-bold">{slide.title}</h2>
-                <h3 className="text-3xl font-bold mt-3">{slide.subtitle}</h3>
+                <h2 className="text-2xl font-bold">{slide.title}</h2>
+                <h3 className="text-2xl font-bold mt-3">{slide.subtitle}</h3>
                 <p className="text-base font-medium text-gray-500 mt-6">
                   {slide.description}
                 </p>
@@ -80,7 +81,7 @@ export default function BannerSlider() {
         ))}
       </Swiper>
 
-      <div className="flex gap-3 max-x-[1280px] px-40">
+      <div className="flex gap-3 max-x-[1280px] px-40 pt-5">
         <button onClick={() => swiperRef?.slidePrev()}>
           <FaAngleLeft />
         </button>
