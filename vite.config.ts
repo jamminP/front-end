@@ -16,6 +16,10 @@ export default defineConfig({
         find: "@components",
         replacement: path.resolve(__dirname, "src/components"),
       },
+      {
+        find: "@landing",
+        replacement: path.resolve(__dirname, "src/landing"),
+      },
     ],
   },
 });
