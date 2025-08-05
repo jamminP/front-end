@@ -11,7 +11,7 @@ const CommunityLayout = ({ children }: Props) => {
         {/* 상단 커뮤니티 탭 */}
         <div className="border border-black text-center py-2">
           {/* <CommunityTab /> */}
-          전체 자료공유 스터디 자유
+          전체 자료공유 자유 스터디
         </div>
 
         <div className="flex justify-center gap-10 mt-6">
