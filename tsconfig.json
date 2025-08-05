@@ -4,9 +4,13 @@
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ],
-  "baseUrl": ".",
-  "paths": {
-    "@components/*": ["src/components/*"]
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": ["./src/*"],
+      "@components/*": ["./src/components/*"],
+      "@landing/*": ["./src/landing/*"]
+    }
   },
   "types": ["node"]
 }
