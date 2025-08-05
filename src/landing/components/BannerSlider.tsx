@@ -81,7 +81,7 @@ export default function BannerSlider() {
         ))}
       </Swiper>
 
-      <div className="flex gap-3 max-x-[1280px] px-40 pt-5">
+      <div className="flex gap-3 max-w-screen-xl px-40 pt-5">
         <button onClick={() => swiperRef?.slidePrev()}>
           <FaAngleLeft />
         </button>
