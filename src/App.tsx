@@ -1,7 +1,12 @@
 import "./App.css";
+import CommunityLayout from "./community/CommunityLayout";
 
 function App() {
-  return <></>;
+  return (
+    <>
+      <CommunityLayout />
+    </>
+  );
 }
 
 export default App;
