@@ -7,13 +7,15 @@ import MypageContent from "./mypage/components/MypageContent";
 import Calendar from "./mypage/components/Calendar";
 import Challenge from "./mypage/components/Challenge";
 import Login from "./login/Login";
-
+import LandingPage from "@landing/LandingPage";
+    
 function App() {
   return (
     <BrowserRouter>
       <Header />
       <main>
         <Routes>
+<!--      <LandingPage></LandingPage> 추후에 라우터 연결 작업 필요-->
 <!--      <CommunityLayout />  추후에 라우터 연결 작업 필요-->
           <Route path="/login" element={<Login />} />
           <Route path="/mypage" element={<MyPage />}>
