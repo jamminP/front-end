@@ -49,7 +49,7 @@ const SidebarRanking = ({
         </ul>
       </div>
       <div>
-        <h2> 스터디 게시판 Top 5 </h2>
+        <h2> 스터디 모집 게시판 Top 5 </h2>
         <ul>
           {studyTop5.map((post) => (
             <li key={post.id}>
