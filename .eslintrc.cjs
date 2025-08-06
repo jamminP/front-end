@@ -37,7 +37,15 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/no-explicit-any': 'off',
     'react/react-in-jsx-scope': 'off',
+
     'simple-import-sort/imports': 'warn',
     'simple-import-sort/exports': 'warn',
+
+    'react-hooks/rules-of-hooks': [
+      'error',
+      {
+        additionalHooks: '(useQuery|useMutation|useInfiniteQuery|useSuspenseQuery)',
+      },
+    ],
   },
 };
