@@ -1,12 +1,12 @@
 import BenefitRending from "./components/BenefitRending";
 import MainRending from "./components/MainRending";
-import UseCaseRending from "./components/UseCaseRending";
+import FAQRending from "./components/FAQRending";
 
 function LandingPage() {
   return (
     <div>
       <MainRending />
-      <UseCaseRending />
+      <FAQRending />
       <BenefitRending />
     </div>
   );
