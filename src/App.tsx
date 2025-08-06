@@ -7,6 +7,7 @@ import MypageContent from "./mypage/components/MypageContent";
 import Calendar from "./mypage/components/Calendar";
 import Challenge from "./mypage/components/Challenge";
 import Login from "./login/Login";
+import LandingPage from "@landing/LandingPage";
 
 function App() {
   return (
@@ -14,12 +15,14 @@ function App() {
       <Header />
       <main>
         <Routes>
+        <Route path="/" element={<LandingPage />} />
           <Route path="/community" element={<CommunityLayout />}>
             {/* <Route path="all" element={<CommunityAll />} />
             <Route path="share" element={<CommunityShare />} />
             <Route path="free" element={<CommunityFree />} />
             <Route path="study" element={<CommunityStudy />} /> */}
           </Route>
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/mypage" element={<MyPage />}>
             <Route index element={<MypageContent />} />
