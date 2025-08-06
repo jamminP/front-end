@@ -13,7 +13,13 @@ module.exports = {
     es2021: true,
     node: true,
   },
-  plugins: ['react', 'react-hooks', '@typescript-eslint', 'prettier'],
+  plugins: [
+    'react',
+    'react-hooks',
+    '@typescript-eslint',
+    'prettier',
+    'simple-import-sort',
+  ],
   extends: [
     'eslint:recommended',
     'plugin:react/recommended',
@@ -30,6 +36,8 @@ module.exports = {
     'prettier/prettier': 'warn',
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/no-explicit-any': 'off',
-    'react/react-in-jsx-scope': 'off', 
+    'react/react-in-jsx-scope': 'off',
+    'simple-import-sort/imports': 'warn',
+    'simple-import-sort/exports': 'warn',
   },
 };
