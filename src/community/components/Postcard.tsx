@@ -55,3 +55,5 @@ const PostCard: FC<PostCardProps> = ({
     </div>
   );
 };
+
+export default PostCard;
