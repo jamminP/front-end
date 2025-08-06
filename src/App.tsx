@@ -11,7 +11,7 @@ import Login from "./login/Login";
 function App() {
   return (
     <BrowserRouter>
-      {/* <Header /> */}
+      <Header />
       <main>
         <Routes>
           <Route path="/community" element={<CommunityLayout />}>

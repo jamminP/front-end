@@ -17,8 +17,8 @@ const CommunityTab = () => {
           className={({ isActive }) =>
             `text-m font-medium pb-1 border-b-2 ps-7 ${
               isActive
-                ? "text-blue-600 border-blue-600"
-                : "text-gray-500 border-transparent hover:text-blue-500"
+                ? "text-[#0180F5]  border-blue-600"
+                : "text-gray-500 border-transparent hover:text-[#0180F5] "
             }`
           }
         >
