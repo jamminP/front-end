@@ -1,17 +1,13 @@
-import { Children, type ReactNode } from "react";
+import { Outlet } from "react-router-dom";
+import CommunityTab from "./components/CommunityTab";
 
-interface Props {
-  children: ReactNode;
-}
-
-const CommunityLayout = ({ children }: Props) => {
+const CommunityLayout = () => {
   return (
     <div className="w-full flex justify-center px-4">
       <div className="w-full max-w-[1000px]">
         {/* 상단 커뮤니티 탭 */}
         <div className="border border-black text-center py-2">
-          {/* <CommunityTab /> */}
-          전체 자료공유 자유 스터디
+          <CommunityTab />
         </div>
 
         <div className="flex justify-center gap-10 mt-6">
@@ -23,7 +19,7 @@ const CommunityLayout = ({ children }: Props) => {
 
           {/* 본문 */}
           <div className="flex-1 border max-w-[600px] border-black">
-            {/* {children} */}
+            <Outlet />
             게시글
           </div>
         </div>

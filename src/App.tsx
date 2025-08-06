@@ -11,10 +11,15 @@ import Login from "./login/Login";
 function App() {
   return (
     <BrowserRouter>
-      <Header />
+      {/* <Header /> */}
       <main>
         <Routes>
-<!--      <CommunityLayout />  추후에 라우터 연결 작업 필요-->
+          <Route path="/community" element={<CommunityLayout />}>
+            {/* <Route path="all" element={<CommunityAll />} />
+            <Route path="share" element={<CommunityShare />} />
+            <Route path="free" element={<CommunityFree />} />
+            <Route path="study" element={<CommunityStudy />} /> */}
+          </Route>
           <Route path="/login" element={<Login />} />
           <Route path="/mypage" element={<MyPage />}>
             <Route index element={<MypageContent />} />
