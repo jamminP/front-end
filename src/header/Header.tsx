@@ -1,40 +1,28 @@
-import { Link } from "react-router-dom";
-import bellIcon from "../header/img/bell.png";
-import { useState } from "react";
-import Logo from "./img/Logo.png";
+import { Link } from 'react-router-dom';
+import bellIcon from '../header/img/bell.png';
+import { useState } from 'react';
 
 export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <header className="fixed flex justify-between items-center w-full p-[20px_30px] md:p-[30px_60px] bg-[#ffffff] z-[999]">
       <Link to="/" className="flex items-center">
-        <img src={Logo} alt="logo" className="h-12 w-auto" />
-        <h1 className="text-[#1B3043] text-4xl font-extrabold ml-3 mb-2">
-          Evi
-        </h1>
+        <h1 className="text-[#1B3043] text-5xl font-extrabold ml-0 mb-0">Evi</h1>
       </Link>
 
       <button className="md:hidden" onClick={() => setIsOpen((prev) => !prev)}>
         <div
           className={`${
-            isOpen ? "rotate-45 relative top-[7px]" : "rotate-0"
+            isOpen ? 'rotate-45 relative top-[7px]' : 'rotate-0'
           } w-[25px] h-[2px] bg-black mb-[5px]`}
         ></div>
-        <div
-          className={`${
-            isOpen ? "hidden" : "block"
-          } w-[25px] h-[2px] bg-black mb-[5px]`}
-        ></div>
-        <div
-          className={`${
-            isOpen ? "rotate-135" : "rotate-0"
-          } w-[25px] h-[2px] bg-black`}
-        ></div>
+        <div className={`${isOpen ? 'hidden' : 'block'} w-[25px] h-[2px] bg-black mb-[5px]`}></div>
+        <div className={`${isOpen ? 'rotate-135' : 'rotate-0'} w-[25px] h-[2px] bg-black`}></div>
       </button>
 
       <nav
         className={`${
-          isOpen ? "flex" : "hidden"
+          isOpen ? 'flex' : 'hidden'
         } w-[50%] md:w-[auto] h-screen md:h-[auto] md:flex flex flex-col md:flex-row absolute md:relative md:items-center gap-[30px] text-[#333] bg-[#fff] top-[72px] md:top-0 right-0 text-right md:text-left p-[30px] md:p-0`}
       >
         <Link to="/" onClick={() => setIsOpen(false)}>

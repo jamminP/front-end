@@ -1,13 +1,14 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import "./App.css";
-import CommunityLayout from "./community/CommunityLayout";
-import Header from "./header/Header";
-import MyPage from "./mypage/Mypage";
-import MypageContent from "./mypage/components/MypageContent";
-import Challenge from "./mypage/components/Challenge";
-import Login from "./login/Login";
-import MyCalendar from "./mypage/components/Calendar";
-import LandingPage from "@landing/LandingPage";
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import './App.css';
+import CommunityLayout from './community/CommunityLayout';
+import Header from './header/Header';
+import MyPage from './mypage/Mypage';
+import MypageContent from './mypage/components/MypageContent';
+import Challenge from './mypage/components/Challenge';
+import Login from './login/Login';
+import MyCalendar from './mypage/components/Calendar';
+import LandingPage from '@landing/LandingPage';
+import Footer from './footer/footer';
 
 function App() {
   return (
@@ -15,7 +16,7 @@ function App() {
       <Header />
       <main>
         <Routes>
-        <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/community" element={<CommunityLayout />}>
             {/* <Route path="all" element={<CommunityAll />} />
             <Route path="share" element={<CommunityShare />} />
@@ -31,6 +32,7 @@ function App() {
           </Route>
         </Routes>
       </main>
+      <Footer />
     </BrowserRouter>
   );
 }
