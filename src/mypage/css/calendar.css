@@ -3,12 +3,15 @@
   font-family: 'Pretendard', sans-serif;
   border: 1px solid #efefef;
   border-radius: 20px;
-  padding: 20px;
+  padding: 40px;
 }
 .react-calendar__tile {
-  height: 100px;
+  height: 140px;
 }
 .react-calendar__tile--now {
   background: #f3f9ff;
   color: #000;
+}
+.react-calendar button {
+  border-block: 1px dotted #efefef;
 }

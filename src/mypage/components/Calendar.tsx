@@ -103,7 +103,7 @@ export default function MyCalendar() {
           const dayEvents = eventsOnDate(date);
           return (
             <div className="mt-1 space-y-1 px-1">
-              {dayEvents.slice(0, 1).map((e) => (
+              {dayEvents.slice(0, 3).map((e) => (
                 <p
                   key={e.id}
                   className="text-xs bg-blue-100 text-blue-800 truncate px-1 rounded cursor-pointer"
@@ -115,7 +115,7 @@ export default function MyCalendar() {
                   {e.title}
                 </p>
               ))}
-              {dayEvents.length > 1 && (
+              {dayEvents.length > 3 && (
                 <p
                   className="text-[10px] text-gray-400 cursor-pointer"
                   onClick={(ev) => {
@@ -126,7 +126,7 @@ export default function MyCalendar() {
                     });
                   }}
                 >
-                  +{dayEvents.length - 1} more
+                  +{dayEvents.length - 3} more
                 </p>
               )}
             </div>
