@@ -10,7 +10,6 @@ interface Event {
   date: string; // YYYY-MM-DD
 }
 
-// 날짜 포맷 함수
 const formatDate = (date: Date): string => {
   const year = date.getFullYear();
   const month = `0${date.getMonth() + 1}`.slice(-2);
@@ -21,7 +20,6 @@ const formatDate = (date: Date): string => {
 export default function MyCalendar() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-  // localStorage에서 초기값 가져오기
   const [events, setEvents] = useState<Event[]>(() => {
     const stored = localStorage.getItem('calendar-events');
     return stored ? JSON.parse(stored) : [];
@@ -34,12 +32,16 @@ export default function MyCalendar() {
   const [formDescription, setFormDescription] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
-  // 로컬스토리지에 저장
+  // 추가된 상태: 특정 날짜의 모든 이벤트 보여주는 모달용
+  const [moreEvents, setMoreEvents] = useState<{
+    date: string;
+    events: Event[];
+  }>({ date: '', events: [] });
+
   useEffect(() => {
     localStorage.setItem('calendar-events', JSON.stringify(events));
   }, [events]);
 
-  // 날짜 클릭 시 일정 추가 폼 열기
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);
     setFormDate(formatDate(date));
@@ -49,11 +51,8 @@ export default function MyCalendar() {
     setShowForm(true);
   };
 
-  // 일정 등록/수정
   const handleSubmit = () => {
-    if (!formTitle.trim()) {
-      return alert('제목을 입력하세요');
-    }
+    if (!formTitle.trim()) return;
 
     const newEvent: Event = {
       id: isEditing && modalEvent ? modalEvent.id : Date.now().toString(),
@@ -70,24 +69,20 @@ export default function MyCalendar() {
     setModalEvent(null);
   };
 
-  // 일정 삭제
   const handleDelete = (id: string) => {
     setEvents((prev) => prev.filter((e) => e.id !== id));
     setModalEvent(null);
   };
 
-  // 특정 날짜의 일정 필터링
   const eventsOnDate = (date: Date) => {
     const dateStr = formatDate(date);
     return events.filter((e) => e.date === dateStr);
   };
 
-  // 일정 클릭 → 상세 보기 모달 열기
   const handleEventClick = (event: Event) => {
     setModalEvent(event);
   };
 
-  // 수정 버튼 클릭 시 일정 수정 폼 열기
   const handleEdit = () => {
     if (!modalEvent) return;
     setFormDate(modalEvent.date);
@@ -99,9 +94,8 @@ export default function MyCalendar() {
 
   return (
     <div>
-      <h1 className="text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">캘린더</h1>
+      <h1 className="text-3xl font-bold mb-[30px]">캘린더</h1>
 
-      {/* 달력 */}
       <Calendar
         onClickDay={handleDayClick}
         value={selectedDate}
@@ -122,7 +116,18 @@ export default function MyCalendar() {
                 </p>
               ))}
               {dayEvents.length > 1 && (
-                <p className="text-[10px] text-gray-400">+{dayEvents.length - 1} more</p>
+                <p
+                  className="text-[10px] text-gray-400 cursor-pointer"
+                  onClick={(ev) => {
+                    ev.stopPropagation();
+                    setMoreEvents({
+                      date: formatDate(date),
+                      events: dayEvents,
+                    });
+                  }}
+                >
+                  +{dayEvents.length - 1} more
+                </p>
               )}
             </div>
           );
@@ -183,6 +188,36 @@ export default function MyCalendar() {
               </button>
               <button className="bg-blue-500 text-white px-3 py-1 rounded" onClick={handleSubmit}>
                 {isEditing ? '수정' : '추가'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 여러 개 일정 모달 (more 클릭 시) */}
+      {moreEvents.date && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow w-[90%] max-w-md space-y-3">
+            <h2 className="text-xl font-semibold mb-2">{moreEvents.date}의 일정 목록</h2>
+            {moreEvents.events.map((event) => (
+              <div
+                key={event.id}
+                className="border p-2 rounded cursor-pointer hover:bg-gray-100"
+                onClick={() => {
+                  setModalEvent(event);
+                  setMoreEvents({ date: '', events: [] });
+                }}
+              >
+                <p className="font-semibold">{event.title}</p>
+                <p className="text-sm text-gray-500">{event.description}</p>
+              </div>
+            ))}
+            <div className="flex justify-end">
+              <button
+                className="text-gray-500"
+                onClick={() => setMoreEvents({ date: '', events: [] })}
+              >
+                닫기
               </button>
             </div>
           </div>
