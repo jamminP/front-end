@@ -9,6 +9,7 @@ import Login from './login/Login';
 import MyCalendar from './mypage/components/Calendar';
 import LandingPage from '@landing/LandingPage';
 import CommunityAll from './community/Category/CommunityAll';
+import CommunityFree from './community/Category/CommunityFree';
 
 function App() {
   return (
@@ -19,8 +20,8 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/community" element={<CommunityLayout />}>
             <Route path="all" element={<CommunityAll />} />
+            {/* <Route path="free" element={<CommunityFree />} /> */}
             {/* <Route path="share" element={<CommunityShare />} />
-            <Route path="free" element={<CommunityFree />} />
             <Route path="study" element={<CommunityStudy />} /> */}
           </Route>
           <Route path="/" element={<LandingPage />} />

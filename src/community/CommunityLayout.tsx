@@ -48,7 +48,7 @@ const CommunityLayout = () => {
           </div>
 
           {/* 본문 */}
-          <div className="flex-1 border max-w-[600px] border-black">
+          <div className="flex-1 max-w-[600px]">
             <CommunityAll />
             <Outlet />
           </div>

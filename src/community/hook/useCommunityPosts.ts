@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { getPostsByCategory } from '../api/community';
+// import { useQuery } from '@tanstack/react-query';
+// import { getPostsByCategory } from '../api/community';
 
-export const useCommunityPosts = (category: string) => {
-  return useQuery({
-    queryKey: ['posts', category],
-    queryFn: () => getPostsByCategory(category),
-  });
-};
+// export const useCommunityPosts = (category: string) => {
+//   return useQuery({
+//     queryKey: ['posts', category],
+//     queryFn: () => getPostsByCategory(category),
+//   });
+// };

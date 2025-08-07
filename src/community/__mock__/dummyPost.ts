@@ -28,7 +28,7 @@ export const dummyPosts: Post[] = [
   {
     postId: 3,
     title: 'React 스터디 주말 모집합니다',
-    author: '스터디리더',
+    author: '에뷔의에뷔',
     category: 'study',
     content: '기초부터 실전까지 함께해요!',
     createdAt: '2025-08-06',
