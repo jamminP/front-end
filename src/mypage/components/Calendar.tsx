@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
+import '../css/calendar.css';
 
 interface Event {
   id: string;
@@ -97,8 +98,8 @@ export default function MyCalendar() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">캘린더</h1>
+    <div>
+      <h1 className="text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">캘린더</h1>
 
       {/* 달력 */}
       <Calendar
