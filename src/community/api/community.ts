@@ -8,6 +8,12 @@ export interface Post {
   likes: number;
   comments: number;
   views: number;
+
+  recruitStart?: string;
+  recruitEnd?: string;
+  studyStart?: string;
+  studyEnd?: string;
+  maxMembers?: number;
 }
 
-export type PostCategory = "all" | "share" | "study" | "free";
+export type PostCategory = 'all' | 'share' | 'study' | 'free';
