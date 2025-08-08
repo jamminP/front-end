@@ -13,7 +13,7 @@ import Footer from './footer/Footer';
 function App() {
   return (
     <BrowserRouter>
-      <Header />
+      <Header isLoggedIn={false} />
       <main>
         <Routes>
           <Route path="/" element={<LandingPage />} />
