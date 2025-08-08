@@ -8,7 +8,7 @@ import Challenge from './mypage/components/Challenge';
 import Login from './login/Login';
 import MyCalendar from './mypage/components/Calendar';
 import LandingPage from '@landing/LandingPage';
-import Footer from './footer/footer';
+import Footer from './footer/Footer';
 
 function App() {
   return (
