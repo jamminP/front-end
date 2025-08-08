@@ -52,7 +52,7 @@ export default function MyCalendar() {
   };
 
   const handleSubmit = () => {
-    if (!formTitle.trim()) return;
+    if (!formTitle.trim()) return alert('제목을 입력해주세요');
 
     const newEvent: Event = {
       id: isEditing && modalEvent ? modalEvent.id : Date.now().toString(),
@@ -67,6 +67,11 @@ export default function MyCalendar() {
 
     setShowForm(false);
     setModalEvent(null);
+    if (isEditing) {
+      alert('수정되었습니다');
+    } else {
+      alert('등록되었습니다');
+    }
   };
 
   const handleDelete = (id: string) => {
@@ -140,20 +145,21 @@ export default function MyCalendar() {
       {modalEvent && (
         <div className="modal-overlay">
           <div className="modal-container">
-            <h2 className="text-xl font-semibold mb-2">{modalEvent.title}</h2>
-            <p className="text-sm text-gray-500 mb-2">{modalEvent.date}</p>
-            <p className="mb-4">{modalEvent.description}</p>
-            <div className="flex justify-end gap-2">
-              <button className="text-red-500" onClick={() => handleDelete(modalEvent.id)}>
-                삭제
-              </button>
-              <button className="text-blue-500" onClick={handleEdit}>
-                수정
-              </button>
-              <button className="text-gray-500" onClick={() => setModalEvent(null)}>
-                닫기
-              </button>
+            <h2 className="modal-title">{modalEvent.title}</h2>
+            <p className="modal-date">{modalEvent.date}</p>
+            <div className="modal-description">
+              {modalEvent.description.split('\n').map((line, idx) => (
+                <p key={idx}>{line}</p>
+              ))}
             </div>
+            <div className="modal-button">
+              <button onClick={() => handleDelete(modalEvent.id)}>삭제</button>
+              <button onClick={handleEdit}>수정</button>
+            </div>
+            <button className="modal-close" onClick={() => setModalEvent(null)}>
+              <span></span>
+              <span></span>
+            </button>
           </div>
         </div>
       )}
@@ -162,9 +168,7 @@ export default function MyCalendar() {
       {showForm && (
         <div className="modal-overlay">
           <div className="modal-container">
-            <h2 className="text-xl font-semibold">
-              {isEditing ? '일정 수정' : `${formDate} 일정 추가`}
-            </h2>
+            <h2 className="modal-title">{isEditing ? '일정 수정' : `${formDate} 일정 추가`}</h2>
             <input
               type="text"
               placeholder="제목"
@@ -178,20 +182,19 @@ export default function MyCalendar() {
               value={formDescription}
               onChange={(e) => setFormDescription(e.target.value)}
             />
-            <div className="flex justify-end gap-2">
-              <button
-                className="text-gray-500"
-                onClick={() => {
-                  setShowForm(false);
-                  setIsEditing(false);
-                }}
-              >
-                취소
-              </button>
-              <button className="bg-blue-500 text-white px-3 py-1 rounded" onClick={handleSubmit}>
-                {isEditing ? '수정' : '추가'}
-              </button>
+            <div className="modal-button">
+              <button onClick={handleSubmit}>{isEditing ? '수정' : '추가'}</button>
             </div>
+            <button
+              className="modal-close"
+              onClick={() => {
+                setShowForm(false);
+                setIsEditing(false);
+              }}
+            >
+              <span></span>
+              <span></span>
+            </button>
           </div>
         </div>
       )}

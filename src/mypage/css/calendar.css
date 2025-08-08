@@ -91,15 +91,99 @@ button.react-calendar__navigation__arrow {
   position: fixed;
   width: 100%;
   height: 100%;
-  background: #000000bd;
+  background: #00000094;
   z-index: 9999;
   inset: calc(var(--spacing) * 0);
 }
 
 .modal-container {
+  position: relative;
   width: 100%;
   max-width: 600px;
   background: #ffffff;
   border-radius: 20px;
   padding: 30px;
+}
+.modal-container input,
+.modal-container textarea {
+  margin-top: 20px;
+  border: 1px solid #d1d1d1;
+  border-radius: 10px;
+  padding: 10px;
+}
+.modal-container textarea {
+  min-height: 200px;
+  margin-bottom: 20px;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+.modal-date {
+  font-size: 0.9rem;
+  color: #999;
+}
+.modal-description {
+  max-height: 50vh;
+  overflow-y: auto;
+  color: #333;
+  margin: 40px 0;
+}
+.modal-description > p {
+  border-bottom: 1px solid #e5e5e5;
+  padding: 5px 0;
+}
+.modal-button {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.modal-button button {
+  padding: 5px 10px;
+  background: #dddddd;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #fff;
+  cursor: pointer;
+}
+.modal-button button:nth-of-type(1) {
+  background: #ffe5e5;
+  color: #af2b2b;
+}
+.modal-button button:nth-of-type(2) {
+  background: #d2e9ff;
+  color: #0060b9;
+}
+.modal-button button:nth-of-type(3) {
+  color: #333;
+}
+.modal-close {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  cursor: pointer;
+  top: 20px;
+  right: 25px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  transition: background 0.5s;
+}
+.modal-close:hover {
+  background: #e5e5e5;
+}
+.modal-close span {
+  position: relative;
+  width: 20px;
+  height: 2px;
+  background: #000;
+  transform: rotate(45deg);
+}
+.modal-close span:last-child {
+  top: -2px;
+  transform: rotate(135deg);
 }
