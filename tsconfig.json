@@ -3,15 +3,5 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ],
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@src/*": ["./src/*"],
-      "@components/*": ["./src/components/*"],
-      "@landing/*": ["./src/landing/*"]
-    }
-  },
-  "types": ["node"],
-  "include": ["src", "src/types/global.d.ts"]
+  ]
 }

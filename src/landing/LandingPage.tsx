@@ -1,10 +1,10 @@
-import BenefitRending from "./components/BenefitRending";
-import MainRending from "./components/MainRending";
-import FAQRending from "./components/FAQRending";
+import BenefitRending from './components/BenefitRending';
+import MainRending from './components/MainRending';
+import FAQRending from './components/FAQRending';
 
 function LandingPage() {
   return (
-    <div>
+    <div className="pt-30">
       <MainRending />
       <FAQRending />
       <BenefitRending />
