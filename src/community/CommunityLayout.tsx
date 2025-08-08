@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import CommunityTab from './components/CommunityTab';
 import SidebarRanking from './components/SidebarRanking';
-import CommunityAll from './Category/CommunityAll';
+import CommunityAll from './category/CommunityAll';
 
 const dummyfreePost = [
   { id: 1, title: '오늘 날씨가 좋아요' },
