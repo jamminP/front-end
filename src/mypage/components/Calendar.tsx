@@ -101,7 +101,7 @@ export default function MyCalendar() {
 
   return (
     <div>
-      <h1 className="text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">캘린더</h1>
+      <h1 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">캘린더</h1>
 
       <Calendar
         onClickDay={handleDayClick}
@@ -171,6 +171,7 @@ export default function MyCalendar() {
             <h2 className="modal-title">{isEditing ? '일정 수정' : `${formDate} 일정 추가`}</h2>
             <input
               type="text"
+              maxLength={30}
               placeholder="제목"
               className="w-full border px-2 py-1"
               value={formTitle}
@@ -203,11 +204,11 @@ export default function MyCalendar() {
       {moreEvents.date && (
         <div className="modal-overlay">
           <div className="modal-container">
-            <h2 className="text-xl font-semibold mb-2">{moreEvents.date}의 일정 목록</h2>
+            <h2 className="modal-title">{moreEvents.date}의 일정 목록</h2>
             {moreEvents.events.map((event) => (
               <div
                 key={event.id}
-                className="border p-2 rounded cursor-pointer hover:bg-gray-100"
+                className="modal-list"
                 onClick={() => {
                   setModalEvent(event);
                   setMoreEvents({ date: '', events: [] });
@@ -217,14 +218,10 @@ export default function MyCalendar() {
                 <p className="text-sm text-gray-500">{event.description}</p>
               </div>
             ))}
-            <div className="flex justify-end">
-              <button
-                className="text-gray-500"
-                onClick={() => setMoreEvents({ date: '', events: [] })}
-              >
-                닫기
-              </button>
-            </div>
+            <button className="modal-close" onClick={() => setMoreEvents({ date: '', events: [] })}>
+              <span></span>
+              <span></span>
+            </button>
           </div>
         </div>
       )}

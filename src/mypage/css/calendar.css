@@ -22,7 +22,7 @@
 
 .react-calendar__tile:enabled:hover,
 .react-calendar__tile:enabled:focus {
-  background: #efefef;
+  background-color: #efefef;
 }
 
 .react-calendar__navigation {
@@ -37,7 +37,7 @@ button.react-calendar__navigation__arrow {
 }
 .react-calendar__navigation button:enabled:hover,
 .react-calendar__navigation button:enabled:focus {
-  background: transparent;
+  background-color: transparent;
 }
 
 .react-calendar__tile--active {
@@ -64,7 +64,7 @@ button.react-calendar__navigation__arrow {
 }
 .react-calendar__tile--now abbr {
   border-radius: 50%;
-  background: #0180f5;
+  background-color: #0180f5;
   color: #ffffff;
 }
 
@@ -91,7 +91,7 @@ button.react-calendar__navigation__arrow {
   position: fixed;
   width: 100%;
   height: 100%;
-  background: #00000094;
+  background-color: #00000094;
   z-index: 9999;
   inset: calc(var(--spacing) * 0);
 }
@@ -100,7 +100,7 @@ button.react-calendar__navigation__arrow {
   position: relative;
   width: 100%;
   max-width: 600px;
-  background: #ffffff;
+  background-color: #ffffff;
   border-radius: 20px;
   padding: 30px;
 }
@@ -116,9 +116,30 @@ button.react-calendar__navigation__arrow {
   margin-bottom: 20px;
 }
 
+.modal-list {
+  margin-top: 10px;
+  border: 1px solid #d1d1d1;
+  border-radius: 10px;
+  padding: 10px;
+  background-color: #ffffff;
+  transition: background-color 0.3s;
+  cursor: pointer;
+  overflow: hidden;
+}
+.modal-list:first-of-type {
+  margin-top: 20px;
+}
+.modal-list:last-of-type {
+  margin-bottom: 20px;
+}
+.modal-list:hover {
+  background-color: #e5e5e5;
+}
+
 .modal-title {
   font-size: 1.5rem;
   font-weight: 600;
+  overflow: hidden;
 }
 .modal-date {
   font-size: 0.9rem;
@@ -141,7 +162,7 @@ button.react-calendar__navigation__arrow {
 }
 .modal-button button {
   padding: 5px 10px;
-  background: #dddddd;
+  background-color: #dddddd;
   border-radius: 50px;
   font-size: 0.9rem;
   font-weight: 500;
@@ -149,11 +170,11 @@ button.react-calendar__navigation__arrow {
   cursor: pointer;
 }
 .modal-button button:nth-of-type(1) {
-  background: #ffe5e5;
+  background-color: #ffe5e5;
   color: #af2b2b;
 }
 .modal-button button:nth-of-type(2) {
-  background: #d2e9ff;
+  background-color: #d2e9ff;
   color: #0060b9;
 }
 .modal-button button:nth-of-type(3) {
@@ -171,19 +192,64 @@ button.react-calendar__navigation__arrow {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  transition: background 0.5s;
+  background-color: #ffffff;
+  transition: background-color 0.3s;
 }
 .modal-close:hover {
-  background: #e5e5e5;
+  background-color: #e5e5e5;
 }
 .modal-close span {
   position: relative;
   width: 20px;
   height: 2px;
-  background: #000;
+  background-color: #000;
   transform: rotate(45deg);
 }
 .modal-close span:last-child {
   top: -2px;
   transform: rotate(135deg);
+}
+
+@media (max-width: 768px) {
+  .react-calendar {
+    padding: 10px;
+  }
+  .react-calendar__tile {
+    padding: 10px 0;
+    font-size: 0.7rem;
+    height: 150px;
+  }
+  .react-calendar abbr {
+    width: 27px;
+    height: 27px;
+  }
+  .react-calendar__navigation {
+    height: 20px;
+    margin-top: 20px;
+    font-size: 1.2rem;
+  }
+  .react-calendar__navigation button {
+    min-width: 20px;
+  }
+  .react-calendar button > div > p {
+    font-size: 0.6rem;
+    padding: 2px 5px;
+    margin: 5px 0;
+  }
+  .react-calendar .more {
+    line-height: 1;
+    margin-top: 10px;
+  }
+
+  .modal-container {
+    width: 90%;
+    padding: 25px;
+  }
+  .modal-title {
+    font-size: 1.2rem;
+  }
+  .modal-close {
+    top: 10px;
+    right: 10px;
+  }
 }
