@@ -70,6 +70,8 @@ export default function MyCalendar() {
   };
 
   const handleDelete = (id: string) => {
+    if (!confirm('삭제하시겠습니까?')) return;
+
     setEvents((prev) => prev.filter((e) => e.id !== id));
     setModalEvent(null);
   };
@@ -94,7 +96,7 @@ export default function MyCalendar() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-[30px]">캘린더</h1>
+      <h1 className="text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">캘린더</h1>
 
       <Calendar
         onClickDay={handleDayClick}
