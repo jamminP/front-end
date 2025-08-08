@@ -106,7 +106,7 @@ export default function MyCalendar() {
               {dayEvents.slice(0, 3).map((e) => (
                 <p
                   key={e.id}
-                  className="text-xs bg-blue-100 text-blue-800 truncate px-1 rounded cursor-pointer"
+                  className="text-xs bg-blue-100 text-blue-800 truncate cursor-pointer"
                   onClick={(ev) => {
                     ev.stopPropagation();
                     handleEventClick(e);
@@ -117,7 +117,7 @@ export default function MyCalendar() {
               ))}
               {dayEvents.length > 3 && (
                 <p
-                  className="text-[10px] text-gray-400 cursor-pointer"
+                  className="more"
                   onClick={(ev) => {
                     ev.stopPropagation();
                     setMoreEvents({
@@ -136,8 +136,8 @@ export default function MyCalendar() {
 
       {/* 일정 상세 모달 */}
       {modalEvent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow w-[90%] max-w-md">
+        <div className="modal-overlay">
+          <div className="modal-container">
             <h2 className="text-xl font-semibold mb-2">{modalEvent.title}</h2>
             <p className="text-sm text-gray-500 mb-2">{modalEvent.date}</p>
             <p className="mb-4">{modalEvent.description}</p>
@@ -158,8 +158,8 @@ export default function MyCalendar() {
 
       {/* 일정 추가/수정 폼 모달 */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow w-[90%] max-w-md space-y-3">
+        <div className="modal-overlay">
+          <div className="modal-container">
             <h2 className="text-xl font-semibold">
               {isEditing ? '일정 수정' : `${formDate} 일정 추가`}
             </h2>
@@ -196,8 +196,8 @@ export default function MyCalendar() {
 
       {/* 여러 개 일정 모달 (more 클릭 시) */}
       {moreEvents.date && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow w-[90%] max-w-md space-y-3">
+        <div className="modal-overlay">
+          <div className="modal-container">
             <h2 className="text-xl font-semibold mb-2">{moreEvents.date}의 일정 목록</h2>
             {moreEvents.events.map((event) => (
               <div
