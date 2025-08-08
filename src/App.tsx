@@ -9,7 +9,6 @@ import Login from './login/Login';
 import MyCalendar from './mypage/components/Calendar';
 import LandingPage from '@landing/LandingPage';
 import CommunityAll from './community/Category/CommunityAll';
-import CommunityFree from './community/Category/CommunityFree';
 import Footer from './footer/Footer';
 
 function App() {
