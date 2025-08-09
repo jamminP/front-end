@@ -10,6 +10,7 @@ import MyCalendar from './mypage/components/Calendar';
 import LandingPage from '@landing/LandingPage';
 import CommunityAll from './community/category/CommunityAll';
 import Footer from './footer/Footer';
+import AiPage from './ai/AiPage';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
             <Route path="calendar" element={<MyCalendar />} />
             <Route path="challenge" element={<Challenge />} />
           </Route>
+          <Route path="/ai" element={<AiPage />} />
         </Routes>
       </main>
       <Footer />
