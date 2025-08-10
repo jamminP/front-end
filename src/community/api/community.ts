@@ -1,3 +1,5 @@
+import type { PostFormValues } from '../form/PostForm';
+
 export interface Post {
   postId: number;
   title: string;
@@ -16,10 +18,22 @@ export interface Post {
   maxMembers?: number;
 }
 
+export type PostCategory = 'all' | 'share' | 'study' | 'free';
+
 export const getPostsByCategory = async (category: string) => {
   const res = await fetch(`/api/community/posts?category=${category}`);
   if (!res.ok) throw new Error('게시글을 불러오지 못했습니다.');
   return res.json();
 };
 
-export type PostCategory = 'all' | 'share' | 'study' | 'free';
+export async function createStudyPost(body: PostFormValues) {
+  const res = await fetch('/api/community/post/study', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error('게시글 작성 실패');
+  }
+  return res.json();
+}
