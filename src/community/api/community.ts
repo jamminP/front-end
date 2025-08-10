@@ -1,39 +1,25 @@
-import type { PostFormValues } from '../form/PostForm';
+import { postJSON } from './http';
+import type { BasePostPayload, CommentPayload, CommentResponse, PostResponse } from './types';
 
-export interface Post {
-  postId: number;
-  title: string;
-  content: string;
-  author: string;
-  category: string;
-  createdAt: string;
-  likes: number;
-  comments: number;
-  views: number;
-
-  recruitStart?: string;
-  recruitEnd?: string;
-  studyStart?: string;
-  studyEnd?: string;
-  maxMembers?: number;
+export function createFreePost(body: BasePostPayload) {
+  return postJSON<BasePostPayload, PostResponse>('/api/community/post/free', body);
 }
 
-export type PostCategory = 'all' | 'share' | 'study' | 'free';
+export function createSharePost(body: BasePostPayload) {
+  return postJSON<BasePostPayload, PostResponse>('/api/community/post/share', body);
+}
 
-export const getPostsByCategory = async (category: string) => {
-  const res = await fetch(`/api/community/posts?category=${category}`);
-  if (!res.ok) throw new Error('게시글을 불러오지 못했습니다.');
-  return res.json();
-};
+export function createStudyPost(body: BasePostPayload) {
+  return postJSON<BasePostPayload, PostResponse>('/api/community/post/study', body);
+}
 
-export async function createStudyPost(body: PostFormValues) {
-  const res = await fetch('/api/community/post/study', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    throw new Error('게시글 작성 실패');
-  }
-  return res.json();
+export function addComment(postId: number, body: CommentPayload) {
+  return postJSON<CommentPayload, CommentResponse>(`/api/community/post/${postId}/comment`, body);
+}
+
+export function joinStudy(postId: number, payload?: { note?: string }) {
+  return postJSON<typeof payload, { joined: true; postId: number }>(
+    `/api/community/post/study/${postId}/join`,
+    payload ?? {},
+  );
 }
