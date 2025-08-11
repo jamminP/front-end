@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 export type PostFormValues = {
   title: string;
@@ -39,8 +39,8 @@ function validate(values: PostFormValues): Errors {
     const SS = values.studyStart ?? '';
     const SE = values.studyEnd ?? '';
 
-    if (RS && RE && RS > RE) e.recruitEnd = '모집 마감은 시작 이후여햐 합니다.';
-    if (SS && SE && SS > SE) e.studyEnd = '스터디 종료는 시작 이후여햐 합니다.';
+    if (RS && RE && RS > RE) e.recruitEnd = '모집 마감은 시작 이후여야 합니다.';
+    if (SS && SE && SS > SE) e.studyEnd = '스터디 종료는 시작 이후여야 합니다.';
 
     if (values.maxMembers !== undefined) {
       if (Number.isNaN(values.maxMembers) || values.maxMembers < 2) {
@@ -48,7 +48,6 @@ function validate(values: PostFormValues): Errors {
       }
     }
   }
-
   return e;
 }
 
@@ -58,10 +57,7 @@ export default function PostForm({
   onSubmit,
   disabled,
 }: PostFormProps) {
-  const [values, setValues] = useState<PostFormValues>({
-    ...defaults,
-    ...initialValues,
-  });
+  const [values, setValues] = useState<PostFormValues>({ ...defaults, ...initialValues });
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -78,14 +74,14 @@ export default function PostForm({
       const raw = e.target.value;
       setValues((v) => ({
         ...v,
-        [name]: name === 'maxMembers' ? (raw === '' ? undefined : Number(raw)) : raw,
+        [name]: name === 'maxMembers' ? (raw === '' ? undefined : Number(raw)) : (raw as any),
       }));
     };
+
   const onBlur = (name: keyof PostFormValues) => () => setTouched((t) => ({ ...t, [name]: true }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     setTouched({
       title: true,
       content: true,
@@ -99,6 +95,7 @@ export default function PostForm({
     if (hasError) return;
     onSubmit(values);
   };
+
   const err = (k: keyof PostFormValues) => touched[k];
 
   return (
@@ -115,10 +112,11 @@ export default function PostForm({
         />
         {err('title') && <p>{errors.title}</p>}
       </div>
+
       <div>
         <label>카테고리</label>
         <select
-          name="categort"
+          name="category"
           value={values.category}
           onChange={setField('category')}
           onBlur={onBlur('category')}
@@ -141,19 +139,21 @@ export default function PostForm({
         />
         {err('content') && <p>{errors.content}</p>}
       </div>
+
       {isStudy && (
         <div>
           <div>
             <label>모집 시작일</label>
             <input
               type="date"
-              name="recruitStard"
+              name="recruitStart"
               value={values.recruitStart ?? ''}
               onChange={setField('recruitStart')}
               onBlur={onBlur('recruitStart')}
               disabled={disabled}
             />
           </div>
+
           <div>
             <label>모집 마감일</label>
             <input
@@ -166,6 +166,7 @@ export default function PostForm({
             />
             {err('recruitEnd') && <p>{errors.recruitEnd}</p>}
           </div>
+
           <div>
             <label>스터디 시작일</label>
             <input
@@ -177,6 +178,7 @@ export default function PostForm({
               disabled={disabled}
             />
           </div>
+
           <div>
             <label>스터디 종료일</label>
             <input
@@ -184,10 +186,12 @@ export default function PostForm({
               name="studyEnd"
               value={values.studyEnd ?? ''}
               onChange={setField('studyEnd')}
+              onBlur={onBlur('studyEnd')}
               disabled={disabled}
             />
             {err('studyEnd') && <p>{errors.studyEnd}</p>}
           </div>
+
           <div>
             <label>최대 인원</label>
             <input
@@ -203,6 +207,7 @@ export default function PostForm({
           </div>
         </div>
       )}
+
       <div>
         <button type="submit" disabled={disabled}>
           {submitLabel}
