@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'framer-motion';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FaCalendarCheck, FaChevronLeft, FaPaperPlane, FaSearch } from 'react-icons/fa';
 import { FaRegFileLines } from 'react-icons/fa6';
 import { MdQuiz } from 'react-icons/md';
@@ -55,7 +55,6 @@ export default function AiMain() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const selectedAction = useMemo(() => ACTIONS.find((a) => a.id === selected) ?? null, [selected]);
-
   const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   const startChat = (id: ActionId) => {
@@ -95,6 +94,32 @@ export default function AiMain() {
       ]);
     }, 300);
   };
+
+  const focusInput = () => {
+    inputRef.current?.focus();
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (view !== 'chat') return;
+
+      if (e.isComposing) return;
+
+      const t = e.target as HTMLElement | null;
+
+      const typing =
+        !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        focusInput();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [view]);
 
   return (
     <div className="h-full grid grid-rows-[1fr_auto]">
