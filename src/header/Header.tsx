@@ -34,6 +34,9 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
         <Link to="/community" onClick={() => setIsOpen(false)}>
           커뮤니티
         </Link>
+        <Link to="/mypage" onClick={() => setIsOpen(false)}>
+          마이페이지
+        </Link>
         {isLoggedIn ? (
           <>
             <div className="relative">

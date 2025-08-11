@@ -1,15 +1,15 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet } from 'react-router-dom';
 
 export default function MyPage() {
   return (
-    <div className="flex flex-col md:flex-row w-full h-full max-w-[1400px] m-auto p-[100px_0] md:p-[150px_0_100px_0]">
+    <div className="flex flex-col md:flex-row w-full h-full max-w-[1400px] m-auto p-[100px_0_0_0] md:p-[150px_0_50px_0]">
       <nav className="flex md:flex-col justify-center md:justify-start gap-[30px] md:w-[20%] mt-[5px]">
         <NavLink
           to="/mypage"
           end
           className={({ isActive }) =>
             `text-[16px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
-              isActive ? "text-[#0180F5]" : "text-[#878787]"
+              isActive ? 'text-[#0180F5]' : 'text-[#878787]'
             }`
           }
         >
@@ -20,7 +20,7 @@ export default function MyPage() {
           end
           className={({ isActive }) =>
             `text-[16px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
-              isActive ? "text-[#0180F5]" : "text-[#878787]"
+              isActive ? 'text-[#0180F5]' : 'text-[#878787]'
             }`
           }
         >
@@ -31,7 +31,7 @@ export default function MyPage() {
           end
           className={({ isActive }) =>
             `text-[16px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
-              isActive ? "text-[#0180F5]" : "text-[#878787]"
+              isActive ? 'text-[#0180F5]' : 'text-[#878787]'
             }`
           }
         >
