@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import type { Post } from '../api/community';
+import type { Post } from '../api/types';
 
 interface PostCardProps {
   post: Post;
