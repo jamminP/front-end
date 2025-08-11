@@ -55,9 +55,9 @@ const PostCard: FC<PostCardProps> = ({ post, currentUserId, isAdmin = false, onC
         <p className="text-sm text-gray-700 mt-1 line-clamp-3">{post.content}</p>
       )}
       <div className="flex justify-end items-center mt-3 text-xs text-gray-500 gap-4">
-        <span>💬 {post.comments}</span>
-        <span>❤️ {post.likes}</span>
-        <span>👁 {post.views}</span>
+        <span>💬 {post.commentCount}</span>
+        <span>❤️ {post.likeCount}</span>
+        <span>👁 {post.viewCount}</span>
       </div>
     </div>
   );
