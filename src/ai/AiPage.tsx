@@ -9,7 +9,7 @@ export default function AiPage() {
     <div className="pt-30 w-full h-screen flex flex-col md:flex-row">
       <aside
         className={[
-          'hidden md:flex h-full bg-white border-r border-amber-100',
+          'hidden md:flex h-full bg-white border-r border-[#1b304336]',
           'transition-all duration-300 ease-in-out',
           'relative overflow-visible',
           collapsed ? 'md:w-16' : 'md:w-64',
@@ -17,7 +17,7 @@ export default function AiPage() {
       >
         <AiSideBar collapsed={collapsed} onToggle={() => setCollaped((view) => !view)} />
       </aside>
-      <main className="flex-1 h-full bg-amber-50">
+      <main className="flex-1 h-full bg-[#fff]">
         <AiMain />
       </main>
     </div>
