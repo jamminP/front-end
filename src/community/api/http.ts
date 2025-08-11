@@ -1,17 +1,17 @@
-export async function postJSON<TReq, TRes>(
-  url: string,
-  body: TReq,
-  init?: RequestInit,
-): Promise<TRes> {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'applocation/json' },
-    body: JSON.stringify(body),
+const BASE = import.meta.env.VITE_API_BASE_URL ?? '';
+
+export async function http<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
     ...init,
   });
   if (!res.ok) {
-    const msg = await res.text().catch(() => '');
-    throw new Error(msg || `POST ${url} failed (${res.status})`);
+    const text = await res.text().catch(() => '');
+    throw new Error(`${res.status} ${res.statusText} ${text}`);
   }
-  return res.json() as Promise<TRes>;
+  try {
+    return await res.json();
+  } catch {
+    return undefined as T;
+  }
 }

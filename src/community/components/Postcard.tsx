@@ -1,5 +1,23 @@
 import React, { FC } from 'react';
-import type { Post } from '../api/types';
+
+export interface Post {
+  postId: number;
+  title: string;
+  author: string;
+  authorId: number;
+  category: 'free' | 'share' | 'study';
+  content: string;
+  createdAt: string;
+  views: number;
+  likes: number;
+  comments: number;
+
+  recruitStart?: string;
+  recruitEnd?: string;
+  studyStart?: string;
+  studyEnd?: string;
+  maxMembers?: number;
+}
 
 interface PostCardProps {
   post: Post;
@@ -55,9 +73,9 @@ const PostCard: FC<PostCardProps> = ({ post, currentUserId, isAdmin = false, onC
         <p className="text-sm text-gray-700 mt-1 line-clamp-3">{post.content}</p>
       )}
       <div className="flex justify-end items-center mt-3 text-xs text-gray-500 gap-4">
-        <span>💬 {post.commentCount}</span>
-        <span>❤️ {post.likeCount}</span>
-        <span>👁 {post.viewCount}</span>
+        <span>💬 {post.comments}</span>
+        <span>❤️ {post.likes}</span>
+        <span>👁 {post.views}</span>
       </div>
     </div>
   );
