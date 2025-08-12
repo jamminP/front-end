@@ -16,7 +16,7 @@ import LoginCallback from './login/LoginCallback';
 function App() {
   return (
     <BrowserRouter>
-      <Header isLoggedIn={false} />
+      <Header />
       <main>
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -28,7 +28,6 @@ function App() {
           </Route>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/login/callback" element={<LoginCallback />} />
           <Route path="/mypage" element={<MyPage />}>
             <Route index element={<MypageContent />} />
             <Route path="calendar" element={<MyCalendar />} />
