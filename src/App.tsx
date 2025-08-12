@@ -11,7 +11,6 @@ import LandingPage from '@landing/LandingPage';
 import CommunityAll from './community/category/CommunityAll';
 import Footer from './footer/Footer';
 import AiPage from './ai/AiPage';
-import LoginCallback from './login/LoginCallback';
 
 function App() {
   return (
