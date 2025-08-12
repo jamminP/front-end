@@ -11,6 +11,7 @@ import LandingPage from '@landing/LandingPage';
 import CommunityAll from './community/category/CommunityAll';
 import Footer from './footer/Footer';
 import AiPage from './ai/AiPage';
+import LoginCallback from './login/LoginCallback';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           </Route>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/login/callback" element={<LoginCallback />} />
           <Route path="/mypage" element={<MyPage />}>
             <Route index element={<MypageContent />} />
             <Route path="calendar" element={<MyCalendar />} />
