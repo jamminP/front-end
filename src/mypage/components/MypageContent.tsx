@@ -14,7 +14,7 @@ function MyPostCard({ title, content, date }: MyPost) {
       <p className="text-[.8rem] text-[#c2c2c2] m-[5px_0] truncate">
         {new Date(date).toLocaleDateString()}
       </p>
-      <p className="text-[.8rem] truncate text-[#797979]">{content}</p>
+      <p className="text-[.9rem] truncate text-[#797979]">{content}</p>
     </li>
   );
 }
