@@ -27,18 +27,18 @@ interface PostCardProps {
 }
 
 const PostCard: FC<PostCardProps> = ({ post, currentUserId, isAdmin = false, onClick }) => {
-  const canEdit = isAdmin || post.postId === currentUserId;
+  const canEdit = isAdmin || post.authorId === currentUserId;
 
   const handleCardClick = () => {
     onClick(post.postId);
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation;
+    e.stopPropagation();
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation;
+    e.stopPropagation();
   };
 
   return (

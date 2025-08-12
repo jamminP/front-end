@@ -10,6 +10,9 @@ import MyCalendar from './mypage/components/Calendar';
 import LandingPage from '@landing/LandingPage';
 import CommunityAll from './community/category/CommunityAll';
 import Footer from './footer/Footer';
+import CreatePost from './community/form/CreatePost';
+import CommunityFree from './community/category/CommunityFree';
+import CommunityShare from './community/category/CommunityShare';
 
 function App() {
   return (
@@ -18,13 +21,14 @@ function App() {
       <main>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/community/create" element={<CreatePost />} />
           <Route path="/community" element={<CommunityLayout />}>
-            <Route path="all" element={<CommunityAll />} />
-            {/* <Route path="free" element={<CommunityFree />} /> */}
-            {/* <Route path="share" element={<CommunityShare />} />
+            <Route index element={<CommunityAll />} />
+            {/* <Route path="free" element={<CommunityFree />} />
+            <Route path="share" element={<CommunityShare />} />
             <Route path="study" element={<CommunityStudy />} /> */}
           </Route>
-          <Route path="/" element={<LandingPage />} />
+
           <Route path="/login" element={<Login />} />
           <Route path="/mypage" element={<MyPage />}>
             <Route index element={<MypageContent />} />

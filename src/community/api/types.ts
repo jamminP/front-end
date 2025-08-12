@@ -24,6 +24,7 @@ export interface SharePostRequestDTO {
   content: string;
   user_id: number;
   file_url?: string | null;
+  img_url?: string | null;
   category?: 'share';
 }
 export interface DataShareResponseDTO {
@@ -46,7 +47,7 @@ export interface StudyPostRequestDTO {
   content: string;
   user_id: number;
   category?: 'study';
-  recruit_start: string; // ISO
+  recruit_start: string;
   recruit_end: string;
   study_start: string;
   study_end: string;

@@ -99,9 +99,8 @@ export default function PostForm({
   const err = (k: keyof PostFormValues) => touched[k];
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="space-y-4 mt-20">
       <div>
-        <label>제목</label>
         <input
           name="title"
           value={values.title}
@@ -109,18 +108,21 @@ export default function PostForm({
           onBlur={onBlur('title')}
           placeholder="제목을 입력하세요"
           disabled={disabled}
+          className={`w-full border rounded-md px-3 py-3 ${
+            err('title') ? 'border-#1B3043' : 'border-#1B3043'
+          }`}
         />
         {err('title') && <p>{errors.title}</p>}
       </div>
 
       <div>
-        <label>카테고리</label>
         <select
           name="category"
           value={values.category}
           onChange={setField('category')}
           onBlur={onBlur('category')}
           disabled={disabled}
+          className="w-full border rounded-md px-3 py-2 border-#1B3043"
         >
           <option value="free">자유</option>
           <option value="share">자료 공유</option>
@@ -136,14 +138,17 @@ export default function PostForm({
           onBlur={onBlur('content')}
           placeholder="내용을 입력하세요"
           disabled={disabled}
+          className={`w-full border rounded-md px-3 py-2 min-h-[400px] ${
+            err('content') ? 'border-#1B3043' : 'border-gray-300'
+          }`}
         />
         {err('content') && <p>{errors.content}</p>}
       </div>
 
       {isStudy && (
-        <div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label>모집 시작일</label>
+            <label className="block text-sm font-medium mb-1">모집 시작일</label>
             <input
               type="date"
               name="recruitStart"
@@ -151,11 +156,12 @@ export default function PostForm({
               onChange={setField('recruitStart')}
               onBlur={onBlur('recruitStart')}
               disabled={disabled}
+              className="w-full border rounded-md px-3 py-2 border-gray-300"
             />
           </div>
 
           <div>
-            <label>모집 마감일</label>
+            <label className="block text-sm font-medium mb-1">모집 마감일</label>
             <input
               type="date"
               name="recruitEnd"
@@ -163,12 +169,15 @@ export default function PostForm({
               onChange={setField('recruitEnd')}
               onBlur={onBlur('recruitEnd')}
               disabled={disabled}
+              className={`w-full border rounded-md px-3 py-2 ${
+                err('recruitEnd') ? 'border-red-400' : 'border-gray-300'
+              }`}
             />
-            {err('recruitEnd') && <p>{errors.recruitEnd}</p>}
+            {err('recruitEnd') && <p className="mt-1 text-xs text-red-500">{errors.recruitEnd}</p>}
           </div>
 
           <div>
-            <label>스터디 시작일</label>
+            <label className="block text-sm font-medium mb-1">스터디 시작일</label>
             <input
               type="date"
               name="studyStart"
@@ -176,11 +185,12 @@ export default function PostForm({
               onChange={setField('studyStart')}
               onBlur={onBlur('studyStart')}
               disabled={disabled}
+              className="w-full border rounded-md px-3 py-2 border-gray-300"
             />
           </div>
 
           <div>
-            <label>스터디 종료일</label>
+            <label className="block text-sm font-medium mb-1">스터디 종료일</label>
             <input
               type="date"
               name="studyEnd"
@@ -188,12 +198,15 @@ export default function PostForm({
               onChange={setField('studyEnd')}
               onBlur={onBlur('studyEnd')}
               disabled={disabled}
+              className={`w-full border rounded-md px-3 py-2 ${
+                err('studyEnd') ? 'border-red-400' : 'border-gray-300'
+              }`}
             />
-            {err('studyEnd') && <p>{errors.studyEnd}</p>}
+            {err('studyEnd') && <p className="mt-1 text-xs text-red-500">{errors.studyEnd}</p>}
           </div>
 
-          <div>
-            <label>최대 인원</label>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">최대 인원</label>
             <input
               type="number"
               min={2}
@@ -202,14 +215,21 @@ export default function PostForm({
               onChange={setField('maxMembers')}
               onBlur={onBlur('maxMembers')}
               disabled={disabled}
+              className={`w-full border rounded-md px-3 py-2 ${
+                err('maxMembers') ? 'border-red-400' : 'border-gray-300'
+              }`}
             />
-            {err('maxMembers') && <p>{errors.maxMembers}</p>}
+            {err('maxMembers') && <p className="mt-1 text-xs text-red-500">{errors.maxMembers}</p>}
           </div>
         </div>
       )}
 
-      <div>
-        <button type="submit" disabled={disabled}>
+      <div className="flex justify-end gap-2">
+        <button
+          type="submit"
+          className="px-4 py-2 rounded-md bg-black text-white disabled:opacity-60"
+          disabled={disabled}
+        >
           {submitLabel}
         </button>
       </div>

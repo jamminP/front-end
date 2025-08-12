@@ -1,16 +1,78 @@
-import { http } from './http';
+// import { http } from './http';
 import {
   FreePostRequestDTO,
-  FreePostResponseDTO,
-  FreePostUpdateRequestDTO,
   SharePostRequestDTO,
-  SharePostResponseDTO,
-  SharePostUpdateRequestDTO,
   StudyPostRequestDTO,
-  StudyPostResponseDTO,
+  FreePostUpdateRequestDTO,
+  SharePostUpdateRequestDTO,
   StudyPostUpdateRequestDTO,
+  FreePostResponseDTO,
+  SharePostResponseDTO,
+  StudyPostResponseDTO,
   CommentResponseDTO,
 } from './types';
+
+type Category = 'all' | 'free' | 'share' | 'study';
+
+export type CursorPage<T> = {
+  items: T[];
+  nextCursor: number | null;
+};
+
+function normalizeCursorPage<T>(raw: any): CursorPage<T> {
+  const items = Array.isArray(raw?.items)
+    ? raw.items
+    : Array.isArray(raw?.data)
+      ? raw.data
+      : Array.isArray(raw?.item)
+        ? raw.item
+        : [];
+  const nc = raw?.next_cursor ?? raw?.nextCursor ?? raw?.cursor ?? null;
+  return { items, nextCursor: (nc ?? null) as number | null };
+}
+
+function qs(params: Record<string, unknown>) {
+  const s = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') s.set(k, String(v));
+  });
+  const q = s.toString();
+  return q ? `?${q}` : '';
+}
+
+function pathForCursor(category: Category) {
+  switch (category) {
+    case 'free':
+      return '/api/community/post/free/list-cursor';
+    case 'share':
+      return '/api/community/post/share/list-cursor';
+    case 'study':
+      return '/api/community/post/study/list-cursor';
+    case 'all':
+    default:
+      return '/api/community/post/all/list-cursor';
+  }
+}
+
+async function getListCursor<T>(category: Category, cursor: number | null | undefined, q?: string) {
+  const url = `${pathForCursor(category)}${qs({ cursor, q })}`;
+  const res = await http<any>(url);
+  return normalizeCursorPage<T>(res);
+}
+
+export const getFreeListCursor = (cursor: number | null | undefined, q?: string) =>
+  getListCursor<FreePostResponseDTO>('free', cursor, q);
+
+export const getShareListCursor = (cursor: number | null | undefined, q?: string) =>
+  getListCursor<SharePostResponseDTO>('share', cursor, q);
+
+export const getStudyListCursor = (cursor: number | null | undefined, q?: string) =>
+  getListCursor<StudyPostResponseDTO>('study', cursor, q);
+
+export const getAllListCursor = (cursor: number | null | undefined, q?: string) =>
+  getListCursor<any>('all', cursor, q);
+
+export type AnyPostResponseDTO = FreePostResponseDTO | SharePostResponseDTO | StudyPostResponseDTO;
 
 export const createFreePost = (body: FreePostRequestDTO) =>
   http<FreePostResponseDTO>('/api/community/post/free', {
@@ -78,7 +140,7 @@ export const createComment = (postId: number, content: string, userId: number, p
   });
 
 export const readLikeCount = (postId: number) =>
-  http<unknown>(`/api/community/post/${postId}/likes`);
+  http<{ count: number }>(`/api/community/post/${postId}/likes`);
 
 export const toggleLike = (postId: number, userId?: number) =>
   http<void>(`/api/community/post/${postId}/like`, {
@@ -87,7 +149,7 @@ export const toggleLike = (postId: number, userId?: number) =>
   });
 
 export const likeStatus = (postId: number, userId?: number) =>
-  http<unknown>(`/api/community/post/${postId}/like/status`, {
+  http<{ liked: boolean }>(`/api/community/post/${postId}/like/status`, {
     headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
   });
 

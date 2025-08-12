@@ -14,6 +14,7 @@ const CommunityTab = () => {
         <NavLink
           key={tab.path}
           to={tab.path}
+          end={tab.path === '/community'}
           className={({ isActive }) =>
             `text-m font-medium  pb-1 ps-7  ${
               isActive
