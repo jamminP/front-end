@@ -13,6 +13,7 @@ import Footer from './footer/Footer';
 import CreatePost from './community/form/CreatePost';
 import CommunityFree from './community/category/CommunityFree';
 import CommunityShare from './community/category/CommunityShare';
+import AiPage from './ai/AiPage';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             <Route path="calendar" element={<MyCalendar />} />
             <Route path="challenge" element={<Challenge />} />
           </Route>
+          <Route path="/ai" element={<AiPage />} />
         </Routes>
       </main>
       <Footer />

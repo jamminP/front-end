@@ -5,9 +5,11 @@ import { useState } from 'react';
 export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <header className="fixed flex justify-between items-center w-full p-[20px_30px] md:p-[30px_60px] bg-[#ffffff] z-[999]">
+    <header className="fixed flex justify-between items-center w-full p-[10px_20px] md:p-[18px_60px] bg-[#ffffff] z-[999]">
       <Link to="/" className="flex items-center">
-        <h1 className="text-[#1B3043] text-5xl font-extrabold ml-0 mb-0">Evi</h1>
+        <h1 className="text-[#1B3043] text-[2rem] md:text-[2.5rem] font-extrabold ml-0 mb-0">
+          Evi
+        </h1>
       </Link>
 
       <button className="md:hidden" onClick={() => setIsOpen((prev) => !prev)}>
@@ -33,6 +35,9 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
         </Link>
         <Link to="/community" onClick={() => setIsOpen(false)}>
           커뮤니티
+        </Link>
+        <Link to="/mypage" onClick={() => setIsOpen(false)}>
+          마이페이지
         </Link>
         {isLoggedIn ? (
           <>
