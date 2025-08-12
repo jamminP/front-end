@@ -18,7 +18,7 @@ import AiPage from './ai/AiPage';
 function App() {
   return (
     <BrowserRouter>
-      <Header isLoggedIn={false} />
+      <Header />
       <main>
         <Routes>
           <Route path="/" element={<LandingPage />} />
