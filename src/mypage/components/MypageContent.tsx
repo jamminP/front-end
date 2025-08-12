@@ -9,7 +9,7 @@ interface MyPost {
 
 function MyPostCard({ title, content, date }: MyPost) {
   return (
-    <li className="w-[48%] md:w-[32%] h-[130px] text-[#252525] bg-[#ffffff] rounded-2xl mb-[2%] p-[25px] border-[1px] border-[#e9e9e9] transform transition-transform duration-300 hover:translate-y-[-5px]">
+    <li className="w-[48%] md:w-[32%] h-[130px] text-[#252525] bg-[#ffffff] rounded-2xl mb-[5%] md:mb-[2%] p-[20px] md:p-[25px] border-[1px] border-[#e9e9e9] transform transition-transform duration-300 hover:translate-y-[-5px]">
       <h4 className="text-[1.1rem] font-bold tracking-[-.03rem] truncate">{title}</h4>
       <p className="text-[.8rem] text-[#c2c2c2] m-[5px_0] truncate">
         {new Date(date).toLocaleDateString()}
@@ -20,7 +20,7 @@ function MyPostCard({ title, content, date }: MyPost) {
 }
 function SkeletonCard() {
   return (
-    <li className="w-[48%] md:w-[32%] h-[130px] bg-[#f1f1f1] rounded-2xl mb-[2%] animate-pulse"></li>
+    <li className="w-[48%] md:w-[32%] h-[130px] bg-[#f1f1f1] rounded-2xl mb-[5%] md:mb-[2%] animate-pulse"></li>
   );
 }
 
@@ -67,24 +67,27 @@ export default function MypageContent() {
   return (
     <>
       <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem]">마이페이지</h2>
-      <div className="flex items-center mt-[30px] bg-[#e4ecf3] w-fit p-[20px_25px] rounded-[20px]">
-        <div>
-          <div className="w-[50px] h-[50px] bg-[#ffffff] rounded-[50%]"></div>
+      <div className="flex items-center justify-between md:justify-items-start mt-[30px] bg-[#e4ecf3] w-full md:w-fit p-[15px_20px] md:p-[20px_25px] rounded-[20px]">
+        <div className="flex items-center">
+          <div>
+            <div className="w-[50px] h-[50px] bg-[#ffffff] rounded-[50%]"></div>
+          </div>
+          <div className="m-[0_15px] leading-[1.3]">
+            <p className="font-bold text-[#1b3043] text-[1.1rem]">홍길동</p>
+            <p className="text-[#5b6b7a] text-[.9rem]">abc@aaa.com</p>
+          </div>
         </div>
-        <div className="m-[0_15px] leading-[1.3]">
-          <p className="font-bold text-[#1b3043] text-[1.1rem]">홍길동</p>
-          <p className="text-[#5b6b7a] text-[.9rem]">abc@aaa.com</p>
-        </div>
+
         <button
           type="button"
-          className="p-[10px_15px] bg-[#1b3043] text-[#ffffff] text-[.9rem] rounded-[100px] font-semibold"
+          className="p-[6px_12px] md:p-[10px_15px] bg-[#1b3043] text-[#ffffff] text-[.9rem] rounded-[100px] font-semibold"
         >
-          닉네임 수정하기
+          닉네임 수정
         </button>
       </div>
       <div className="m-[60px_0]">
         <h3 className="text-[1.5rem] font-light tracking-[-0.05rem] pl-[5px]">작성한 글 보기</h3>
-        <ul className="flex items-center flex-wrap gap-[2%] w-full mt-[15px]">
+        <ul className="flex items-center justify-between md:justify-start gap-[2%] flex-wrap w-full mt-[15px]">
           {loading
             ? Array(dummyMyPosts.length)
                 .fill(0)
@@ -94,7 +97,7 @@ export default function MypageContent() {
       </div>
       <div>
         <h3 className="text-[1.5rem] font-light tracking-[-0.05rem] pl-[5px]">찜한 글 보기</h3>
-        <ul className="flex items-center flex-wrap gap-[2%] w-full mt-[15px]">
+        <ul className="flex items-center flex-wrap justify-between md:justify-start gap-[2%] w-full mt-[15px]">
           {loading
             ? Array(dummyLikedPosts.length)
                 .fill(0)
