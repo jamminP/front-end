@@ -11,16 +11,6 @@ body {
   font-family: 'Pretendard', sans-serif;
 }
 
-.landing-snap {
-  overflow-y: auto;
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-}
-
-.hide-global-footer footer {
-  display: none;
-}
-
 @font-face {
   font-family: 'Pretendard';
   font-weight: 900;
