@@ -10,7 +10,6 @@ function LandingPage() {
     <main style={landingThemeVars} className="pt-20 md:pt-30 w-full h-full">
       <HeroRending />
       <FeatureMosaic />
-      <MainRending />
       <FAQRending />
       <BenefitRending />
     </main>
