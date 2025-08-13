@@ -14,6 +14,10 @@ import CreatePost from './community/form/CreatePost';
 import CommunityFree from './community/category/CommunityFree';
 import CommunityShare from './community/category/CommunityShare';
 import AiPage from './ai/AiPage';
+import EditPost from './community/form/EditPost';
+import PostDetail from './community/post/components/CommentItem';
+import CommunityStudy from './community/category/CommunityStudy';
+import PostDetailMock from './community/post/PostDetail';
 
 function App() {
   return (
@@ -25,9 +29,11 @@ function App() {
           <Route path="/community/create" element={<CreatePost />} />
           <Route path="/community" element={<CommunityLayout />}>
             <Route index element={<CommunityAll />} />
-            {/* <Route path="free" element={<CommunityFree />} />
+            <Route path="free" element={<CommunityFree />} />
             <Route path="share" element={<CommunityShare />} />
-            <Route path="study" element={<CommunityStudy />} /> */}
+            <Route path="study" element={<CommunityStudy />} />
+            <Route path="/community/:category/:id" element={<PostDetailMock />} />
+            <Route path="/community/:category/:id/edit" element={<EditPost />} />
           </Route>
 
           <Route path="/login" element={<Login />} />

@@ -1,7 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import CommunityTab from './components/CommunityTab';
 import SidebarRanking from './components/SidebarRanking';
-import CommunityAll from './category/CommunityAll';
 import CreatePostButton from './components/CreatePostButton';
 
 const dummyfreePost = [
