@@ -1,5 +1,4 @@
 import BenefitRending from './components/BenefitRending';
-import MainRending from './components/MainRending';
 import FAQRending from './components/FAQRending';
 import HeroRending from './components/HeroRending';
 import { landingThemeVars } from './theme/colors';
