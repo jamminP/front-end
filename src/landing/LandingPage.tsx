@@ -5,7 +5,7 @@ import HeroRending from './components/HeroRending';
 
 function LandingPage() {
   return (
-    <main>
+    <main className="pt-20 md:pt-30">
       <HeroRending />
       <MainRending />
       <FAQRending />
