@@ -3,13 +3,8 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 export default function HeroRending() {
-  const colorVars = { '--main': '#1B3043', '--accent': '#0180F5' } as React.CSSProperties;
-
   return (
-    <section
-      style={colorVars}
-      className="relative overflow-hidden bg-white min-h-[70dvh] flex items-center pb-20"
-    >
+    <section className="relative overflow-hidden bg-white min-h-[70dvh] flex items-center pb-20">
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.06] 
       [background:linear-gradient(to_right,rgba(27,48,67,0.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(27,48,67,0.12)_1px,transparent_1px)] 
