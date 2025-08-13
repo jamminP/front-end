@@ -12,6 +12,25 @@ import {
   CommentResponseDTO,
 } from './types';
 
+export type CommentTreeItem = {
+  id: number;
+  post_id: number;
+  content: string;
+  author_id: number;
+  parent_id: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export async function listComments(postId: number): Promise<CommentTreeItem[]> {
+  try {
+    return await http<CommentTreeItem[]>(`/api/community/post/${postId}/comments`);
+  } catch (e: any) {
+    if (String(e?.message || '').startsWith('404')) return [];
+    throw e;
+  }
+}
+
 type Category = 'all' | 'free' | 'share' | 'study';
 
 export type CursorPage<T> = {
