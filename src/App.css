@@ -1,1 +1,13 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+
+@layer utilities {
+  .snap-section {
+    min-height: calc(100dvh - var(--header-h));
+    scroll-margin-top: var(--header-h);
+    @apply snap-start snap-always;
+  }
+
+  .snap-center {
+    @apply flex items-center;
+  }
+}
