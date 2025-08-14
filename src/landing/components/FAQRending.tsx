@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { FAQs } from "../data/FAQList";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from 'react';
+import { FAQs } from '../data/FAQList';
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 
 function FAQRending() {
   const [openId, setOpenId] = useState<number | null>(null);
@@ -12,8 +12,8 @@ function FAQRending() {
 
   return (
     <div className="w-full mt-20">
-      <div className="relative w-full max-w-screen-xl mx-auto px-40 py-10 mt-7 rounded-lg">
-        <h2 className="text-4xl font-bold mb-10">
+      <div className="relative w-full max-w-screen-2xl mx-auto md:px-12 md:py-10 rounded-lg">
+        <h2 className="text-4xl font-bold mb-10 leading-relaxed">
           궁금증을 <br /> 해결해드리겠습니다.
         </h2>
 
@@ -24,9 +24,7 @@ function FAQRending() {
                 onClick={() => toggleFAQ(faq.id)}
                 className="flex items-center justify-between w-full text-left font-bold"
               >
-                <span className="flex-1 text-gray-800 text-base">
-                  {faq.question}
-                </span>
+                <span className="flex-1 text-gray-800 text-base">{faq.question}</span>
                 {openId === faq.id ? (
                   <FaChevronUp className="text-gray-400 flex-shrink-0" />
                 ) : (
@@ -38,14 +36,12 @@ function FAQRending() {
                   <motion.div
                     key="content"
                     initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
+                    animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
                     className="overflow-hidden"
                   >
-                    <div className="mt-3 text-gray-600 text-sm max-w-[90ch]">
-                      {faq.answer}
-                    </div>
+                    <div className="mt-3 text-gray-600 text-sm max-w-[90ch]">{faq.answer}</div>
                   </motion.div>
                 )}
               </AnimatePresence>
