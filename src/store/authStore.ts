@@ -1,7 +1,6 @@
-// authStore.ts
 import { create } from 'zustand';
 
-// 유저 타입
+//유저 타입
 interface User {
   id: number;
   email: string;
@@ -10,30 +9,26 @@ interface User {
   is_superuser: boolean;
 }
 
-// Zustand 상태 타입
+//스토어 상태 타입
 interface AuthState {
   user: User | null;
-  accessToken: string | null;
   isLoggedIn: boolean;
-  setAuthData: (data: { user: User; accessToken: string }) => void;
+  setAuthData: (data: { user: User }) => void;
   logout: () => void;
 }
 
-// Zustand 스토어
+//zustand스토어
 const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  accessToken: null,
   isLoggedIn: false,
-  setAuthData: ({ user, accessToken }) =>
+  setAuthData: ({ user }) =>
     set({
       user,
-      accessToken,
       isLoggedIn: true,
     }),
   logout: () =>
     set({
       user: null,
-      accessToken: null,
       isLoggedIn: false,
     }),
 }));

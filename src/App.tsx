@@ -24,27 +24,20 @@ import useAuthStore from './store/authStore';
 function App() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
 
-  // 앱 첫 렌더 시 토큰 기반 로그인 상태 확인
+  // 앱 첫 렌더 시 쿠키 기반 로그인 상태 확인
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) return; // 토큰 없으면 로그인 안된 상태
-
     fetch('https://backend.evida.site/api/v1/users/myinfo', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      credentials: 'include', // 쿠키 자동 전송
     })
       .then((res) => {
         if (!res.ok) throw new Error('로그인 정보 없음');
         return res.json();
       })
       .then((user) => {
-        setAuthData({ user, accessToken: token });
+        setAuthData({ user }); // Zustand 상태 갱신
       })
       .catch((err) => {
         console.log(err.message);
-        // 필요하면 토큰 삭제
-        localStorage.removeItem('access_token');
       });
   }, []);
 
