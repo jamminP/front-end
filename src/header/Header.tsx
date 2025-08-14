@@ -9,10 +9,7 @@ export default function Header() {
   const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = async () => {
-    await fetch('https://backend.evida.site/api/v1/users/auth/google/logout', {
-      method: 'POST',
-      credentials: 'include',
-    });
+    localStorage.removeItem('access_token'); // 토큰 삭제
     logout(); // Zustand 상태 초기화
   };
 
