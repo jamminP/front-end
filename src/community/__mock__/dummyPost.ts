@@ -1,4 +1,12 @@
-import type { FreePostResponseDTO, SharePostResponseDTO, StudyPostResponseDTO } from '../api/types';
+import { CursorPage } from '../api/community';
+import type {
+  FreePostResponseDTO,
+  FreePostUpdateRequestDTO,
+  SharePostResponseDTO,
+  SharePostUpdateRequestDTO,
+  StudyPostResponseDTO,
+  StudyPostUpdateRequestDTO,
+} from '../api/types';
 import { Post } from '../components/Postcard';
 
 export type CommentTreeItem = {
@@ -176,7 +184,6 @@ export const mockPatchFree = async (id: number, body: FreePostUpdateRequestDTO) 
     ...prev,
     title: body.title ?? prev.title,
     content: body.content ?? prev.content,
-    free_board: { image_url: body.image_url ?? prev.free_board?.image_url ?? null },
     updated_at: new Date().toISOString(),
   };
   dummyFree[idx] = next;
