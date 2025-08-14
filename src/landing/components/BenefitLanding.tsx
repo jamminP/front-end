@@ -1,7 +1,7 @@
 import { FaCheck } from 'react-icons/fa';
 import BenefitRendingImg from '../img/ready_to_next_level.jpg';
 
-function BenefitRending() {
+function BenefitLanding() {
   return (
     <div className="relative w-full max-w-screen-xl mx-auto px-40 flex justify-between items-center mt-12 mb-12">
       <div className="pr-10">
@@ -30,4 +30,4 @@ function BenefitRending() {
   );
 }
 
-export default BenefitRending;
+export default BenefitLanding;
