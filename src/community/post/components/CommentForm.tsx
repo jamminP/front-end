@@ -69,9 +69,9 @@ export default function CommentFormMock({
   const disabled = mut.isPending || value.trim().length === 0;
 
   return (
-    <div className="bg-gray-50 border border-gray-500 rounded-xl p-2">
+    <div className="bg-gray-50 border border-gray-300 rounded-xl p-1">
       <textarea
-        className="w-full rounded-md border border-gray-500 px-2 py-2 text-sm"
+        className="w-full rounded-md border border-gray-300 px-2 py-2 text-sm"
         rows={parentId ? 2 : 3}
         placeholder={parentId ? '답글을 입력하세요' : '댓글을 입력하세요'}
         value={value}

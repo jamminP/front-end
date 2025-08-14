@@ -318,7 +318,7 @@ export default function PostDetailMock() {
   const canEdit = vm.authorId === currentUserId;
 
   return (
-    <div className="max-w-[900px] mx-auto p-4">
+    <div className="max-w-[1000px]  mx-auto">
       <div className="bg-gray-100 rounded-2xl shadow px-6 py-5">
         <div className="flex items-start justify-between">
           <div>
@@ -350,7 +350,7 @@ export default function PostDetailMock() {
         <h1 className="text-2xl font-bold mt-3">{vm.title}</h1>
 
         {vm.category === 'study' && (
-          <div className="mt-2 text-sm text-gray-700 space-y-1">
+          <div className=" text-sm text-gray-700 space-y-1">
             <div>
               모집기간: {vm.recruitStart} ~ {vm.recruitEnd}
             </div>
@@ -378,7 +378,7 @@ export default function PostDetailMock() {
           </div>
         )}
 
-        <div className="mt-4 whitespace-pre-wrap leading-7 text-gray-800">{vm.content}</div>
+        <div className="mt-5 whitespace-pre-wrap leading-7 text-gray-800">{vm.content}</div>
       </div>
 
       <section className="mt-6">
