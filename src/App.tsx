@@ -26,7 +26,7 @@ function App() {
 
   // 앱 첫 렌더 시 로그인 상태 확인
   useEffect(() => {
-    fetch('https://www.evida.site/api/v1/users/myinfo', {
+    fetch('https://backend.evida.site/api/v1/users/myinfo', {
       credentials: 'include', // 쿠키 자동 전송
     })
       .then((res) => {
