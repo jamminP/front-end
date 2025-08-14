@@ -1,136 +1,230 @@
-import { useEffect, useState } from "react";
-import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
+import { useEffect, useState } from 'react';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
+import '../css/calendar.css';
 
-type Event = {
+interface Event {
   id: string;
   title: string;
   description: string;
-  date: string;
+  date: string; // YYYY-MM-DD
+}
+
+const formatDate = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = `0${date.getMonth() + 1}`.slice(-2);
+  const day = `0${date.getDate()}`.slice(-2);
+  return `${year}-${month}-${day}`;
 };
 
 export default function MyCalendar() {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [newTitle, setNewTitle] = useState("");
-  const [newDesc, setNewDesc] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-  // localStorage 불러오기
-  useEffect(() => {
-    const saved = localStorage.getItem("events");
-    if (saved) {
-      setEvents(JSON.parse(saved));
-    }
-  }, []);
+  const [events, setEvents] = useState<Event[]>(() => {
+    const stored = localStorage.getItem('calendar-events');
+    return stored ? JSON.parse(stored) : [];
+  });
 
-  // localStorage 저장
+  const [modalEvent, setModalEvent] = useState<Event | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [formDate, setFormDate] = useState<string>('');
+  const [formTitle, setFormTitle] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+
+  // 추가된 상태: 특정 날짜의 모든 이벤트 보여주는 모달용
+  const [moreEvents, setMoreEvents] = useState<{
+    date: string;
+    events: Event[];
+  }>({ date: '', events: [] });
+
   useEffect(() => {
-    localStorage.setItem("events", JSON.stringify(events));
+    localStorage.setItem('calendar-events', JSON.stringify(events));
   }, [events]);
 
-  // 날짜 클릭 시 모달 열기
-  const handleDateClick = (date: Date) => {
+  const handleDayClick = (date: Date) => {
     setSelectedDate(date);
-    setNewTitle("");
-    setNewDesc("");
-    setIsModalOpen(true);
+    setFormDate(formatDate(date));
+    setFormTitle('');
+    setFormDescription('');
+    setIsEditing(false);
+    setShowForm(true);
   };
 
-  // 일정 추가
-  const handleAddEvent = () => {
-    if (!selectedDate || !newTitle) return;
+  const handleSubmit = () => {
+    if (!formTitle.trim()) return alert('제목을 입력해주세요');
 
     const newEvent: Event = {
-      id: Date.now().toString(),
-      title: newTitle,
-      description: newDesc,
-      date: selectedDate.toISOString().split("T")[0],
+      id: isEditing && modalEvent ? modalEvent.id : Date.now().toString(),
+      title: formTitle,
+      description: formDescription,
+      date: formDate,
     };
 
-    setEvents((prev) => [...prev, newEvent]);
-    setIsModalOpen(false);
+    setEvents((prev) =>
+      isEditing ? prev.map((e) => (e.id === modalEvent?.id ? newEvent : e)) : [...prev, newEvent],
+    );
+
+    setShowForm(false);
+    setModalEvent(null);
+    if (isEditing) {
+      alert('수정되었습니다');
+    } else {
+      alert('등록되었습니다');
+    }
   };
 
-  // 삭제
   const handleDelete = (id: string) => {
-    setEvents((prev) => prev.filter((ev) => ev.id !== id));
+    if (!confirm('삭제하시겠습니까?')) return;
+
+    setEvents((prev) => prev.filter((e) => e.id !== id));
+    setModalEvent(null);
   };
 
-  const eventsForSelectedDate = selectedDate
-    ? events.filter((ev) => ev.date === selectedDate.toISOString().split("T")[0])
-    : [];
+  const eventsOnDate = (date: Date) => {
+    const dateStr = formatDate(date);
+    return events.filter((e) => e.date === dateStr);
+  };
+
+  const handleEventClick = (event: Event) => {
+    setModalEvent(event);
+  };
+
+  const handleEdit = () => {
+    if (!modalEvent) return;
+    setFormDate(modalEvent.date);
+    setFormTitle(modalEvent.title);
+    setFormDescription(modalEvent.description);
+    setIsEditing(true);
+    setShowForm(true);
+  };
 
   return (
-    <>
-      <h2 className="text-4xl text-[#242424] tracking-[-.05rem]">캘린더</h2>
-      <div className="p-4">
-        <Calendar onClickDay={handleDateClick} />
+    <div>
+      <h1 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">캘린더</h1>
 
-        {/* 일정 목록 */}
-        {selectedDate && (
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold">{selectedDate.toDateString()} 일정</h3>
-            <ul className="mt-2">
-              {eventsForSelectedDate.map((ev) => (
-                <li
-                  key={ev.id}
-                  className="border-b py-2 flex justify-between items-center"
+      <Calendar
+        onClickDay={handleDayClick}
+        value={selectedDate}
+        tileContent={({ date }) => {
+          const dayEvents = eventsOnDate(date);
+          return (
+            <div className="mt-1 space-y-1 px-1">
+              {dayEvents.slice(0, 3).map((e) => (
+                <p
+                  key={e.id}
+                  className="text-xs bg-blue-100 text-blue-800 truncate cursor-pointer"
+                  onClick={(ev) => {
+                    ev.stopPropagation();
+                    handleEventClick(e);
+                  }}
                 >
-                  <div>
-                    <p className="font-medium">{ev.title}</p>
-                    <p className="text-sm text-gray-500">{ev.description}</p>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(ev.id)}
-                    className="text-red-500 text-sm"
-                  >
-                    삭제
-                  </button>
-                </li>
+                  {e.title}
+                </p>
               ))}
-            </ul>
-          </div>
-        )}
-      </div>
-
-      {/* 모달 */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4">
-              {selectedDate?.toDateString()} 일정 추가
-            </h3>
-            <input
-              type="text"
-              placeholder="제목"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              className="w-full border p-2 mb-2"
-            />
-            <textarea
-              placeholder="내용"
-              value={newDesc}
-              onChange={(e) => setNewDesc(e.target.value)}
-              className="w-full border p-2 mb-4"
-            />
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 text-gray-600"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleAddEvent}
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-              >
-                추가
-              </button>
+              {dayEvents.length > 3 && (
+                <p
+                  className="more"
+                  onClick={(ev) => {
+                    ev.stopPropagation();
+                    setMoreEvents({
+                      date: formatDate(date),
+                      events: dayEvents,
+                    });
+                  }}
+                >
+                  +{dayEvents.length - 3} more
+                </p>
+              )}
             </div>
+          );
+        }}
+      />
+
+      {/* 일정 상세 모달 */}
+      {modalEvent && (
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <h2 className="modal-title">{modalEvent.title}</h2>
+            <p className="modal-date">{modalEvent.date}</p>
+            <div className="modal-description">
+              {modalEvent.description.split('\n').map((line, idx) => (
+                <p key={idx}>{line}</p>
+              ))}
+            </div>
+            <div className="modal-button">
+              <button onClick={() => handleDelete(modalEvent.id)}>삭제</button>
+              <button onClick={handleEdit}>수정</button>
+            </div>
+            <button className="modal-close" onClick={() => setModalEvent(null)}>
+              <span></span>
+              <span></span>
+            </button>
           </div>
         </div>
       )}
-    </>
+
+      {/* 일정 추가/수정 폼 모달 */}
+      {showForm && (
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <h2 className="modal-title">{isEditing ? '일정 수정' : `${formDate} 일정 추가`}</h2>
+            <input
+              type="text"
+              maxLength={30}
+              placeholder="제목"
+              className="w-full border px-2 py-1"
+              value={formTitle}
+              onChange={(e) => setFormTitle(e.target.value)}
+            />
+            <textarea
+              placeholder="내용"
+              className="w-full border px-2 py-1"
+              value={formDescription}
+              onChange={(e) => setFormDescription(e.target.value)}
+            />
+            <div className="modal-button">
+              <button onClick={handleSubmit}>{isEditing ? '수정' : '추가'}</button>
+            </div>
+            <button
+              className="modal-close"
+              onClick={() => {
+                setShowForm(false);
+                setIsEditing(false);
+              }}
+            >
+              <span></span>
+              <span></span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 여러 개 일정 모달 (more 클릭 시) */}
+      {moreEvents.date && (
+        <div className="modal-overlay">
+          <div className="modal-container">
+            <h2 className="modal-title">{moreEvents.date}의 일정 목록</h2>
+            {moreEvents.events.map((event) => (
+              <div
+                key={event.id}
+                className="modal-list"
+                onClick={() => {
+                  setModalEvent(event);
+                  setMoreEvents({ date: '', events: [] });
+                }}
+              >
+                <p className="font-semibold">{event.title}</p>
+                <p className="text-sm text-gray-500">{event.description}</p>
+              </div>
+            ))}
+            <button className="modal-close" onClick={() => setMoreEvents({ date: '', events: [] })}>
+              <span></span>
+              <span></span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

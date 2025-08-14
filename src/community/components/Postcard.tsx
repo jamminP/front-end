@@ -1,5 +1,23 @@
 import React, { FC } from 'react';
-import type { Post } from '../api/community';
+
+export interface Post {
+  postId: number;
+  title: string;
+  author: string;
+  authorId: number;
+  category: 'free' | 'share' | 'study';
+  content: string;
+  createdAt: string;
+  views: number;
+  likes: number;
+  comments: number;
+
+  recruitStart?: string;
+  recruitEnd?: string;
+  studyStart?: string;
+  studyEnd?: string;
+  maxMembers?: number;
+}
 
 interface PostCardProps {
   post: Post;
@@ -9,18 +27,18 @@ interface PostCardProps {
 }
 
 const PostCard: FC<PostCardProps> = ({ post, currentUserId, isAdmin = false, onClick }) => {
-  const canEdit = isAdmin || post.postId === currentUserId;
+  const canEdit = isAdmin || post.authorId === currentUserId;
 
   const handleCardClick = () => {
     onClick(post.postId);
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation;
+    e.stopPropagation();
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation;
+    e.stopPropagation();
   };
 
   return (

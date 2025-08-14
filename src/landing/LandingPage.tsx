@@ -1,14 +1,17 @@
-import BenefitRending from './components/BenefitRending';
-import MainRending from './components/MainRending';
-import FAQRending from './components/FAQRending';
+import BenefitLanding from './components/BenefitLanding';
+import FAQLanding from './components/FAQLanding';
+import HeroLanding from './components/HeroLanding';
+import { landingThemeVars } from './theme/colors';
+import FeatureMosaic from './components/FeatureMosaic';
 
 function LandingPage() {
   return (
-    <div className="pt-30">
-      <MainRending />
-      <FAQRending />
-      <BenefitRending />
-    </div>
+    <main style={landingThemeVars} className="pt-20 md:pt-30 w-full h-full">
+      <HeroLanding />
+      <FeatureMosaic />
+      <FAQLanding />
+      <BenefitLanding />
+    </main>
   );
 }
 

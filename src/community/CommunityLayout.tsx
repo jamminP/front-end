@@ -1,7 +1,7 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import CommunityTab from './components/CommunityTab';
 import SidebarRanking from './components/SidebarRanking';
-import CommunityAll from './category/CommunityAll';
+import CreatePostButton from './components/CreatePostButton';
 
 const dummyfreePost = [
   { id: 1, title: '오늘 날씨가 좋아요' },
@@ -29,6 +29,19 @@ const dummySharePost = [
 // 더미데이터로 구현 확인
 
 const CommunityLayout = () => {
+  const location = useLocation();
+
+  const category: 'free' | 'share' | 'study' = location.pathname.includes('/share')
+    ? 'share'
+    : location.pathname.includes('/study')
+      ? 'study'
+      : 'free';
+
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
     <div className="w-full flex justify-center px-4 pt-30">
       <div className="w-full max-w-[1000px]">
@@ -48,10 +61,15 @@ const CommunityLayout = () => {
           </div>
 
           {/* 본문 */}
-          <div className="flex-1 max-w-[600px]">
-            <CommunityAll />
+          <main className="flex-1 max-w-[600px]">
+            <div className="text-sm text-gray-700" />
             <Outlet />
-          </div>
+          </main>
+          <CreatePostButton
+            category={category}
+            to="/community/create"
+            className="inline-flex self-start h-9 px-3 py-1 rounded-lg"
+          />
         </div>
       </div>
     </div>
