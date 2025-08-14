@@ -251,6 +251,15 @@ export const mockCreateComment = async (
   const list = (dummyComments[postId] = dummyComments[postId] ?? []);
   const nextId = Math.max(0, ...list.map((c) => c.id)) + 1;
   const now = new Date().toISOString();
+
+  if (parentId != null) {
+    const parent = list.find((c) => c.id === parentId);
+    if (!parent) throw new Error('parent not found');
+    if (parent.parent_id !== null) {
+      throw new Error('Replies are allowed only one level deep.');
+    }
+  }
+
   const item: CommentTreeItem = {
     id: nextId,
     post_id: postId,
