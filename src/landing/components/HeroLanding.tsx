@@ -2,7 +2,7 @@ import Robo from '../img/Logo.png';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-export default function HeroRending() {
+export default function HeroLanding() {
   return (
     <section className="relative overflow-hidden bg-white min-h-[70dvh] flex items-center pb-20">
       <div

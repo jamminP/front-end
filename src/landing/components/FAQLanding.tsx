@@ -3,7 +3,7 @@ import { FAQs } from '../data/FAQList';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
-function FAQRending() {
+export default function FAQLanding() {
   const [openId, setOpenId] = useState<number | null>(null);
 
   const toggleFAQ = (id: number) => {
@@ -52,5 +52,3 @@ function FAQRending() {
     </div>
   );
 }
-
-export default FAQRending;
