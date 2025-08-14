@@ -1,4 +1,4 @@
-// import { http } from './http';
+import { http } from './http';
 import {
   FreePostRequestDTO,
   SharePostRequestDTO,
@@ -22,14 +22,14 @@ export type CommentTreeItem = {
   updated_at: string;
 };
 
-export async function listComments(postId: number): Promise<CommentTreeItem[]> {
-  try {
-    return await http<CommentTreeItem[]>(`/api/community/post/${postId}/comments`);
-  } catch (e: any) {
-    if (String(e?.message || '').startsWith('404')) return [];
-    throw e;
-  }
-}
+// export async function listComments(postId: number): Promise<CommentTreeItem[]> {
+//   try {
+//     return await http<CommentTreeItem[]>(`/api/community/post/${postId}/comments`);
+//   } catch (e: any) {
+//     if (String(e?.message || '').startsWith('404')) return [];
+//     throw e;
+//   }
+// }
 
 type Category = 'all' | 'free' | 'share' | 'study';
 
