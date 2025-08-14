@@ -1,9 +1,6 @@
-import { Post } from '../components/Postcard';
 import type { FreePostResponseDTO, SharePostResponseDTO, StudyPostResponseDTO } from '../api/types';
+import { Post } from '../components/Postcard';
 
-// src/community/__mock__/dummy.ts
-
-// ---------- 공용 타입 ----------
 export type CommentTreeItem = {
   id: number;
   post_id: number;
@@ -16,7 +13,6 @@ export type CommentTreeItem = {
 
 const iso = (s: string) => new Date(s).toISOString();
 
-// ---------- 더미 글 데이터 ----------
 export const dummyFree: FreePostResponseDTO[] = [
   {
     id: 101,
@@ -138,7 +134,6 @@ export const mockShareListCursor = (cursor: number | null | undefined) =>
 export const mockStudyListCursor = (cursor: number | null | undefined) =>
   Promise.resolve(makeCursorPage(dummyStudy, cursor));
 
-// ---------- 더미 좋아요 상태 ----------
 const likeStore = new Map<number, Set<number>>(); // postId -> Set<userId>
 export const mockReadLikeCount = async (postId: number) => ({
   count: likeStore.get(postId)?.size ?? 0,
@@ -153,7 +148,6 @@ export const mockToggleLike = async (postId: number, userId?: number) => {
   likeStore.set(postId, set);
 };
 
-// ---------- 단건 조회/댓글/작성 모킹 ----------
 export const mockGetFree = async (id: number) => {
   const d = dummyFree.find((x) => x.id === id);
   if (!d) throw new Error('not found');
@@ -172,6 +166,73 @@ export const mockGetStudy = async (id: number) => {
 
 export const mockListComments = async (postId: number): Promise<CommentTreeItem[]> => {
   return dummyComments[postId] ? [...dummyComments[postId]] : [];
+};
+
+export const mockPatchFree = async (id: number, body: FreePostUpdateRequestDTO) => {
+  const idx = dummyFree.findIndex((x) => x.id === id);
+  if (idx < 0) throw new Error('not found');
+  const prev = dummyFree[idx];
+  const next: FreePostResponseDTO = {
+    ...prev,
+    title: body.title ?? prev.title,
+    content: body.content ?? prev.content,
+    free_board: { image_url: body.image_url ?? prev.free_board?.image_url ?? null },
+    updated_at: new Date().toISOString(),
+  };
+  dummyFree[idx] = next;
+  return structuredClone(next);
+};
+
+export const mockPatchShare = async (id: number, body: SharePostUpdateRequestDTO) => {
+  const idx = dummyShare.findIndex((x) => x.id === id);
+  if (idx < 0) throw new Error('not found');
+  const prev = dummyShare[idx];
+  const next: SharePostResponseDTO = {
+    ...prev,
+    title: body.title ?? prev.title,
+    content: body.content ?? prev.content,
+    data_share: { file_url: body.file_url ?? prev.data_share?.file_url ?? null },
+    updated_at: new Date().toISOString(),
+  };
+  dummyShare[idx] = next;
+  return structuredClone(next);
+};
+
+export const mockPatchStudy = async (id: number, body: StudyPostUpdateRequestDTO) => {
+  const idx = dummyStudy.findIndex((x) => x.id === id);
+  if (idx < 0) throw new Error('not found');
+  const prev = dummyStudy[idx];
+  const next: StudyPostResponseDTO = {
+    ...prev,
+    title: body.title ?? prev.title,
+    content: body.content ?? prev.content,
+    study_recruitment: {
+      recruit_start: body.recruit_start ?? prev.study_recruitment.recruit_start,
+      recruit_end: body.recruit_end ?? prev.study_recruitment.recruit_end,
+      study_start: body.study_start ?? prev.study_recruitment.study_start,
+      study_end: body.study_end ?? prev.study_recruitment.study_end,
+      max_member: body.max_member ?? prev.study_recruitment.max_member,
+    },
+    updated_at: new Date().toISOString(),
+  };
+  dummyStudy[idx] = next;
+  return structuredClone(next);
+};
+
+export const mockDeletePost = async (category: 'free' | 'share' | 'study', id: number) => {
+  if (category === 'free') {
+    const idx = dummyFree.findIndex((x) => x.id === id);
+    if (idx >= 0) dummyFree.splice(idx, 1);
+    return;
+  }
+  if (category === 'share') {
+    const idx = dummyShare.findIndex((x) => x.id === id);
+    if (idx >= 0) dummyShare.splice(idx, 1);
+    return;
+  }
+  const idx = dummyStudy.findIndex((x) => x.id === id);
+  if (idx >= 0) dummyStudy.splice(idx, 1);
+  return;
 };
 
 export const mockCreateComment = async (
