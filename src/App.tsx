@@ -18,8 +18,29 @@ import EditPost from './community/form/EditPost';
 import PostDetail from './community/post/components/CommentItem';
 import CommunityStudy from './community/category/CommunityStudy';
 import PostDetailMock from './community/post/PostDetail';
+import { useEffect } from 'react';
+import useAuthStore from './store/authStore';
 
 function App() {
+  const setAuthData = useAuthStore((state) => state.setAuthData);
+
+  // 앱 첫 렌더 시 로그인 상태 확인
+  useEffect(() => {
+    fetch('https://www.evida.site/api/v1/users/myinfo', {
+      credentials: 'include', // 쿠키 자동 전송
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('로그인 정보 없음');
+        return res.json();
+      })
+      .then((user) => {
+        setAuthData({ user }); // Zustand 상태 갱신
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  }, []);
+
   return (
     <BrowserRouter>
       <Header />

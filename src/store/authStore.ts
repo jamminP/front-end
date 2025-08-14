@@ -12,31 +12,23 @@ interface User {
 //스토어 상태 타입
 interface AuthState {
   user: User | null;
-  accessToken: string | null;
-  refreshToken: string | null;
   isLoggedIn: boolean;
-  setAuthData: (data: { user: User; accessToken: string; refreshToken: string }) => void;
+  setAuthData: (data: { user: User }) => void;
   logout: () => void;
 }
 
 //zustand스토어
 const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  accessToken: null,
-  refreshToken: null,
   isLoggedIn: false,
-  setAuthData: ({ user, accessToken, refreshToken }) =>
+  setAuthData: ({ user }) =>
     set({
       user,
-      accessToken,
-      refreshToken,
       isLoggedIn: true,
     }),
   logout: () =>
     set({
       user: null,
-      accessToken: null,
-      refreshToken: null,
       isLoggedIn: false,
     }),
 }));
