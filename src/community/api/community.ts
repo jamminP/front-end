@@ -205,16 +205,16 @@ type _AllDto = AllPostResponseDTO;
 type _Post = Post;
 
 const _toPost = (dto: _AllDto): _Post => ({
-  postId: dto.id,
+  post_id: dto.id,
   title: dto.title ?? '',
   content: dto.content ?? '',
-  authorId: dto.author_id,
+  author_id: dto.author_id,
   author: `user#${dto.author_id}`,
   category: dto.category,
-  createdAt: dto.created_at,
-  viewCount: (dto as any).views ?? 0,
-  likeCount: (dto as any).like_count ?? 0,
-  commentCount: (dto as any).comment_count ?? 0,
+  created_at: dto.created_at,
+  views: (dto as any).views ?? 0,
+  likes: (dto as any).like_count ?? 0,
+  comments: (dto as any).comment_count ?? 0,
 });
 
 export async function searchPostsAllPages(
@@ -231,6 +231,6 @@ export async function searchPostsAllPages(
   }
 
   const mapped = acc.map(_toPost);
-  mapped.sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
+  mapped.sort((a, b) => new Date(b.created_at).valueOf() - new Date(a.createdAt).valueOf());
   return mapped;
 }
