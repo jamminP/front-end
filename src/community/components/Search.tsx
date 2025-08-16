@@ -1,158 +1,123 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useDebounceCallback } from '../hook/useDebouncedCallback';
-import { getAllPosts } from '../api/community';
-import { Post } from './Postcard';
+import { useMemo, useState } from 'react';
+import { SearchScope } from '../api/types';
+import useDebounce from '../hook/useDebounce';
+import { useSearchPosts } from '../hook/useSearchPosts';
 
-type SearchMode = 'title' | 'title+content' | 'content';
+interface Props {
+  onClose?: () => void;
+  defaultScope?: SearchScope;
+  category?: 'free' | 'share' | 'study' | 'all';
+}
 
-type Props = {
-  onResults?: (results: Post[]) => void;
-  defaultMode?: SearchMode;
-  debounceMs?: number;
-  className?: string;
-};
+export function SearchPopover({ onClose, defaultScope = 'title', category = 'all' }: Props) {
+  const [scope, setScope] = useState<SearchScope>(defaultScope);
+  const [q, setQ] = useState('');
 
-export default function Search({
-  onResults,
-  defaultMode = 'title',
-  debounceMs = 3000,
-  className = '',
-}: Props) {
-  const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<SearchMode>(defaultMode);
-  const [query, setQuery] = useState('');
+  const debouncedQ = useDebounce(q, 5000);
 
-  const { data: allPosts = [], isLoading } = useQuery({
-    queryKey: ['all-posts'],
-    queryFn: () => getAllPosts(),
-    staleTime: 60_000,
+  const { data, isFetching, fetchNextPage, hasNextPage, isLoading, isError } = useSearchPosts({
+    q: debouncedQ,
+    scope,
+    category,
+    limit: 20,
   });
 
-  const filter = useCallback((posts: Post[], q: string, m: SearchMode) => {
-    const text = q.trim().toLowerCase();
-    if (!text) return [] as Post[];
-
-    return posts.filter((p) => {
-      const t = (p.title ?? '').toLowerCase();
-      const c = (p.content ?? '').toLowerCase();
-      if (m === 'title') return t.includes(text);
-      if (m === 'content') return c.includes(text);
-      return t.includes(text) || c.includes(text);
-    });
-  }, []);
-
-  const applySearch = useCallback(
-    (text: string) => {
-      const results = filter(allPosts, text, mode);
-      onResults?.(results);
-    },
-    [allPosts, mode, filter, onResults],
-  );
-
-  const { run: runSearch, flush, cancel, isPending } = useDebounceCallback(applySearch, debounceMs);
-
-  useEffect(() => {
-    if (!open) return;
-    runSearch(query);
-  }, [query, open, runSearch]);
-
-  useEffect(() => {
-    if (!open) return;
-
-    applySearch(query);
-    cancel();
-  }, [mode, open, applySearch, cancel, query]);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => {
-    setOpen(false);
-    setQuery('');
-    cancel();
-    onResults?.([]);
-  };
-
-  const runImmediate = () => flush();
+  const items = useMemo(() => {
+    return data?.pages.flatMap((p) => p.items) ?? [];
+  }, [data]);
 
   return (
-    <div className={`relative ${className}`}>
-      {!open ? (
-        <button
-          aria-label="검색 열기"
-          onClick={handleOpen}
-          className="flex h-9 w-9 items-center justify-center rounded-full border hover:shadow"
+    <div className="w-[400px] rounded-xl border-[0.5px] border-gray-300 shadow-lg bg-white pt-1.5 px-1.5">
+      <div className="flex gap-2 items-center">
+        <select
+          value={scope}
+          onChange={(e) => setScope(e.target.value as SearchScope)}
+          className="border-[0.5px] border-gray-300 rounded-lg px-2 py-1.5 text-sm"
         >
-          <SearchIcon />
+          <option value="title">제목만</option>
+          <option value="title_content">제목 + 글</option>
+          <option value="content">글만</option>
+        </select>
+
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="검색어를 입력해주세요"
+          className="flex-1 border-[0.5px] border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2"
+        />
+
+        <button
+          className="px-3 py-1.5 rounded-lg bg-[#1B3043] text-white text-sm"
+          onClick={onClose}
+        >
+          닫기
         </button>
-      ) : (
-        <div className="flex items-center gap-2">
+      </div>
+
+      <div className="mt-2 text-xs text-gray-500">
+        {q && !debouncedQ && <p>입력 중…</p>}
+        {isLoading && debouncedQ && <p>검색 중…</p>}
+        {isError && <p>검색 중 오류가 발생했습니다.</p>}
+        {!isLoading && debouncedQ && items.length === 0 && <p>결과가 없습니다.</p>}
+      </div>
+
+      <ul className="mt-2 max-h-72 overflow-auto divide-y">
+        {items.map((it) => (
+          <li key={`${it.category}-${it.post_id}`} className="py-2">
+            <a href={`/community/${it.category}/${it.post_id}`} className="block" onClick={onClose}>
+              <div className="text-sm font-medium line-clamp-1">{it.title}</div>
+              <div className="text-xs text-gray-500 line-clamp-1">{it.content}</div>
+              <div className="text-[11px] text-gray-400 mt-0.5">
+                {it.author_id} · {new Date(it.created_at).toLocaleString()}
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      {hasNextPage && (
+        <div className="mt-2">
           <button
-            aria-label="검색 닫기"
-            onClick={handleClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full border hover:shadow"
-            title="닫기"
+            disabled={isFetching}
+            onClick={() => fetchNextPage()}
+            className="w-full border rounded-lg py-2 text-sm disabled:opacity-60"
           >
-            <CloseIcon />
+            {isFetching ? '불러오는 중…' : '더 불러오기'}
           </button>
-
-          <div className="flex items-center gap-2 rounded-full border px-3 py-1">
-            <SearchIcon className="mr-1" />
-            <input
-              className="w-[280px] outline-none text-sm"
-              placeholder={isLoading ? '전체 글 불러오는 중…' : '검색어를 입력하세요'}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') runImmediate(); // Enter로 즉시 검색
-              }}
-              disabled={isLoading}
-            />
-
-            <select
-              className="rounded-md border px-2 py-1 text-sm"
-              value={mode}
-              onChange={(e) => setMode(e.target.value as SearchMode)}
-              disabled={isLoading}
-              title="검색 범위"
-            >
-              <option value="title">제목</option>
-              <option value="title+content">제목+게시글</option>
-              <option value="content">게시글</option>
-            </select>
-
-            <button
-              onClick={runImmediate}
-              className="ml-1 rounded-md border px-2 py-1 text-xs hover:bg-gray-50 disabled:opacity-60"
-              disabled={isLoading}
-              title={isPending ? '디바운스 대기 중' : '즉시 검색'}
-            >
-              검색
-            </button>
-          </div>
         </div>
       )}
     </div>
   );
 }
 
-function SearchIcon({ className = '' }: { className?: string }) {
+export default function SearchIcon() {
+  const [open, setOpen] = useState(false);
   return (
-    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+    <div className="relative">
+      <button
+        aria-label="검색"
+        className="p-2 rounded-full hover:bg-gray-100"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="w-6 h-6"
+        >
+          <path
+            fillRule="evenodd"
+            d="M10.5 3a7.5 7.5 0 105.02 13.19l3.646 3.646a.75.75 0 101.06-1.06l-3.646-3.647A7.5 7.5 0 0010.5 3zm-6 7.5a6 6 0 1112 0 6 6 0 01-12 0z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </button>
 
-function CloseIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
+      {open && (
+        <div className="absolute right-0 mt-2 z-50">
+          <SearchPopover onClose={() => setOpen(false)} />
+        </div>
+      )}
+    </div>
   );
 }
