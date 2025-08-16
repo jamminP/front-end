@@ -37,7 +37,7 @@ function App() {
         setAuthData({ user }); // Zustand 상태 갱신
       })
       .catch((err) => {
-        console.log(err.message);
+        useAuthStore.getState().logout();
       });
   }, []);
 

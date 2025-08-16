@@ -5,8 +5,6 @@ interface User {
   id: number;
   email: string;
   nickname: string;
-  provider: string;
-  is_superuser: boolean;
 }
 
 //스토어 상태 타입
