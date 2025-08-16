@@ -231,6 +231,6 @@ export async function searchPostsAllPages(
   }
 
   const mapped = acc.map(_toPost);
-  mapped.sort((a, b) => new Date(b.created_at).valueOf() - new Date(a.createdAt).valueOf());
+  mapped.sort((a, b) => new Date(b.created_at).valueOf() - new Date(a.created_at).valueOf());
   return mapped;
 }
