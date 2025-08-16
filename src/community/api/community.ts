@@ -10,6 +10,8 @@ import {
   SharePostResponseDTO,
   StudyPostResponseDTO,
   CommentResponseDTO,
+  Post,
+  AllPostResponseDTO,
 } from './types';
 
 export type CommentTreeItem = {
@@ -22,14 +24,14 @@ export type CommentTreeItem = {
   updated_at: string;
 };
 
-// export async function listComments(postId: number): Promise<CommentTreeItem[]> {
-//   try {
-//     return await http<CommentTreeItem[]>(`/api/community/post/${postId}/comments`);
-//   } catch (e: any) {
-//     if (String(e?.message || '').startsWith('404')) return [];
-//     throw e;
-//   }
-// }
+export async function listComments(postId: number): Promise<CommentTreeItem[]> {
+  try {
+    return await http<CommentTreeItem[]>(`/api/community/post/${postId}/comments`);
+  } catch (e: any) {
+    if (String(e?.message || '').startsWith('404')) return [];
+    throw e;
+  }
+}
 
 type Category = 'all' | 'free' | 'share' | 'study';
 
@@ -177,3 +179,58 @@ export const deletePost = (postId: number, userId?: number) =>
     method: 'DELETE',
     headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
   });
+
+//search
+
+export type SearchScope = 'title' | 'content' | 'title+content';
+
+const SEARCH_ENDPOINT = '/api/community/post/search';
+
+export interface SearchCursorParams {
+  q: string;
+  scope: SearchScope;
+  category?: Category;
+  cursor?: number | null;
+  size?: number;
+}
+
+export async function searchPostsCursor(params: SearchCursorParams) {
+  const { q, scope, category = 'all', cursor, size } = params;
+  const url = `${SEARCH_ENDPOINT}${qs({ q, scope, category, cursor, size })}`;
+  const raw = await http<any>(url);
+  return normalizeCursorPage<AllPostResponseDTO>(raw);
+}
+
+type _AllDto = AllPostResponseDTO;
+type _Post = Post;
+
+const _toPost = (dto: _AllDto): _Post => ({
+  postId: dto.id,
+  title: dto.title ?? '',
+  content: dto.content ?? '',
+  authorId: dto.author_id,
+  author: `user#${dto.author_id}`,
+  category: dto.category,
+  createdAt: dto.created_at,
+  viewCount: (dto as any).views ?? 0,
+  likeCount: (dto as any).like_count ?? 0,
+  commentCount: (dto as any).comment_count ?? 0,
+});
+
+export async function searchPostsAllPages(
+  params: Omit<SearchCursorParams, 'cursor'>,
+): Promise<Post[]> {
+  const acc: _AllDto[] = [];
+  let cursor: number | null | undefined = undefined;
+
+  while (true) {
+    const page = await searchPostsCursor({ ...params, cursor });
+    acc.push(...page.items);
+    if (page.nextCursor == null) break;
+    cursor = page.nextCursor;
+  }
+
+  const mapped = acc.map(_toPost);
+  mapped.sort((a, b) => new Date(b.createdAt).valueOf() - new Date(a.createdAt).valueOf());
+  return mapped;
+}

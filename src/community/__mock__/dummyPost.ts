@@ -273,6 +273,34 @@ export const mockCreateComment = async (
   return item;
 };
 
+// 검색동작 확인
+export function mockSearchAllCursor(
+  q: string,
+  scope: 'title' | 'content' | 'title+content',
+  cursor: number | null | undefined,
+  size = 20,
+) {
+  const text = q.trim().toLowerCase();
+  const all = [
+    ...dummyFree.map((x) => ({ ...x, category: 'free' as const })),
+    ...dummyShare.map((x) => ({ ...x, category: 'share' as const })),
+    ...dummyStudy.map((x) => ({ ...x, category: 'study' as const })),
+  ].filter((p: any) => {
+    if (!text) return false;
+    const t = (p.title ?? '').toLowerCase();
+    const c = (p.content ?? '').toLowerCase();
+    if (scope === 'title') return t.includes(text);
+    if (scope === 'content') return c.includes(text);
+    return t.includes(text) || c.includes(text);
+  });
+  all.sort(
+    (a: any, b: any) =>
+      new Date(b.created_at ?? b.createdAt).valueOf() -
+      new Date(a.created_at ?? a.createdAt).valueOf(),
+  );
+  return Promise.resolve(makeCursorPage(all, cursor, size));
+}
+
 export const dummyPosts: Post[] = [
   {
     postId: 1,
