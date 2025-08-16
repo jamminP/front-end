@@ -40,6 +40,7 @@ function App() {
         return res.json();
       })
       .then((user) => {
+        console.log(user);
         setAuthData({ user }); // Zustand 상태 갱신: isLoggedIn = true
       })
       .catch((err) => console.log(err.message));
