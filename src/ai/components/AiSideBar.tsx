@@ -1,6 +1,5 @@
-import { FaChalkboardTeacher, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { GrPlan } from 'react-icons/gr';
-import { MdQuiz } from 'react-icons/md';
 import SidebarItem from './AISideItem';
 import { FaRegFileLines } from 'react-icons/fa6';
 import ChatList from './ChatList';
@@ -25,13 +24,7 @@ export default function AiSideBar({ collapsed, onToggle }: Props) {
 
       <nav className="py-3">
         <SidebarItem icon={<GrPlan size={20} />} label="공부 계획" collapsed={collapsed} />
-        <SidebarItem icon={<MdQuiz size={20} />} label="예상 문제" collapsed={collapsed} />
         <SidebarItem icon={<FaRegFileLines size={20} />} label="정보 요약" collapsed={collapsed} />
-        <SidebarItem
-          icon={<FaChalkboardTeacher size={20} />}
-          label="리처드파인만 AI"
-          collapsed={collapsed}
-        />
       </nav>
       <section className={collapsed ? 'px-0 py-3' : 'px-3 py-3'}>
         {!collapsed && <h3 className="mb-2 text-xs font-semibold text-gray-600">채팅</h3>}
