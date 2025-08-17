@@ -26,22 +26,25 @@ function App() {
 
   useEffect(() => {
     // 테스트용: 직접 복사한 JWT를 넣어 로그인 상태 확인
-    const token =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkczdYYlpvSzV3N1U1em03eDZyZDREa1MiLCJpYXQiOjE3NTUxNDM4NTEsIm93bmVySWQiOiJ0ZWFtX3RIa25qa2pINloyMXYyWTdPVDFNZzFyTSIsImF1ZCI6ImV1bmJpbi5ldmlkYS5zaXRlIiwidXNlcm5hbWUiOiJiaW4wMDEyNSIsInN1YiI6InNzby1wcm90ZWN0aW9uIn0.FbUJsuZA7utb_SHfdpxL6UnoDfbHAUSmjPYuTHi4jgY';
+    const accessToken =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNyIsImV4cCI6MTc1NTM5NDU5NH0.doRwyO9Londh-3URXWzY0A9y-0j2zx_wEH8fegTxCJ4';
 
     fetch('https://backend.evida.site/api/v1/users/myinfo', {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${token}`, // JWT 전달
+        Authorization: `Bearer ${accessToken}`, // 여기!
       },
     })
-      .then((res) => {
-        if (!res.ok) throw new Error('로그인 정보 없음');
-        return res.json();
+      .then(async (res) => {
+        const text = await res.text();
+        console.log('status:', res.status);
+        console.log('body:', text);
+        if (!res.ok) throw new Error(`실패: ${res.status}`);
+        return JSON.parse(text);
       })
       .then((user) => {
-        console.log(user);
-        setAuthData({ user }); // Zustand 상태 갱신: isLoggedIn = true
+        console.log('user:', user);
+        setAuthData({ user });
       })
       .catch((err) => console.log(err.message));
   }, [setAuthData]);
