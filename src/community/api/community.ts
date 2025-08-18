@@ -1,18 +1,18 @@
 import { http } from './http';
 import {
-  FreePostRequestDTO,
-  SharePostRequestDTO,
-  StudyPostRequestDTO,
-  FreePostUpdateRequestDTO,
-  SharePostUpdateRequestDTO,
-  StudyPostUpdateRequestDTO,
-  FreePostResponseDTO,
-  SharePostResponseDTO,
-  StudyPostResponseDTO,
-  CommentResponseDTO,
+  FreePostRequest,
+  SharePostRequest,
+  StudyPostRequest,
+  FreePostUpdateRequest,
+  SharePostUpdateRequest,
+  StudyPostUpdateRequest,
+  FreePostResponse,
+  SharePostResponse,
+  StudyPostResponse,
+  CommentResponse,
   Post,
-  AllPostResponseDTO,
-  SearchScope,
+  AllPostResponse,
+  SearchIn,
 } from './types';
 
 export type CommentTreeItem = {
@@ -83,62 +83,62 @@ async function getListCursor<T>(category: Category, cursor: number | null | unde
 }
 
 export const getFreeListCursor = (cursor: number | null | undefined, q?: string) =>
-  getListCursor<FreePostResponseDTO>('free', cursor, q);
+  getListCursor<FreePostResponse>('free', cursor, q);
 
 export const getShareListCursor = (cursor: number | null | undefined, q?: string) =>
-  getListCursor<SharePostResponseDTO>('share', cursor, q);
+  getListCursor<SharePostResponse>('share', cursor, q);
 
 export const getStudyListCursor = (cursor: number | null | undefined, q?: string) =>
-  getListCursor<StudyPostResponseDTO>('study', cursor, q);
+  getListCursor<StudyPostResponse>('study', cursor, q);
 
 export const getAllListCursor = (cursor: number | null | undefined, q?: string) =>
   getListCursor<any>('all', cursor, q);
 
-export type AnyPostResponseDTO = FreePostResponseDTO | SharePostResponseDTO | StudyPostResponseDTO;
+export type AnyPostResponse = FreePostResponse | SharePostResponse | StudyPostResponse;
 
-export const createFreePost = (body: FreePostRequestDTO) =>
-  http<FreePostResponseDTO>('/api/community/post/free', {
+export const createFreePost = (body: FreePostRequest) =>
+  http<FreePostResponse>('/api/community/post/free', {
     method: 'POST',
     body: JSON.stringify(body),
   });
 
 export const getFreePost = (postId: number) =>
-  http<FreePostResponseDTO>(`/api/community/post/free/${postId}`);
+  http<FreePostResponse>(`/api/community/post/free/${postId}`);
 
-export const patchFreePost = (postId: number, body: FreePostUpdateRequestDTO, userId?: number) =>
-  http<FreePostResponseDTO>(`/api/community/post/free/${postId}`, {
+export const patchFreePost = (postId: number, body: FreePostUpdateRequest, userId?: number) =>
+  http<FreePostResponse>(`/api/community/post/free/${postId}`, {
     method: 'PATCH',
     headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
     body: JSON.stringify(body),
   });
 
-export const createSharePost = (body: SharePostRequestDTO) =>
-  http<SharePostResponseDTO>('/api/community/post/share', {
+export const createSharePost = (body: SharePostRequest) =>
+  http<SharePostResponse>('/api/community/post/share', {
     method: 'POST',
     body: JSON.stringify(body),
   });
 
 export const getSharePost = (postId: number) =>
-  http<SharePostResponseDTO>(`/api/community/post/share/${postId}`);
+  http<SharePostResponse>(`/api/community/post/share/${postId}`);
 
-export const patchSharePost = (postId: number, body: SharePostUpdateRequestDTO, userId?: number) =>
-  http<SharePostResponseDTO>(`/api/community/post/share/${postId}`, {
+export const patchSharePost = (postId: number, body: SharePostUpdateRequest, userId?: number) =>
+  http<SharePostResponse>(`/api/community/post/share/${postId}`, {
     method: 'PATCH',
     headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
     body: JSON.stringify(body),
   });
 
-export const createStudyPost = (body: StudyPostRequestDTO) =>
-  http<StudyPostResponseDTO>('/api/community/post/study', {
+export const createStudyPost = (body: StudyPostRequest) =>
+  http<StudyPostResponse>('/api/community/post/study', {
     method: 'POST',
     body: JSON.stringify(body),
   });
 
 export const getStudyPost = (postId: number) =>
-  http<StudyPostResponseDTO>(`/api/community/post/study/${postId}`);
+  http<StudyPostResponse>(`/api/community/post/study/${postId}`);
 
-export const patchStudyPost = (postId: number, body: StudyPostUpdateRequestDTO, userId?: number) =>
-  http<StudyPostResponseDTO>(`/api/community/post/study/${postId}`, {
+export const patchStudyPost = (postId: number, body: StudyPostUpdateRequest, userId?: number) =>
+  http<StudyPostResponse>(`/api/community/post/study/${postId}`, {
     method: 'PATCH',
     headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
     body: JSON.stringify(body),
@@ -151,7 +151,7 @@ export const joinStudyPost = (postId: number, userId: number) =>
   });
 
 export const createComment = (postId: number, content: string, userId: number, parentId?: number) =>
-  http<CommentResponseDTO>(`/api/community/post/${postId}/comment`, {
+  http<CommentResponse>(`/api/community/post/${postId}/comment`, {
     method: 'POST',
     body: JSON.stringify({
       post_id: postId,
@@ -186,7 +186,7 @@ const SEARCH_ENDPOINT = '/api/community/post/search';
 
 export interface SearchCursorParams {
   q: string;
-  scope: SearchScope;
+  scope: SearchIn;
   category?: Category;
   cursor?: number | null;
   size?: number;
@@ -196,29 +196,31 @@ export async function searchPostsCursor(params: SearchCursorParams) {
   const { q, scope, category = 'all', cursor, size } = params;
   const url = `${SEARCH_ENDPOINT}${qs({ q, scope, category, cursor, size })}`;
   const raw = await http<any>(url);
-  return normalizeCursorPage<AllPostResponseDTO>(raw);
+  return normalizeCursorPage<AllPostResponse>(raw);
 }
 
-type _AllDto = AllPostResponseDTO;
+type _All = AllPostResponse;
 type _Post = Post;
 
-const _toPost = (dto: _AllDto): _Post => ({
-  post_id: dto.id,
-  title: dto.title ?? '',
-  content: dto.content ?? '',
-  author_id: dto.author_id,
-  author: `user#${dto.author_id}`,
-  category: dto.category,
-  created_at: dto.created_at,
-  views: (dto as any).views ?? 0,
-  likes: (dto as any).like_count ?? 0,
-  comments: (dto as any).comment_count ?? 0,
+const toNum = (v: unknown): number => (v == null ? 0 : typeof v === 'number' ? v : Number(v) || 0);
+
+export const toPost = (src: _All): _Post => ({
+  post_id: src.id,
+  title: src.title ?? '',
+  content: src.content ?? '',
+  author_id: src.author_id,
+  author: `user#${src.author_id}`,
+  category: src.category,
+  created_at: src.created_at,
+  views: toNum((src as any).views ?? (src as any).view_count),
+  likes: toNum((src as any).like_count),
+  comments: toNum((src as any).comment_count),
 });
 
 export async function searchPostsAllPages(
   params: Omit<SearchCursorParams, 'cursor'>,
 ): Promise<Post[]> {
-  const acc: _AllDto[] = [];
+  const acc: _All[] = [];
   let cursor: number | null | undefined = undefined;
 
   while (true) {
@@ -228,7 +230,7 @@ export async function searchPostsAllPages(
     cursor = page.nextCursor;
   }
 
-  const mapped = acc.map(_toPost);
+  const mapped = acc.map(toPost);
   mapped.sort((a, b) => new Date(b.created_at).valueOf() - new Date(a.created_at).valueOf());
   return mapped;
 }

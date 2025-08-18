@@ -1,11 +1,11 @@
 import { CursorPage } from '../api/community';
 import type {
-  FreePostResponseDTO,
-  FreePostUpdateRequestDTO,
-  SharePostResponseDTO,
-  SharePostUpdateRequestDTO,
-  StudyPostResponseDTO,
-  StudyPostUpdateRequestDTO,
+  FreePostResponse,
+  FreePostUpdateRequest,
+  SharePostResponse,
+  SharePostUpdateRequest,
+  StudyPostResponse,
+  StudyPostUpdateRequest,
 } from '../api/types';
 import { Post } from '../components/Postcard';
 
@@ -21,7 +21,7 @@ export type CommentTreeItem = {
 
 const iso = (s: string) => new Date(s).toISOString();
 
-export const dummyFree: FreePostResponseDTO[] = [
+export const dummyFree: FreePostResponse[] = [
   {
     id: 101,
     title: '오늘 날씨가 좋아요',
@@ -46,7 +46,7 @@ export const dummyFree: FreePostResponseDTO[] = [
   },
 ];
 
-export const dummyShare: SharePostResponseDTO[] = [
+export const dummyShare: SharePostResponse[] = [
   {
     id: 201,
     title: 'React 자료 모음.zip 공유합니다',
@@ -71,7 +71,7 @@ export const dummyShare: SharePostResponseDTO[] = [
   },
 ];
 
-export const dummyStudy: StudyPostResponseDTO[] = [
+export const dummyStudy: StudyPostResponse[] = [
   {
     id: 301,
     title: 'React 스터디 주말 모집합니다',
@@ -176,11 +176,11 @@ export const mockListComments = async (postId: number): Promise<CommentTreeItem[
   return dummyComments[postId] ? [...dummyComments[postId]] : [];
 };
 
-export const mockPatchFree = async (id: number, body: FreePostUpdateRequestDTO) => {
+export const mockPatchFree = async (id: number, body: FreePostUpdateRequest) => {
   const idx = dummyFree.findIndex((x) => x.id === id);
   if (idx < 0) throw new Error('not found');
   const prev = dummyFree[idx];
-  const next: FreePostResponseDTO = {
+  const next: FreePostResponse = {
     ...prev,
     title: body.title ?? prev.title,
     content: body.content ?? prev.content,
@@ -190,11 +190,11 @@ export const mockPatchFree = async (id: number, body: FreePostUpdateRequestDTO) 
   return structuredClone(next);
 };
 
-export const mockPatchShare = async (id: number, body: SharePostUpdateRequestDTO) => {
+export const mockPatchShare = async (id: number, body: SharePostUpdateRequest) => {
   const idx = dummyShare.findIndex((x) => x.id === id);
   if (idx < 0) throw new Error('not found');
   const prev = dummyShare[idx];
-  const next: SharePostResponseDTO = {
+  const next: SharePostResponse = {
     ...prev,
     title: body.title ?? prev.title,
     content: body.content ?? prev.content,
@@ -205,11 +205,11 @@ export const mockPatchShare = async (id: number, body: SharePostUpdateRequestDTO
   return structuredClone(next);
 };
 
-export const mockPatchStudy = async (id: number, body: StudyPostUpdateRequestDTO) => {
+export const mockPatchStudy = async (id: number, body: StudyPostUpdateRequest) => {
   const idx = dummyStudy.findIndex((x) => x.id === id);
   if (idx < 0) throw new Error('not found');
   const prev = dummyStudy[idx];
-  const next: StudyPostResponseDTO = {
+  const next: StudyPostResponse = {
     ...prev,
     title: body.title ?? prev.title,
     content: body.content ?? prev.content,

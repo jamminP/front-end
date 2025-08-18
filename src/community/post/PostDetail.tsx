@@ -212,7 +212,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import { mockGetFree, mockGetShare, mockGetStudy, mockListComments } from '../__mock__/dummyPost';
-import type { FreePostResponseDTO, SharePostResponseDTO, StudyPostResponseDTO } from '../api/types';
+import type { FreePostResponse, SharePostResponse, StudyPostResponse } from '../api/types';
 
 import CommentList from './components/CommentList';
 import CommentForm from './components/CommentForm';
@@ -266,7 +266,7 @@ export default function PostDetailMock() {
     if (!dto || !category) return null;
 
     if (category === 'free') {
-      const d = dto as FreePostResponseDTO;
+      const d = dto as FreePostResponse;
       return {
         id: d.id,
         title: d.title,
@@ -280,7 +280,7 @@ export default function PostDetailMock() {
       };
     }
     if (category === 'share') {
-      const d = dto as SharePostResponseDTO;
+      const d = dto as SharePostResponse;
       return {
         id: d.id,
         title: d.title,
@@ -293,7 +293,7 @@ export default function PostDetailMock() {
         fileUrl: d.data_share?.file_url ?? null,
       };
     }
-    const d = dto as StudyPostResponseDTO;
+    const d = dto as StudyPostResponse;
     return {
       id: d.id,
       title: d.title,

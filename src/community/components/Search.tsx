@@ -1,39 +1,39 @@
 import { useMemo, useState } from 'react';
-import { SearchScope } from '../api/types';
+import { Link } from 'react-router-dom';
 import useDebounce from '../hook/useDebounce';
-import { useSearchPosts } from '../hook/useSearchPosts';
-import searchIcon from '../img/search.png';
-import { baseClass } from './CreatePostButton';
+import { useCategoryListCursor } from '../hook/useCategoryListCursor';
+import type { SearchIn, Category, SearchPostItem } from '../api/types';
 
 interface Props {
   onClose?: () => void;
-  defaultScope?: SearchScope;
-  category?: 'free' | 'share' | 'study';
+  defaultScope?: SearchIn;
+  category?: Category;
 }
 
-export function SearchPopover({ onClose, defaultScope = 'title', category = 'share' }: Props) {
-  const [scope, setScope] = useState<SearchScope>(defaultScope);
-  const [q, setQ] = useState('');
+export function SearchPopover({ onClose, defaultScope = 'title', category = 'all' }: Props) {
+  const [search_in, setSearchIn] = useState<SearchIn>(defaultScope);
+  const [keyword, setKeyword] = useState('');
 
-  const debouncedQ = useDebounce(q, 3000);
+  const debounced = useDebounce(keyword, 3000);
 
-  const { data, isFetching, fetchNextPage, hasNextPage, isLoading, isError } = useSearchPosts({
-    q: debouncedQ,
-    scope,
-    category,
-    limit: 20,
-  });
+  const { data, isFetching, fetchNextPage, hasNextPage, isLoading, isError } =
+    useCategoryListCursor(category, {
+      limit: 20,
+      search_in: debounced ? search_in : undefined,
+      keyword: debounced || undefined,
+    });
 
   const items = useMemo(() => {
-    return data?.pages.flatMap((p) => p.items) ?? [];
+    const pages = data?.pages ?? [];
+    return pages.reduce<SearchPostItem[]>((acc, p) => acc.concat(p.items), []);
   }, [data]);
 
   return (
     <div className="w-[400px] rounded-xl border-[0.5px] border-gray-300 shadow-lg bg-white pt-1.5 px-1.5">
       <div className="flex gap-2 items-center">
         <select
-          value={scope}
-          onChange={(e) => setScope(e.target.value as SearchScope)}
+          value={search_in}
+          onChange={(e) => setSearchIn(e.target.value as SearchIn)}
           className="border-[0.5px] border-gray-300 rounded-lg px-2 py-1.5 text-sm"
         >
           <option value="title">제목만</option>
@@ -42,8 +42,8 @@ export function SearchPopover({ onClose, defaultScope = 'title', category = 'sha
         </select>
 
         <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
           placeholder="검색어를 입력해주세요"
           className="flex-1 border-[0.5px] border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2"
         />
@@ -57,22 +57,26 @@ export function SearchPopover({ onClose, defaultScope = 'title', category = 'sha
       </div>
 
       <div className="mt-2 text-xs text-gray-500">
-        {q && !debouncedQ && <p>입력 중…</p>}
-        {isLoading && debouncedQ && <p>검색 중…</p>}
-        {isError && <p>검색 중 오류가 발생했습니다.</p>}
-        {!isLoading && debouncedQ && items.length === 0 && <p>결과가 없습니다.</p>}
+        {keyword && !debounced && <p>입력 중…</p>}
+        {isLoading && debounced && <p>검색 중…</p>}
+        {isError && <p></p>}
+        {!isLoading && debounced && items.length === 0 && <p>결과가 없습니다.</p>}
       </div>
 
       <ul className="mt-2 max-h-72 overflow-auto divide-y">
         {items.map((it) => (
           <li key={`${it.category}-${it.post_id}`} className="py-2">
-            <a href={`/community/${it.category}/${it.post_id}`} className="block" onClick={onClose}>
+            <Link
+              to={`/community/${it.category}/${it.post_id}`}
+              className="block"
+              onClick={onClose}
+            >
               <div className="text-sm font-medium line-clamp-1">{it.title}</div>
               <div className="text-xs text-gray-500 line-clamp-1">{it.content}</div>
               <div className="text-[11px] text-gray-400 mt-0.5">
                 {it.author_id} · {new Date(it.created_at).toLocaleString()}
               </div>
-            </a>
+            </Link>
           </li>
         ))}
       </ul>
@@ -92,19 +96,4 @@ export function SearchPopover({ onClose, defaultScope = 'title', category = 'sha
   );
 }
 
-export default function SearchIcon() {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative">
-      <button aria-label="검색" className={`${baseClass}`} onClick={() => setOpen((v) => !v)}>
-        <img src={searchIcon} className="h-5 w-5" />
-      </button>
-
-      {open && (
-        <div className="absolute right-0 mt-2 z-50">
-          <SearchPopover onClose={() => setOpen(false)} />
-        </div>
-      )}
-    </div>
-  );
-}
+export default SearchPopover;

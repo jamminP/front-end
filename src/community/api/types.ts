@@ -1,4 +1,4 @@
-export type Category = 'free' | 'share' | 'study';
+export type Category = 'free' | 'share' | 'study' | 'all';
 
 export interface FreePostItem {
   id: number;
@@ -169,17 +169,17 @@ export interface Post {
 
 export type SearchIn = 'title' | 'content' | 'title_content';
 
-export interface ListCursorResult<T> {
-  count: number;
-  next_cursor: string | null;
-  items: T[];
-}
-
 export interface ListCursorParams {
   limit?: number;
   cursor?: string | null;
   search_in?: SearchIn;
   keyword?: string;
+}
+
+export interface ListCursorResult<T> {
+  count: number;
+  next_cursor: string | null;
+  items: T[];
 }
 
 export interface SearchPostItem {
