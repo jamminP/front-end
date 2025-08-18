@@ -21,6 +21,7 @@ import PostDetailMock from './community/post/PostDetail';
 import { useEffect } from 'react';
 import useAuthStore from './store/authStore';
 import axios from 'axios';
+import GoogleCallback from './login/callback';
 
 function App() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
@@ -58,6 +59,7 @@ function App() {
           </Route>
 
           <Route path="/login" element={<Login />} />
+          <Route path="/auth/callback" element={<GoogleCallback />} />
           <Route path="/mypage" element={<MyPage />}>
             <Route index element={<MypageContent />} />
             <Route path="calendar" element={<MyCalendar />} />
