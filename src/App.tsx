@@ -28,16 +28,21 @@ function AppContent() {
   const location = useLocation();
 
   const checkLogin = async () => {
+    // 로그인 전에는 쿠키가 없으면 호출하지 않음
+    if (!document.cookie.includes('access_token')) return;
+
     try {
       const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
-        withCredentials: true,
+        withCredentials: true, // 쿠키 전송
       });
       setAuthData(res.data);
-    } catch {
+    } catch (err) {
+      console.log('Not logged in or token invalid');
       logout();
     }
   };
 
+  // 초기 렌더링 + 라우트 변경 시 로그인 상태 확인
   useEffect(() => {
     checkLogin();
   }, [location.pathname]);
