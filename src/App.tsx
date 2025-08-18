@@ -27,7 +27,7 @@ function App() {
   const logout = useAuthStore((state) => state.logout);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = sessionStorage.getItem('access_token');
     if (!token) {
       logout();
       return;
@@ -35,16 +35,10 @@ function App() {
 
     axios
       .get('https://backend.evida.site/api/v1/users/myinfo', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res) => {
-        setAuthData({ user: res.data });
-      })
-      .catch(() => {
-        logout();
-      });
+      .then((res) => setAuthData({ user: res.data, token }))
+      .catch(() => logout());
   }, [setAuthData, logout]);
 
   return (

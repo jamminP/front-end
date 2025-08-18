@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import bellIcon from '../header/img/bell.png';
 import { useState } from 'react';
 import useAuthStore from '@src/store/authStore';
+import axios from 'axios';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,11 +11,16 @@ export default function Header() {
   const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = async () => {
-    await fetch('https://backend.evida.site/api/v1/users/auth/google/logout', {
-      method: 'POST',
-      credentials: 'include', // 쿠키 자동 전송
-    });
-    logout(); // Zustand 상태 초기화
+    try {
+      await axios.post(
+        'https://backend.evida.site/api/v1/users/auth/google/logout',
+        {},
+        { withCredentials: true },
+      );
+      logout(); // Zustand 상태 초기화
+    } catch (error) {
+      console.error('로그아웃 실패', error);
+    }
   };
 
   return (
