@@ -18,9 +18,6 @@ import EditPost from './community/form/EditPost';
 import PostDetail from './community/post/components/CommentItem';
 import CommunityStudy from './community/category/CommunityStudy';
 import PostDetailMock from './community/post/PostDetail';
-import { useEffect } from 'react';
-import useAuthStore from './store/authStore';
-import axios from 'axios';
 
 function App() {
   return (

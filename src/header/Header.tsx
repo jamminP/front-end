@@ -5,7 +5,8 @@ import useAuthStore from '@src/store/authStore';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const token = useAuthStore((state) => state.token);
+  const isLoggedIn = !!token;
   const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = async () => {
