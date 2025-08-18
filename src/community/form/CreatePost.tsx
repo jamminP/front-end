@@ -2,7 +2,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import PostForm, { PostFormValues } from './PostForm';
 import { useCreateFree, useCreateShare, useCreateStudy } from '../hook/useCommunityPosts';
-import { FreePostRequestDTO, SharePostRequestDTO, StudyPostRequestDTO } from '../api/types';
+import { FreePostRequest, SharePostRequest, StudyPostRequest } from '../api/types';
 
 const toISODate = (d?: string) => (d ? new Date(`${d}T00:00:00`).toISOString() : '');
 
@@ -39,7 +39,7 @@ export default function CreatePost() {
     async (v: PostFormValues) => {
       try {
         if (v.category === 'free') {
-          const body: FreePostRequestDTO = {
+          const body: FreePostRequest = {
             title: v.title,
             content: v.content,
             user_id: currentUserId,
@@ -50,7 +50,7 @@ export default function CreatePost() {
         }
 
         if (v.category === 'share') {
-          const body: SharePostRequestDTO = {
+          const body: SharePostRequest = {
             title: v.title,
             content: v.content,
             user_id: currentUserId,
@@ -63,7 +63,7 @@ export default function CreatePost() {
         }
 
         if (v.category === 'study') {
-          const body: StudyPostRequestDTO = {
+          const body: StudyPostRequest = {
             title: v.title,
             content: v.content,
             user_id: currentUserId,

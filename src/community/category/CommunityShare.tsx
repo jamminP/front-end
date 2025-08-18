@@ -33,16 +33,16 @@ export default function CommunityShare() {
 
   return (
     <div className="space-y-3">
-      {items.map((dto) => {
+      {items.map((sha) => {
         const post: Post = {
-          postId: dto.id,
-          title: dto.title,
-          author: `user#${dto.author_id}`,
-          authorId: dto.author_id,
+          postId: sha.id,
+          title: sha.title,
+          author: `user#${sha.author_id}`,
+          authorId: sha.author_id,
           category: 'share',
-          content: dto.content,
-          createdAt: dto.created_at,
-          views: dto.views,
+          content: sha.content,
+          createdAt: sha.created_at,
+          views: sha.views,
           likes: 0,
           comments: 0,
         };

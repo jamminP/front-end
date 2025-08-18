@@ -120,7 +120,7 @@ export interface StudyPostResponse {
 }
 
 export type FreePostUpdateRequest = Partial<Pick<FreePostRequest, 'title' | 'content'>>;
-export type SharePostUpdateRequestD = Partial<Pick<SharePostRequest, 'title' | 'content'>> & {
+export type SharePostUpdateRequest = Partial<Pick<SharePostRequest, 'title' | 'content'>> & {
   file_url?: string | null;
 };
 export type StudyPostUpdateRequest = Partial<
@@ -167,21 +167,19 @@ export interface Post {
   comments?: number;
 }
 
-export type SearchScope = 'title' | 'content' | 'title_content';
+export type SearchIn = 'title' | 'content' | 'title_content';
 
-export interface CursorListResult<T> {
+export interface ListCursorResult<T> {
   count: number;
   next_cursor: string | null;
   items: T[];
 }
 
-export interface SearchPost {
-  post_id: number;
-  title: string;
-  content: string;
-  author_id: string;
-  category: Category;
-  created_at: string;
+export interface ListCursorParams {
+  limit?: number;
+  cursor?: string | null;
+  search_in?: SearchIn;
+  keyword?: string;
 }
 
 export interface SearchPostItem {

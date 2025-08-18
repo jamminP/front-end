@@ -1,63 +1,55 @@
-import { CursorListResult, SearchPostItem, SearchQuery } from '../api/types';
-import { dummyFree, dummyShare, dummyStudy } from './dummyPost';
+import type {
+  Category,
+  ListCursorResult,
+  ListCursorParams,
+  SearchIn,
+  SearchPostItem,
+} from '../api/types';
+import { dummyFree, dummyShare, dummyStudy } from '../__mock__/dummyPost';
 
-const ALL: SearchPostItem[] = [...dummyFree, ...dummyShare, ...dummyStudy].map((p: any) => ({
-  post_id: p.post_id ?? p.id,
+const enc = (i: number) => btoa(String(i));
+const dec = (c: string | null | undefined) => (c ? Number(atob(c)) || 0 : 0);
+
+const MAP = (p: any): SearchPostItem => ({
+  post_id: p.post_id ?? p.postId ?? p.id,
   title: p.title,
   content: p.content ?? '',
-  author_id: p.author ?? p.author_id ?? 'user#0000',
+  author_id: p.author_id ?? p.authorId ?? p.author ?? 'user#0000',
   category: p.category,
-  created_at: p.created_at ?? p.created_at ?? new Date().toISOString(),
-}));
+  created_at: p.created_at ?? p.createdAt ?? new Date().toISOString(),
+});
 
-function normalize(str: string) {
-  return (str ?? '').toLowerCase();
-}
+const POOLS: Record<Category, SearchPostItem[]> = {
+  free: dummyFree.map(MAP),
+  share: dummyShare.map(MAP),
+  study: dummyStudy.map(MAP),
+};
 
-function matchByScope(item: SearchPostItem, q: string, scope: SearchQuery['scope']): boolean {
-  const normalizeQuery = normalize(q);
-  if (!normalizeQuery) return false;
-  const title = normalize(item.title);
-  const content = normalize(item.content);
-  switch (scope) {
-    case 'title':
-      return title.includes(normalizeQuery);
-    case 'content':
-      return content.includes(normalizeQuery);
-    case 'title_content':
-      return title.includes(normalizeQuery) || content.includes(normalizeQuery);
-    default:
-      return false;
+const norm = (s: string) => (s ?? '').toLowerCase();
+const match = (it: SearchPostItem, q: string, where: SearchIn) => {
+  const t = norm(it.title);
+  const c = norm(it.content);
+  const nQ = norm(q);
+  if (!nQ) return true;
+  if (where === 'title') return t.includes(nQ);
+  if (where === 'content') return c.includes(nQ);
+  return t.includes(nQ) || c.includes(nQ);
+};
+
+export async function mockListCursor(
+  category: Category,
+  { limit = 20, cursor, search_in, keyword }: ListCursorParams,
+): Promise<ListCursorResult<SearchPostItem>> {
+  const start = dec(cursor);
+  let pool = POOLS[category];
+
+  if (keyword && search_in) {
+    pool = pool.filter((it) => match(it, keyword, search_in));
   }
-}
 
-function encodeCursor(i: number) {
-  return Buffer.from(String(i), 'utf-8').toString('base64');
-}
+  const slice = pool.slice(start, start + limit);
+  const next = start + limit < pool.length ? enc(start + limit) : null;
 
-function decodeCursor(cursor: string | null | undefined): number {
-  if (!cursor) return 0;
-  try {
-    const v = Buffer.from(cursor, 'base64').toString('utf-8');
-    const n = Number(v);
-    return Number.isFinite(n) ? n : 0;
-  } catch {
-    return 0;
-  }
-}
-
-export async function mockSearchPosts(
-  params: SearchQuery,
-): Promise<CursorListResult<SearchPostItem>> {
-  const { q, scope, limit = 20, cursor } = params;
-  const start = decodeCursor(cursor);
-  const pool = ALL.filter((it) => matchByScope(it, q, scope));
-  const sliced = pool.slice(start, start + limit);
-  const next = start + limit < pool.length ? encodeCursor(start + limit) : null;
-
-  return {
-    count: sliced.length,
-    next_cursor: next,
-    items: sliced,
-  };
+  await new Promise((r) => setTimeout(r, 200));
+  return { count: slice.length, next_cursor: next, items: slice };
 }

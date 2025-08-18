@@ -1,18 +1,28 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { mockSearchPosts } from '../__mock__/search.mock';
-import type { SearchQuery, CursorListResult, SearchPostItem } from '../api/types';
+import { Category, ListCursorParams, ListCursorResult, SearchPostItem } from '../api/types';
+import { mockListCursor } from '../__mock__/search.mock';
 
-export function useSearchPosts(params: Omit<SearchQuery, 'cursor'>) {
-  const { q, scope, category = 'all', limit = 20 } = params;
-
-  return useInfiniteQuery<CursorListResult<SearchPostItem>>({
-    queryKey: ['search', { q, scope, category, limit }],
-    enabled: !!q && q.trim().length > 0,
+export function useCategoryListCursor(
+  category: Category,
+  params: Omit<ListCursorParams, 'cursor'>,
+) {
+  return useInfiniteQuery<
+    ListCursorResult<SearchPostItem>,
+    Error,
+    ListCursorResult<SearchPostItem>,
+    any,
+    string | null
+  >({
+    queryKey: [
+      'list-cursor',
+      category,
+      { limit: params.limit ?? 20, search_in: params.search_in, keyword: params.keyword },
+    ],
     initialPageParam: null,
     queryFn: ({ pageParam }) => {
       const cursor = typeof pageParam === 'string' ? pageParam : null;
-      return mockSearchPosts({ q, scope, limit, cursor });
+      return mockListCursor(category, { ...params, cursor });
     },
-    getNextPageParam: (lastPage) => lastPage.next_cursor,
+    getNextPageParam: (last) => last.next_cursor,
   });
 }
