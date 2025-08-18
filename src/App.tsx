@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import './App.css';
 import CommunityLayout from './community/CommunityLayout';
 import Header from './header/Header';
@@ -25,27 +25,23 @@ import axios from 'axios';
 function App() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
   const logout = useAuthStore((state) => state.logout);
+  const location = useLocation();
 
-  const fetchMyInfo = async () => {
+  const checkLogin = async () => {
     try {
       const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
-        withCredentials: true, // 쿠키 자동 전송
+        withCredentials: true, // 쿠키 전송
       });
       setAuthData(res.data);
-    } catch (err) {
+    } catch {
       logout();
     }
   };
 
+  // 1️ 초기 렌더링 + 2️ 라우트 변경 시마다 로그인 상태 확인
   useEffect(() => {
-    // 페이지 로드될 때마다 로그인 상태 확인
-    fetchMyInfo();
-
-    // 혹은 구글 로그인 후 돌아왔을 때 강제 갱신용
-    const handleFocus = () => fetchMyInfo();
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, []);
+    checkLogin();
+  }, [location.pathname]); // 라우트가 바뀔 때마다 실행
 
   return (
     <BrowserRouter>
