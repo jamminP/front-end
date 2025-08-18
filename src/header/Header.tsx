@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import bellIcon from '../header/img/bell.png';
 import { useState } from 'react';
 import useAuthStore from '@src/store/authStore';
@@ -9,7 +9,6 @@ export default function Header() {
 
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const logout = useAuthStore((state) => state.logout);
-  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
@@ -18,15 +17,10 @@ export default function Header() {
         {},
         { withCredentials: true },
       );
-    } catch (err: any) {
-      console.warn('Logout request failed, forcing local logout', err.message);
-    } finally {
-      // Zustand 상태 초기화
-      logout();
-
-      // 로그아웃 후 메인 페이지로 이동
-      navigate('/');
+    } catch (err) {
+      console.error(err);
     }
+    logout(); // Zustand 상태 초기화
   };
 
   return (
