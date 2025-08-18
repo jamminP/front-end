@@ -27,9 +27,17 @@ function App() {
   const logout = useAuthStore((state) => state.logout);
 
   useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      logout();
+      return;
+    }
+
     axios
       .get('https://backend.evida.site/api/v1/users/myinfo', {
-        withCredentials: true, // 쿠키 포함
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
       .then((res) => {
         setAuthData({ user: res.data });
