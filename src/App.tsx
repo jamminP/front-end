@@ -26,13 +26,26 @@ function App() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
   const logout = useAuthStore((state) => state.logout);
 
+  const fetchMyInfo = async () => {
+    try {
+      const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
+        withCredentials: true, // 쿠키 자동 전송
+      });
+      setAuthData(res.data);
+    } catch (err) {
+      logout();
+    }
+  };
+
   useEffect(() => {
-    // 쿠키 기반 인증 확인
-    axios
-      .get('https://backend.evida.site/api/v1/users/myinfo', { withCredentials: true })
-      .then((res) => setAuthData(res.data))
-      .catch(() => logout());
-  }, [setAuthData, logout]);
+    // 페이지 로드될 때마다 로그인 상태 확인
+    fetchMyInfo();
+
+    // 혹은 구글 로그인 후 돌아왔을 때 강제 갱신용
+    const handleFocus = () => fetchMyInfo();
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
 
   return (
     <BrowserRouter>
