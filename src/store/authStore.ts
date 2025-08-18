@@ -10,27 +10,22 @@ interface User {
 // 스토어 상태 타입
 interface AuthState {
   user: User | null;
-  token: string | null;
   isLoggedIn: boolean;
-  setAuthData: (data: { user: User; token: string }) => void;
+  setAuthData: (user: User) => void;
   logout: () => void;
 }
 
-// Zustand 스토어
 const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  token: null,
   isLoggedIn: false,
-  setAuthData: ({ user, token }) =>
+  setAuthData: (user) =>
     set({
       user,
-      token,
       isLoggedIn: true,
     }),
   logout: () =>
     set({
       user: null,
-      token: null,
       isLoggedIn: false,
     }),
 }));

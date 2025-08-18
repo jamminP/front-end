@@ -21,24 +21,16 @@ import PostDetailMock from './community/post/PostDetail';
 import { useEffect } from 'react';
 import useAuthStore from './store/authStore';
 import axios from 'axios';
-import GoogleCallback from './login/Callback';
 
 function App() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
   const logout = useAuthStore((state) => state.logout);
 
   useEffect(() => {
-    const token = sessionStorage.getItem('access_token');
-    if (!token) {
-      logout();
-      return;
-    }
-
+    // 쿠키 기반 인증 확인
     axios
-      .get('https://backend.evida.site/api/v1/users/myinfo', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setAuthData({ user: res.data, token }))
+      .get('https://backend.evida.site/api/v1/users/myinfo', { withCredentials: true })
+      .then((res) => setAuthData(res.data))
       .catch(() => logout());
   }, [setAuthData, logout]);
 
@@ -59,7 +51,6 @@ function App() {
           </Route>
 
           <Route path="/login" element={<Login />} />
-          <Route path="/auth/callback" element={<GoogleCallback />} />
           <Route path="/mypage" element={<MyPage />}>
             <Route index element={<MypageContent />} />
             <Route path="calendar" element={<MyCalendar />} />

@@ -17,10 +17,10 @@ export default function Header() {
         {},
         { withCredentials: true },
       );
-      logout(); // Zustand 상태 초기화
-    } catch (error) {
-      console.error('로그아웃 실패', error);
+    } catch (err) {
+      console.error(err);
     }
+    logout(); // Zustand 상태 초기화
   };
 
   return (
