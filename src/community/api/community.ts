@@ -12,6 +12,7 @@ import {
   CommentResponseDTO,
   Post,
   AllPostResponseDTO,
+  SearchScope,
 } from './types';
 
 export type CommentTreeItem = {
@@ -181,9 +182,6 @@ export const deletePost = (postId: number, userId?: number) =>
   });
 
 //search
-
-export type SearchScope = 'title' | 'content' | 'title+content';
-
 const SEARCH_ENDPOINT = '/api/community/post/search';
 
 export interface SearchCursorParams {

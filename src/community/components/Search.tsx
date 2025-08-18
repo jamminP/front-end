@@ -15,7 +15,7 @@ export function SearchPopover({ onClose, defaultScope = 'title', category = 'all
   const [scope, setScope] = useState<SearchScope>(defaultScope);
   const [q, setQ] = useState('');
 
-  const debouncedQ = useDebounce(q, 5000);
+  const debouncedQ = useDebounce(q, 3000);
 
   const { data, isFetching, fetchNextPage, hasNextPage, isLoading, isError } = useSearchPosts({
     q: debouncedQ,

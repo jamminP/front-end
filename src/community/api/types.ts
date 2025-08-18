@@ -1,5 +1,3 @@
-import { SrvRecord } from 'dns';
-
 export interface FreePostItem {
   id: number;
   title: string;
