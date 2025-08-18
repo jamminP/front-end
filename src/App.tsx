@@ -21,7 +21,7 @@ import PostDetailMock from './community/post/PostDetail';
 import { useEffect } from 'react';
 import useAuthStore from './store/authStore';
 import axios from 'axios';
-import GoogleCallback from './login/callback';
+import GoogleCallback from './login/Callback';
 
 function App() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
