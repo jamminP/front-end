@@ -27,9 +27,24 @@ function App() {
   const logout = useAuthStore((state) => state.logout);
 
   useEffect(() => {
-    // 쿠키 기반 인증 확인
+    // 1) 쿠키에서 access_token 추출
+    const token = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('access_token='))
+      ?.split('=')[1];
+
+    if (!token) {
+      logout();
+      return;
+    }
+
+    // 2) Authorization 헤더로 myinfo 호출
     axios
-      .get('https://backend.evida.site/api/v1/users/myinfo', { withCredentials: true })
+      .get('https://backend.evida.site/api/v1/users/myinfo', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       .then((res) => setAuthData(res.data))
       .catch(() => logout());
   }, [setAuthData, logout]);
