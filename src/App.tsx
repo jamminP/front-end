@@ -20,34 +20,32 @@ import CommunityStudy from './community/category/CommunityStudy';
 import PostDetailMock from './community/post/PostDetail';
 import { useEffect } from 'react';
 import useAuthStore from './store/authStore';
+import axios from 'axios';
 
 function App() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
+  const logout = useAuthStore((state) => state.logout);
 
   useEffect(() => {
-    // 테스트용: 직접 복사한 JWT를 넣어 로그인 상태 확인
-    const accessToken =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxNyIsImV4cCI6MTc1NTM5NDU5NH0.doRwyO9Londh-3URXWzY0A9y-0j2zx_wEH8fegTxCJ4';
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      logout();
+      return;
+    }
 
-    fetch('https://backend.evida.site/api/v1/users/myinfo', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${accessToken}`, // 여기!
-      },
-    })
-      .then(async (res) => {
-        const text = await res.text();
-        console.log('status:', res.status);
-        console.log('body:', text);
-        if (!res.ok) throw new Error(`실패: ${res.status}`);
-        return JSON.parse(text);
+    axios
+      .get('https://backend.evida.site/api/v1/users/myinfo', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
-      .then((user) => {
-        console.log('user:', user);
-        setAuthData({ user });
+      .then((res) => {
+        setAuthData({ user: res.data });
       })
-      .catch((err) => console.log(err.message));
-  }, [setAuthData]);
+      .catch(() => {
+        logout();
+      });
+  }, [setAuthData, logout]);
 
   return (
     <BrowserRouter>
