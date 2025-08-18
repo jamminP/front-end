@@ -18,8 +18,35 @@ import EditPost from './community/form/EditPost';
 import PostDetail from './community/post/components/CommentItem';
 import CommunityStudy from './community/category/CommunityStudy';
 import PostDetailMock from './community/post/PostDetail';
+import { useEffect } from 'react';
+import useAuthStore from './store/authStore';
+import axios from 'axios';
 
 function App() {
+  const setAuthData = useAuthStore((state) => state.setAuthData);
+  const logout = useAuthStore((state) => state.logout);
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      logout();
+      return;
+    }
+
+    axios
+      .get('https://backend.evida.site/api/v1/users/myinfo', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+        setAuthData({ user: res.data });
+      })
+      .catch(() => {
+        logout();
+      });
+  }, [setAuthData, logout]);
+
   return (
     <BrowserRouter>
       <Header />

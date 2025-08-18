@@ -1,27 +1,35 @@
-// stores/authStore.ts
 import { create } from 'zustand';
 
+//유저 타입
 interface User {
   id: number;
   email: string;
   nickname: string;
 }
 
+//스토어 상태 타입
 interface AuthState {
   user: User | null;
-  token: string | null;
-  setAuthData: (data: { user: User; token: string }) => void;
+  isLoggedIn: boolean;
+  setAuthData: (data: { user: User }) => void;
   logout: () => void;
 }
 
+//zustand스토어
 const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
-  setAuthData: (data) => set({ user: data.user, token: data.token }),
-  logout: () => {
-    localStorage.removeItem('access_token');
-    set({ user: null, token: null });
-  },
+  isLoggedIn: false,
+  setAuthData: ({ user }) =>
+    set({
+      user,
+      isLoggedIn: true,
+    }),
+  logout: () =>
+    set({
+      user: null,
+      isLoggedIn: false,
+    }),
 }));
 
 export default useAuthStore;
