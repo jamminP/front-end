@@ -86,8 +86,6 @@ export default function CreatePost() {
 
   return (
     <div className="p-6 max-w-[720px] mx-auto space-y-4">
-      <h1 className="text-xl font-semibold">새 글 작성</h1>
-
       <PostForm
         initialValues={initialValues}
         submitLabel="저장"
