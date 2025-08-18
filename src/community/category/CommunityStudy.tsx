@@ -1,7 +1,7 @@
 import { useInfiniteQuery, QueryFunctionContext } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { mockStudyListCursor } from '../__mock__/dummyPost';
-import type { StudyPostResponseDTO } from '../api/types';
+import type { StudyPostResponse } from '../api/types';
 import PostCard, { Post } from '../components/Postcard';
 
 type CursorPage<T> = { items: T[]; nextCursor: number | null };
@@ -12,9 +12,9 @@ export default function CommunityStudy() {
   const currentUserId = 1001;
 
   const q = useInfiniteQuery<
-    CursorPage<StudyPostResponseDTO>,
+    CursorPage<StudyPostResponse>,
     Error,
-    StudyPostResponseDTO[],
+    StudyPostResponse[],
     QK,
     number | null
   >({
@@ -33,24 +33,24 @@ export default function CommunityStudy() {
 
   return (
     <div className="space-y-3">
-      {items.map((dto) => {
+      {items.map((std) => {
         const post: Post = {
-          postId: dto.id,
-          title: dto.title,
-          author: `user#${dto.author_id}`,
-          authorId: dto.author_id,
+          postId: std.id,
+          title: std.title,
+          author: `user#${std.author_id}`,
+          authorId: std.author_id,
           category: 'study',
-          content: dto.content,
-          createdAt: dto.created_at,
-          views: dto.views,
+          content: std.content,
+          createdAt: std.created_at,
+          views: std.views,
           likes: 0,
           comments: 0,
 
-          recruitStart: dto.study_recruitment.recruit_start,
-          recruitEnd: dto.study_recruitment.recruit_end,
-          studyStart: dto.study_recruitment.study_start,
-          studyEnd: dto.study_recruitment.study_end,
-          maxMembers: dto.study_recruitment.max_member,
+          recruitStart: std.study_recruitment.recruit_start,
+          recruitEnd: std.study_recruitment.recruit_end,
+          studyStart: std.study_recruitment.study_start,
+          studyEnd: std.study_recruitment.study_end,
+          maxMembers: std.study_recruitment.max_member,
         };
         return (
           <PostCard

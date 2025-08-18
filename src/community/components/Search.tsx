@@ -8,10 +8,10 @@ import { baseClass } from './CreatePostButton';
 interface Props {
   onClose?: () => void;
   defaultScope?: SearchScope;
-  category?: 'free' | 'share' | 'study' | 'all';
+  category?: 'free' | 'share' | 'study';
 }
 
-export function SearchPopover({ onClose, defaultScope = 'title', category = 'all' }: Props) {
+export function SearchPopover({ onClose, defaultScope = 'title', category = 'share' }: Props) {
   const [scope, setScope] = useState<SearchScope>(defaultScope);
   const [q, setQ] = useState('');
 

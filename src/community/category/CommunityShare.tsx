@@ -1,7 +1,7 @@
 import { useInfiniteQuery, QueryFunctionContext } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { mockShareListCursor } from '../__mock__/dummyPost';
-import type { SharePostResponseDTO } from '../api/types';
+import type { SharePostResponse } from '../api/types';
 import PostCard, { Post } from '../components/Postcard';
 
 type CursorPage<T> = { items: T[]; nextCursor: number | null };
@@ -12,9 +12,9 @@ export default function CommunityShare() {
   const currentUserId = 1001;
 
   const q = useInfiniteQuery<
-    CursorPage<SharePostResponseDTO>,
+    CursorPage<SharePostResponse>,
     Error,
-    SharePostResponseDTO[],
+    SharePostResponse[],
     QK,
     number | null
   >({

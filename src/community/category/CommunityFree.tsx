@@ -1,6 +1,6 @@
 import { useInfiniteQuery, QueryFunctionContext } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import type { FreePostResponseDTO } from '../api/types';
+import type { FreePostResponse } from '../api/types';
 import PostCard, { Post } from '../components/Postcard';
 import { mockFreeListCursor } from '../__mock__/dummyPost';
 
@@ -12,9 +12,9 @@ export default function CommunityFree() {
   const currentUserId = 1001;
 
   const q = useInfiniteQuery<
-    CursorPage<FreePostResponseDTO>,
+    CursorPage<FreePostResponse>,
     Error,
-    FreePostResponseDTO[],
+    FreePostResponse[],
     QK,
     number | null
   >({
@@ -33,16 +33,16 @@ export default function CommunityFree() {
 
   return (
     <div className="space-y-3">
-      {items.map((dto) => {
+      {items.map((f) => {
         const post: Post = {
-          postId: dto.id,
-          title: dto.title,
-          author: `user#${dto.author_id}`,
-          authorId: dto.author_id,
+          postId: f.id,
+          title: f.title,
+          author: `user#${f.author_id}`,
+          authorId: f.author_id,
           category: 'free',
-          content: dto.content,
-          createdAt: dto.created_at,
-          views: dto.views,
+          content: f.content,
+          createdAt: f.created_at,
+          views: f.views,
           likes: 0,
           comments: 0,
         };
