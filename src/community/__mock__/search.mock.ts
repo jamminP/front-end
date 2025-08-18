@@ -14,7 +14,6 @@ const MAP = (p: any): SearchPostItem => ({
   post_id: p.post_id ?? p.postId ?? p.id,
   title: p.title,
   content: p.content ?? '',
-  author_id: p.author_id ?? p.authorId ?? p.author ?? 'user#0000',
   category: p.category,
   created_at: p.created_at ?? p.createdAt ?? new Date().toISOString(),
   badge: p.badge,
@@ -38,9 +37,16 @@ const match = (it: SearchPostItem, q: string, where: SearchIn) => {
   return t.includes(nQ) || c.includes(nQ);
 };
 
+function inDateRange(iso: string, from?: string, to?: string) {
+  const d = iso.slice(0, 10);
+  if (from && d < from) return false;
+  if (to && d > to) return false;
+  return true;
+}
+
 export async function mockListCursor(
   category: Category,
-  { limit = 20, cursor, search_in, keyword }: ListCursorParams,
+  { limit = 20, cursor, search_in, keyword, date_to, date_from }: ListCursorParams,
 ): Promise<ListCursorResult<SearchPostItem>> {
   const start = dec(cursor);
   let pool = POOLS[category];
@@ -49,9 +55,12 @@ export async function mockListCursor(
     pool = pool.filter((it) => match(it, keyword, search_in));
   }
 
+  if (date_from || date_to) {
+    pool = pool.filter((it) => inDateRange(it.created_at, date_from, date_to));
+  }
+
   const slice = pool.slice(start, start + limit);
   const next = start + limit < pool.length ? enc(start + limit) : null;
-
-  await new Promise((r) => setTimeout(r, 200));
+  await new Promise((r) => setTimeout(r, 150));
   return { count: slice.length, next_cursor: next, items: slice };
 }

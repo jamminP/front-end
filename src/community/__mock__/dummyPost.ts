@@ -86,8 +86,8 @@ export const dummyStudy: StudyPostResponse[] = [
       study_end: iso('2025-09-11T23:59:59'),
       max_member: 6,
     },
-    created_at: iso('2025-08-08T08:00:00'),
-    updated_at: iso('2025-08-08T08:00:00'),
+    created_at: iso('2025-08-04T08:00:00'),
+    updated_at: iso('2025-08-04T08:00:00'),
   },
 ];
 

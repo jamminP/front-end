@@ -167,13 +167,15 @@ export interface Post {
   comments?: number;
 }
 
-export type SearchIn = 'title' | 'content' | 'title_content';
+export type SearchIn = 'title' | 'content' | 'title_content' | 'author_id';
 
 export interface ListCursorParams {
   limit?: number;
   cursor?: string | null;
   search_in?: SearchIn;
   keyword?: string;
+  date_from?: string;
+  date_to?: string;
 }
 
 export interface ListCursorResult<T> {
@@ -186,8 +188,7 @@ export interface SearchPostItem {
   post_id: number;
   title: string;
   content: string;
-  author_id: string;
   category: Category;
   created_at: string;
-  badge?: string;
+  badge?: '모집중' | '모집완료';
 }

@@ -7,19 +7,37 @@ export function useCategoryListCursor(
   category: Category,
   params: Omit<ListCursorParams, 'cursor'>,
 ) {
-  const { limit = 20, search_in, keyword } = params;
+  const { limit = 20, search_in, keyword, date_from, date_to } = params;
 
   const query = useInfiniteQuery<
     ListCursorResult<SearchPostItem>,
     Error,
     InfiniteData<ListCursorResult<SearchPostItem>>,
-    [string, Category, { limit: number; search_in?: string; keyword?: string }],
+    [
+      string,
+      Category,
+      {
+        limit: number;
+        search_in?: string;
+        keyword?: string;
+        author_id?: string | number;
+        date_from?: string;
+        date_to?: string;
+      },
+    ],
     string | null
   >({
-    queryKey: ['list-cursor', category, { limit, search_in, keyword }],
+    queryKey: ['list-cursor', category, { limit, search_in, keyword, date_from, date_to }],
     initialPageParam: null,
     queryFn: ({ pageParam }) =>
-      mockListCursor(category, { limit, cursor: pageParam, search_in, keyword }),
+      mockListCursor(category, {
+        limit,
+        cursor: pageParam,
+        search_in,
+        keyword,
+        date_from,
+        date_to,
+      }),
     getNextPageParam: (last) => last.next_cursor,
   });
   const items = useMemo(() => {

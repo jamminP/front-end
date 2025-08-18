@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import SearchIcon from './Search';
+import SearchIcon from './SearchIcon';
 
 const tabs = [
   { lable: '전체', path: '/community' },

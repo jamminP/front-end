@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
+import 'react-datepicker/dist/react-datepicker.css';
 import CommunityLayout from './community/CommunityLayout';
 import Header from './header/Header';
 import MyPage from './mypage/Mypage';
