@@ -12,7 +12,7 @@ interface Props {
   extraQuery?: Record<string, string | number | undefined>;
 }
 
-const baseClass =
+export const baseClass =
   'px-2 py-2 rounded-xl shadow hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed';
 
 function buildHref(to: string, params: Record<string, string | number | undefined>) {

@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { SearchScope } from '../api/types';
 import useDebounce from '../hook/useDebounce';
 import { useSearchPosts } from '../hook/useSearchPosts';
+import searchIcon from '../img/search.png';
+import { baseClass } from './CreatePostButton';
 
 interface Props {
   onClose?: () => void;
@@ -94,23 +96,8 @@ export default function SearchIcon() {
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
-      <button
-        aria-label="검색"
-        className="p-2 rounded-full hover:bg-gray-100"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="w-6 h-6"
-        >
-          <path
-            fillRule="evenodd"
-            d="M10.5 3a7.5 7.5 0 105.02 13.19l3.646 3.646a.75.75 0 101.06-1.06l-3.646-3.647A7.5 7.5 0 0010.5 3zm-6 7.5a6 6 0 1112 0 6 6 0 01-12 0z"
-            clipRule="evenodd"
-          />
-        </svg>
+      <button aria-label="검색" className={`${baseClass}`} onClick={() => setOpen((v) => !v)}>
+        <img src={searchIcon} className="h-5 w-5" />
       </button>
 
       {open && (
