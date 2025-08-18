@@ -22,7 +22,7 @@ import { useEffect } from 'react';
 import useAuthStore from './store/authStore';
 import axios from 'axios';
 
-function App() {
+function AppContent() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
   const logout = useAuthStore((state) => state.logout);
   const location = useLocation();
@@ -30,7 +30,7 @@ function App() {
   const checkLogin = async () => {
     try {
       const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
-        withCredentials: true, // 쿠키 전송
+        withCredentials: true,
       });
       setAuthData(res.data);
     } catch {
@@ -38,13 +38,12 @@ function App() {
     }
   };
 
-  // 1️ 초기 렌더링 + 2️ 라우트 변경 시마다 로그인 상태 확인
   useEffect(() => {
     checkLogin();
-  }, [location.pathname]); // 라우트가 바뀔 때마다 실행
+  }, [location.pathname]);
 
   return (
-    <BrowserRouter>
+    <>
       <Header />
       <main>
         <Routes>
@@ -69,8 +68,14 @@ function App() {
         </Routes>
       </main>
       <Footer />
-    </BrowserRouter>
+    </>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
+  );
+}
