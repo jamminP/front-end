@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { createFreePost, createSharePost } from '../api/community';
 
-const BASE = 'https://backend.evida.site';
+export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
 
 type ApiId = { id?: number; post_id?: number };
 

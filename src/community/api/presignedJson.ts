@@ -1,6 +1,6 @@
 import { sanitizeFilename } from '../utils/upload';
 
-const BASE = import.meta.env.VITE_API_BASE_URL || 'https://backend.evida.site';
+const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
 const CREATE_PREFIX = `${BASE}/api/v1/community/post`;
 
 export type Category = 'free' | 'share' | 'study';
