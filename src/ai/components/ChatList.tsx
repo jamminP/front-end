@@ -93,7 +93,7 @@ export default function ChatList({ collapsed }: { collapsed: boolean }) {
   return (
     <div
       ref={scrollRef}
-      className={collapsed ? 'h-[40vh] overflow-y-auto' : 'h-[44vh] overflow-y-auto'}
+      className={collapsed ? 'h-[56vh] overflow-y-auto' : 'h-[56vh] overflow-y-auto'}
     >
       <ul className={collapsed ? 'space-y-0.5' : 'space-y-1'}>{content}</ul>
       <div ref={sentinelRef} />

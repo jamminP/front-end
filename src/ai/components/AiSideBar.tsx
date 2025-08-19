@@ -15,8 +15,7 @@ export default function AiSideBar({ collapsed, onToggle }: Props) {
       <div className="h-10 flex items-center justify-between px-3">
         <button
           onClick={onToggle}
-          className="ml-auto inline-flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100"
-          aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
+          className="ml-auto mt-4.5 inline-flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100"
         >
           {collapsed ? <FaChevronRight size={20} /> : <FaChevronLeft size={20} />}
         </button>
@@ -26,7 +25,7 @@ export default function AiSideBar({ collapsed, onToggle }: Props) {
         <SidebarItem icon={<GrPlan size={20} />} label="공부 계획" collapsed={collapsed} />
         <SidebarItem icon={<FaRegFileLines size={20} />} label="정보 요약" collapsed={collapsed} />
       </nav>
-      <section className={collapsed ? 'px-0 py-3' : 'px-3 py-3'}>
+      <section className={collapsed ? 'px-0 py-5' : 'px-3.5 py-5'}>
         {!collapsed && <h3 className="mb-2 text-xs font-semibold text-gray-600">채팅</h3>}
         <ChatList collapsed={collapsed} />
       </section>
