@@ -99,6 +99,8 @@ export type AnyPostResponse = FreePostResponse | SharePostResponse | StudyPostRe
 export const createFreePost = (body: FreePostRequest) =>
   http<FreePostResponse>('/api/v1/community/post/free', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(body),
   });
 
@@ -115,6 +117,8 @@ export const patchFreePost = (postId: number, body: FreePostUpdateRequest, userI
 export const createSharePost = (body: SharePostRequest) =>
   http<SharePostResponse>('/api/v1/community/post/share', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(body),
   });
 
