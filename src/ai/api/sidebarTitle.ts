@@ -2,22 +2,27 @@ import type { StudyPlan } from './types';
 
 export type ChatSummary = { id: string; title: string };
 
+function extractTitle(output_data: string): string | null {
+  try {
+    const v = JSON.parse(output_data);
+    if (v && typeof v === 'object' && typeof v.title === 'string' && v.title.trim()) {
+      return v.title.trim();
+    }
+    if (typeof v === 'string') {
+      const v2 = JSON.parse(v);
+      if (v2 && typeof v2 === 'object' && typeof v2.title === 'string' && v2.title.trim()) {
+        return v2.title.trim();
+      }
+    }
+  } catch (err) {
+    console.log(`Error: ${err}`);
+  }
+  return null;
+}
+
 export function toChatSummaries(plans: StudyPlan[]): ChatSummary[] {
   return plans.map((p) => {
-    let title = `대화 ${p.id}`;
-    try {
-      const parsed = JSON.parse(p.output_data);
-
-      if (typeof parsed?.title === 'string' && parsed.title.trim()) {
-        title = parsed.title.trim();
-      }
-    } catch (err) {
-      console.log(`error: ${err}`);
-    }
-
-    const d = new Date(p.created_at);
-    const pad = (n: number) => String(n).padStart(2, '0');
-    const head = `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    return { id: String(p.id), title: `${head} - ${title}` };
+    const onlyTitle = extractTitle(p.output_data) ?? '제목 없음';
+    return { id: String(p.id), title: onlyTitle };
   });
 }
