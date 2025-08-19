@@ -1,8 +1,6 @@
 import { sanitizeFilename } from '../utils/upload';
 
-const BASE = import.meta.env.VITE_API_BASE_URL || 'https://backend.evida.site';
-
-const CREATE_PREFIX = `${BASE}/api/v1/community/post`;
+const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
 
 export type Category = 'free' | 'share' | 'study';
 export type ApiId = { id?: number; post_id?: number } & Record<string, unknown>;
@@ -22,7 +20,7 @@ export type CreatePostJSONBody =
     };
 
 export async function createPostJSON(body: CreatePostJSONBody): Promise<ApiId> {
-  const url = `${CREATE_PREFIX}/${body.category}`;
+  const url = `${BASE}/api/v1/community/post/${body.category}`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -46,7 +44,7 @@ async function requestPresignedJSON(
   postId: number,
   body: PresignReq,
 ): Promise<PresignRes> {
-  const url = `${CREATE_PREFIX}/${category}/${postId}/attachments/presigned`;
+  const url = `${BASE}/api/v1/community/post/${category}/${postId}/attachments/presigned`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -69,7 +67,7 @@ async function attachJSON(
     order: number;
   },
 ) {
-  const url = `${CREATE_PREFIX}/${category}/${postId}/attachments/attach`;
+  const url = `${BASE}/api/v1/community/post/${category}/${postId}/attachments/attach`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
