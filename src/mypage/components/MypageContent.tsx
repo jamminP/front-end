@@ -1,4 +1,6 @@
+import useAuthStore from '@src/store/authStore';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 interface MyPost {
   id: number;
@@ -25,14 +27,32 @@ function SkeletonCard() {
 }
 
 export default function MypageContent() {
+  const [nicknameInput, setNicknameInput] = useState('');
   const [nicknameModal, setNicknameModal] = useState(false);
+  const user = useAuthStore((state) => state.user);
+  const setAuthData = useAuthStore((state) => state.setAuthData);
   const openNicknameModal = () => {
+    setNicknameInput(user?.nickname || '');
     setNicknameModal(true);
   };
   const closeNicknameModal = () => {
     setNicknameModal(false);
   };
 
+  const handleNicknameUpdate = async () => {
+    if (!nicknameInput.trim()) return; //공백 방지
+    try {
+      const res = await axios.patch(
+        'https://backend.evida.site/api/v1/users/myinfo',
+        { nickname: nicknameInput },
+        { withCredentials: true },
+      );
+      setAuthData(res.data);
+      closeNicknameModal();
+    } catch (err) {
+      console.error('닉네임 변경 실패', err);
+    }
+  };
   //더미데이터
   const dummyMyPosts: MyPost[] = [
     {
@@ -81,8 +101,8 @@ export default function MypageContent() {
             <div className="w-[50px] h-[50px] bg-[#ffffff] rounded-[50%]"></div>
           </div>
           <div className="m-[0_15px] leading-[1.3]">
-            <p className="font-bold text-[#1b3043] text-[1.1rem]">홍길동</p>
-            <p className="text-[#5b6b7a] text-[.9rem]">abc@aaa.com</p>
+            <p className="font-bold text-[#1b3043] text-[1.1rem]">{user?.nickname}</p>
+            <p className="text-[#5b6b7a] text-[.9rem]">{user?.email}</p>
           </div>
         </div>
 
@@ -103,11 +123,13 @@ export default function MypageContent() {
               <div className="md:flex items-center justify-between">
                 <input
                   type="text"
-                  maxLength={5}
+                  maxLength={10}
+                  value={nicknameInput}
+                  onChange={(e) => setNicknameInput(e.target.value)}
                   className="w-full md:w-[82%] border-[1px] border-[#d1d1d1] rounded-[10px] p-[10px] mr-[10px] mb-[10px] md:mb-[0px]"
                 />
                 <div className="modal-button">
-                  <button>수정</button>
+                  <button onClick={handleNicknameUpdate}>수정</button>
                 </div>
               </div>
 
