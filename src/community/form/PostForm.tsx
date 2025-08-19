@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
 
 export type PostFormValues = {
   title: string;
@@ -9,6 +10,8 @@ export type PostFormValues = {
   studyStart?: string;
   studyEnd?: string;
   maxMembers?: number;
+  freeImages?: File[];
+  shareFiles?: File[];
 };
 
 interface PostFormProps {
@@ -22,11 +25,21 @@ const defaults: PostFormValues = {
   title: '',
   content: '',
   category: 'free',
+  freeImages: [],
+  shareFiles: [],
 };
 
-type Errors = Partial<Record<keyof PostFormValues, string>>;
+const BYTES_10MB = 10 * 1024 * 1024;
 
-function validate(values: PostFormValues): Errors {
+type Errors = Partial<
+  Record<keyof PostFormValues | 'limitMembers' | 'shareLimit' | 'freeLimit', string>
+>;
+
+function bytesToMB(n: number) {
+  return (n / (1024 * 1024)).toFixed(2);
+}
+
+function validate(values: PostFormValues, limitMembers: boolean): Errors {
   const e: Errors = {};
   const req = (v?: string) => v && v.trim().length > 0;
 
@@ -42,12 +55,45 @@ function validate(values: PostFormValues): Errors {
     if (RS && RE && RS > RE) e.recruitEnd = '모집 마감은 시작 이후여야 합니다.';
     if (SS && SE && SS > SE) e.studyEnd = '스터디 종료는 시작 이후여야 합니다.';
 
-    if (values.maxMembers !== undefined) {
-      if (Number.isNaN(values.maxMembers) || values.maxMembers < 2) {
-        e.maxMembers = '최대 인원은 2명 이상이어야 합니다.';
+    if (limitMembers) {
+      if (values.maxMembers == undefined || Number.isNaN(values.maxMembers)) {
+        e.maxMembers = '최대 인원을 입력해주세요.';
+      } else if (!Number.isInteger(values.maxMembers)) {
+        e.maxMembers = '정수를 입력해주세요.';
+      } else if (values.maxMembers < 2) {
+        e.maxMembers = '2명 이상이어야 합니다.';
+      } else if (values.maxMembers > 30) {
+        e.maxMembers = '최대 인원은 30명을 넘을 수 없습니다.';
       }
     }
   }
+  if (values.category === 'free') {
+    const imgs = values.freeImages ?? [];
+    if (imgs.length > 10) e.freeLimit = '이미지는 최대 10장까지 업로드할 수 있어요.';
+    const allow = new Set(['image/png', 'image/jpeg']);
+    const bad = imgs.find((f) => !allow.has(f.type));
+    if (bad) e.freeLimit = 'PNG 또는 JPG만 업로드할 수 있어요.';
+    const total = imgs.reduce((a, f) => a + f.size, 0);
+    if (total > BYTES_10MB)
+      e.freeLimit = `총 용량은 10MB 이하여야 합니다. (현재 ${bytesToMB(total)}MB)`;
+  }
+
+  if (values.category === 'share') {
+    const files = values.shareFiles ?? [];
+    if (files.length > 10) e.shareLimit = '파일은 최대 10개까지만 업로드할 수 있어요.';
+    const total = files.reduce((a, f) => a + f.size, 0);
+    if (total > BYTES_10MB)
+      e.shareLimit = `총 용량은 10MB 이하여야 합니다. (현재 ${bytesToMB(total)}MB)`;
+    const allow = new Set([
+      'image/png',
+      'image/jpeg',
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ]);
+    const bad = files.find((f) => !allow.has(f.type));
+    if (bad) e.shareLimit = '허용되지 않는 파일 형식이 있어요. (png, jpg, pdf, docx만 가능)';
+  }
+
   return e;
 }
 
@@ -58,14 +104,31 @@ export default function PostForm({
   disabled,
 }: PostFormProps) {
   const [values, setValues] = useState<PostFormValues>({ ...defaults, ...initialValues });
+  const [limitMembers, setLimitMembers] = useState<boolean>(
+    (initialValues?.maxMembers ?? undefined) !== undefined,
+  );
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setValues((prev) => ({ ...prev, ...initialValues }));
   }, [initialValues]);
 
+  useEffect(() => {
+    setValues((v) => {
+      if (v.category === 'free') return { ...v, shareFiles: [] };
+      if (v.category === 'share') return { ...v, freeImages: [] };
+      return v;
+    });
+  }, [values.category]);
+
   const isStudy = values.category === 'study';
-  const errors = useMemo(() => validate(values), [values]);
+  const isFree = values.category === 'free';
+  const isShare = values.category === 'share';
+
+  const errors = useMemo(
+    () => validate(values, isStudy && limitMembers),
+    [values, limitMembers, isStudy],
+  );
   const hasError = Object.keys(errors).length > 0;
 
   const setField =
@@ -74,11 +137,13 @@ export default function PostForm({
       const raw = e.target.value;
       setValues((v) => ({
         ...v,
-        [name]: name === 'maxMembers' ? (raw === '' ? undefined : Number(raw)) : (raw as any),
+        [name]:
+          name === 'maxMembers' ? (raw === '' ? undefined : Math.floor(Number(raw))) : (raw as any),
       }));
     };
 
-  const onBlur = (name: keyof PostFormValues) => () => setTouched((t) => ({ ...t, [name]: true }));
+  const onBlur = (name: keyof PostFormValues | 'limitMembers' | 'shareLimit' | 'freeLimit') => () =>
+    setTouched((t) => ({ ...t, [name]: true }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,15 +156,71 @@ export default function PostForm({
       studyStart: true,
       studyEnd: true,
       maxMembers: true,
+      limitMembers: true,
+      freeImages: true,
+      freeLimit: true,
+      shareFiles: true,
+      shareLimit: true,
     });
     if (hasError) return;
-    onSubmit(values);
+    const payload: PostFormValues = {
+      ...values,
+      maxMembers: isStudy && limitMembers ? values.maxMembers : undefined,
+    };
+
+    onSubmit(payload);
   };
 
-  const err = (k: keyof PostFormValues) => touched[k];
+  const err = (k: keyof PostFormValues | 'limitMembers' | 'shareLimit' | 'freeLimit') => touched[k];
+
+  const {
+    getRootProps: getFreeRootProps,
+    getInputProps: getFreeInputProps,
+    isDragActive: isFreeDrag,
+  } = useDropzone({
+    multiple: true,
+    accept: { 'image/*': ['.png', '.jpg', '.jpeg'] },
+    onDrop: (accepted) => {
+      setValues((v) => {
+        const next = [...(v.freeImages ?? []), ...accepted];
+        const dedup = Array.from(new Map(next.map((f) => [`${f.name}-${f.size}`, f])).values());
+        const trimmed = dedup.slice(0, 10);
+        return { ...v, freeImages: trimmed };
+      });
+      setTouched((t) => ({ ...t, freeImages: true, freeLimit: true }));
+    },
+    disabled: disabled || !isFree,
+  });
+
+  const freeTotalSize = (values.freeImages ?? []).reduce((a, f) => a + f.size, 0);
+
+  const {
+    getRootProps: getShareRootProps,
+    getInputProps: getShareInputProps,
+    isDragActive: isShareDrag,
+  } = useDropzone({
+    multiple: true,
+    accept: {
+      'image/*': ['.png', '.jpg', '.jpeg'],
+      'application/pdf': ['.pdf'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+    },
+    onDrop: (accepted) => {
+      setValues((v) => {
+        const next = [...(v.shareFiles ?? []), ...accepted];
+        const dedup = Array.from(new Map(next.map((f) => [`${f.name}-${f.size}`, f])).values());
+        const trimmed = dedup.slice(0, 10);
+        return { ...v, shareFiles: trimmed };
+      });
+      setTouched((t) => ({ ...t, shareFiles: true, shareLimit: true }));
+    },
+    disabled: disabled || !isShare,
+  });
+
+  const shareTotalSize = (values.shareFiles ?? []).reduce((a, f) => a + f.size, 0);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 mt-20">
+    <form onSubmit={handleSubmit} className="space-y-4 mt-20 ">
       <div>
         <input
           name="title"
@@ -108,11 +229,11 @@ export default function PostForm({
           onBlur={onBlur('title')}
           placeholder="제목을 입력하세요"
           disabled={disabled}
-          className={`w-full border rounded-md px-3 py-3 ${
-            err('title') ? 'border-#1B3043' : 'border-#1B3043'
+          className={`w-full h-10 border border-gray-300 rounded-md px-4 py-3 ${
+            err('title') ? 'border-red-500' : 'border-#1B3043'
           }`}
         />
-        {err('title') && <p>{errors.title}</p>}
+        {err('title') && <p className="text-red-500 text-sm">{errors.title}</p>}
       </div>
 
       <div>
@@ -122,33 +243,17 @@ export default function PostForm({
           onChange={setField('category')}
           onBlur={onBlur('category')}
           disabled={disabled}
-          className="w-full border rounded-md px-3 py-2 border-#1B3043"
+          className="w-full h-10 border border-gray-300 rounded-md px-3 py-2 border-#1B3043"
         >
           <option value="free">자유</option>
           <option value="share">자료 공유</option>
           <option value="study">스터디</option>
         </select>
       </div>
-
-      <div>
-        <textarea
-          name="content"
-          value={values.content}
-          onChange={setField('content')}
-          onBlur={onBlur('content')}
-          placeholder="내용을 입력하세요"
-          disabled={disabled}
-          className={`w-full border rounded-md px-3 py-2 min-h-[400px] ${
-            err('content') ? 'border-#1B3043' : 'border-gray-300'
-          }`}
-        />
-        {err('content') && <p>{errors.content}</p>}
-      </div>
-
       {isStudy && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">모집 시작일</label>
+            <label className="block text-sm  font-medium mb-1 ">모집 시작일</label>
             <input
               type="date"
               name="recruitStart"
@@ -156,7 +261,7 @@ export default function PostForm({
               onChange={setField('recruitStart')}
               onBlur={onBlur('recruitStart')}
               disabled={disabled}
-              className="w-full border rounded-md px-3 py-2 border-gray-300"
+              className="w-full h-10 border rounded-md px-3 py-2 border-gray-300"
             />
           </div>
 
@@ -169,7 +274,7 @@ export default function PostForm({
               onChange={setField('recruitEnd')}
               onBlur={onBlur('recruitEnd')}
               disabled={disabled}
-              className={`w-full border rounded-md px-3 py-2 ${
+              className={`w-full h-10 border rounded-md px-3 py-2 ${
                 err('recruitEnd') ? 'border-red-400' : 'border-gray-300'
               }`}
             />
@@ -185,7 +290,7 @@ export default function PostForm({
               onChange={setField('studyStart')}
               onBlur={onBlur('studyStart')}
               disabled={disabled}
-              className="w-full border rounded-md px-3 py-2 border-gray-300"
+              className="w-full border h-10 rounded-md px-3 py-2 border-gray-300"
             />
           </div>
 
@@ -198,32 +303,241 @@ export default function PostForm({
               onChange={setField('studyEnd')}
               onBlur={onBlur('studyEnd')}
               disabled={disabled}
-              className={`w-full border rounded-md px-3 py-2 ${
-                err('studyEnd') ? 'border-red-400' : 'border-gray-300'
+              className={`w-full h-10 border rounded-md px-3 py-2 ${
+                err('studyEnd') ? 'border-red-500' : 'border-gray-300'
               }`}
             />
             {err('studyEnd') && <p className="mt-1 text-xs text-red-500">{errors.studyEnd}</p>}
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-1">최대 인원</label>
-            <input
-              type="number"
-              min={2}
-              name="maxMembers"
-              value={values.maxMembers ?? ''}
-              onChange={setField('maxMembers')}
-              onBlur={onBlur('maxMembers')}
-              disabled={disabled}
-              className={`w-full border rounded-md px-3 py-2 ${
-                err('maxMembers') ? 'border-red-400' : 'border-gray-300'
-              }`}
-            />
-            {err('maxMembers') && <p className="mt-1 text-xs text-red-500">{errors.maxMembers}</p>}
+            <label className="block text-sm font-medium mb-2">모집 인원</label>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setLimitMembers(true);
+                  setValues((v) => ({
+                    ...v,
+                    maxMembers:
+                      v.maxMembers && v.maxMembers >= 2
+                        ? Math.min(30, Math.floor(v.maxMembers))
+                        : 2,
+                  }));
+                }}
+                onBlur={onBlur('limitMembers')}
+                className={`px-1 py-1 w-20 text-sm rounded-md border ${
+                  limitMembers
+                    ? 'bg-[#1B3043] text-white border-black'
+                    : 'bg-white text-black border-slate-300'
+                }`}
+                disabled={disabled}
+              >
+                인원수 제한
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setLimitMembers(false);
+                  setValues((v) => ({ ...v, maxMembers: undefined }));
+                }}
+                onBlur={onBlur('limitMembers')}
+                className={`px-1 py-1 w-20 text-sm rounded-md border ${
+                  !limitMembers
+                    ? 'bg-[#1B3043] text-white border-black'
+                    : 'bg-white text-black border-slate-300'
+                }`}
+                disabled={disabled}
+              >
+                무제한
+              </button>
+            </div>
+
+            {limitMembers && (
+              <div className="mt-3">
+                <input
+                  type="number"
+                  min={2}
+                  max={30}
+                  step={1}
+                  name="maxMembers"
+                  value={values.maxMembers ?? ''}
+                  onChange={setField('maxMembers')}
+                  onBlur={onBlur('maxMembers')}
+                  disabled={disabled}
+                  className={`w-full border rounded-md px-3 py-2 ${
+                    err('maxMembers') && errors.maxMembers ? 'border-red-400' : 'border-gray-300'
+                  }`}
+                  placeholder="최대 30명"
+                />
+                {err('maxMembers') && errors.maxMembers && (
+                  <p className="mt-1 text-xs text-red-500">{errors.maxMembers}</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
+      {isFree && (
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            이미지 업로드 (PNG/JPG · 최대 10장 · 총 10MB 이하)
+          </label>
+          <div
+            {...getFreeRootProps()}
+            className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${isFreeDrag ? 'border-black' : 'border-slate-300'}`}
+          >
+            <input {...getFreeInputProps()} />
+            <p className="text-sm">
+              이곳에 이미지를 드래그하거나 <span className="underline">클릭해서 선택</span>하세요.
+            </p>
+          </div>
 
+          {(values.freeImages?.length ?? 0) > 0 && (
+            <>
+              <div className="mt-3 flex items-center justify-between text-sm">
+                <span>
+                  총 {values.freeImages!.length}장 · {bytesToMB(freeTotalSize)} MB
+                </span>
+                <button
+                  type="button"
+                  className="px-3 py-1 rounded-md border text-sm"
+                  onClick={() => setValues((v) => ({ ...v, freeImages: [] }))}
+                  disabled={disabled}
+                >
+                  모두 제거
+                </button>
+              </div>
+
+              <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {values.freeImages!.map((f, idx) => (
+                  <div key={`${f.name}-${f.size}-${idx}`} className="relative">
+                    <img
+                      src={URL.createObjectURL(f)}
+                      alt={f.name}
+                      className="w-full h-28 object-cover rounded border"
+                    />
+                    <button
+                      type="button"
+                      className="absolute top-1 right-1 px-2 py-0.5 text-xs bg-white/90 border rounded"
+                      onClick={() =>
+                        setValues((v) => ({
+                          ...v,
+                          freeImages: (v.freeImages ?? []).filter((_, i) => i !== idx),
+                        }))
+                      }
+                      disabled={disabled}
+                    >
+                      제거
+                    </button>
+                    <div className="mt-1 text-[11px] text-slate-600 truncate">{f.name}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {err('freeLimit') && errors.freeLimit && (
+            <p className="mt-2 text-xs text-red-500">{errors.freeLimit}</p>
+          )}
+        </div>
+      )}
+      {isShare && (
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            파일 업로드 (PNG/JPG/PDF/DOCX · 최대 10개 · 총 10MB 이하)
+          </label>
+          <div
+            {...getShareRootProps()}
+            className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${isShareDrag ? 'border-black' : 'border-slate-300'}`}
+          >
+            <input {...getShareInputProps()} />
+            <p className="text-sm">
+              이곳에 파일을 드래그하거나 <span className="underline">클릭해서 선택</span>하세요.
+            </p>
+          </div>
+
+          {(values.shareFiles?.length ?? 0) > 0 && (
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span>
+                  총 {values.shareFiles!.length}개 · {bytesToMB(shareTotalSize)} MB
+                </span>
+                <button
+                  type="button"
+                  className="px-3 py-1 rounded-md border text-sm"
+                  onClick={() => setValues((v) => ({ ...v, shareFiles: [] }))}
+                  disabled={disabled}
+                >
+                  모두 제거
+                </button>
+              </div>
+
+              <ul className="space-y-2">
+                {values.shareFiles!.map((f, idx) => {
+                  const isImg = f.type.startsWith('image/');
+                  return (
+                    <li
+                      key={`${f.name}-${f.size}-${idx}`}
+                      className="flex items-center gap-3 border rounded-md p-2"
+                    >
+                      {isImg ? (
+                        <img
+                          src={URL.createObjectURL(f)}
+                          alt={f.name}
+                          className="w-14 h-14 object-cover rounded border"
+                        />
+                      ) : (
+                        <div className="w-14 h-14 rounded border flex items-center justify-center text-xs">
+                          {f.type.includes('pdf') ? 'PDF' : 'DOCX'}
+                        </div>
+                      )}
+                      <div className="text-sm min-w-0 flex-1">
+                        <div className="font-medium truncate">{f.name}</div>
+                        <div className="text-slate-500">{bytesToMB(f.size)} MB</div>
+                      </div>
+                      <button
+                        type="button"
+                        className="px-3 py-1 rounded-md border text-sm"
+                        onClick={() =>
+                          setValues((v) => ({
+                            ...v,
+                            shareFiles: (v.shareFiles ?? []).filter((_, i) => i !== idx),
+                          }))
+                        }
+                        disabled={disabled}
+                      >
+                        제거
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
+          {err('shareLimit') && errors.shareLimit && (
+            <p className="mt-2 text-xs text-red-500">{errors.shareLimit}</p>
+          )}
+        </div>
+      )}
+
+      <div>
+        <textarea
+          name="content"
+          value={values.content}
+          onChange={setField('content')}
+          onBlur={onBlur('content')}
+          placeholder="내용을 입력하세요"
+          disabled={disabled}
+          className={`w-full border border-gray-300 rounded-md px-3 py-2 min-h-[400px] ${
+            err('content') ? 'border-red-400' : 'border-gray-300'
+          }`}
+        />
+        {err('content') && <p className="text-red-500 text-sm">{errors.content}</p>}
+      </div>
       <div className="flex justify-end gap-2">
         <button
           type="submit"

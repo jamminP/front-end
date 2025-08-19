@@ -1,11 +1,11 @@
 import { CursorPage } from '../api/community';
 import type {
-  FreePostResponseDTO,
-  FreePostUpdateRequestDTO,
-  SharePostResponseDTO,
-  SharePostUpdateRequestDTO,
-  StudyPostResponseDTO,
-  StudyPostUpdateRequestDTO,
+  FreePostResponse,
+  FreePostUpdateRequest,
+  SharePostResponse,
+  SharePostUpdateRequest,
+  StudyPostResponse,
+  StudyPostUpdateRequest,
 } from '../api/types';
 import { Post } from '../components/Postcard';
 
@@ -21,7 +21,7 @@ export type CommentTreeItem = {
 
 const iso = (s: string) => new Date(s).toISOString();
 
-export const dummyFree: FreePostResponseDTO[] = [
+export const dummyFree: FreePostResponse[] = [
   {
     id: 101,
     title: '오늘 날씨가 좋아요',
@@ -46,7 +46,7 @@ export const dummyFree: FreePostResponseDTO[] = [
   },
 ];
 
-export const dummyShare: SharePostResponseDTO[] = [
+export const dummyShare: SharePostResponse[] = [
   {
     id: 201,
     title: 'React 자료 모음.zip 공유합니다',
@@ -71,7 +71,7 @@ export const dummyShare: SharePostResponseDTO[] = [
   },
 ];
 
-export const dummyStudy: StudyPostResponseDTO[] = [
+export const dummyStudy: StudyPostResponse[] = [
   {
     id: 301,
     title: 'React 스터디 주말 모집합니다',
@@ -86,8 +86,8 @@ export const dummyStudy: StudyPostResponseDTO[] = [
       study_end: iso('2025-09-11T23:59:59'),
       max_member: 6,
     },
-    created_at: iso('2025-08-08T08:00:00'),
-    updated_at: iso('2025-08-08T08:00:00'),
+    created_at: iso('2025-08-04T08:00:00'),
+    updated_at: iso('2025-08-04T08:00:00'),
   },
 ];
 
@@ -176,11 +176,11 @@ export const mockListComments = async (postId: number): Promise<CommentTreeItem[
   return dummyComments[postId] ? [...dummyComments[postId]] : [];
 };
 
-export const mockPatchFree = async (id: number, body: FreePostUpdateRequestDTO) => {
+export const mockPatchFree = async (id: number, body: FreePostUpdateRequest) => {
   const idx = dummyFree.findIndex((x) => x.id === id);
   if (idx < 0) throw new Error('not found');
   const prev = dummyFree[idx];
-  const next: FreePostResponseDTO = {
+  const next: FreePostResponse = {
     ...prev,
     title: body.title ?? prev.title,
     content: body.content ?? prev.content,
@@ -190,11 +190,11 @@ export const mockPatchFree = async (id: number, body: FreePostUpdateRequestDTO) 
   return structuredClone(next);
 };
 
-export const mockPatchShare = async (id: number, body: SharePostUpdateRequestDTO) => {
+export const mockPatchShare = async (id: number, body: SharePostUpdateRequest) => {
   const idx = dummyShare.findIndex((x) => x.id === id);
   if (idx < 0) throw new Error('not found');
   const prev = dummyShare[idx];
-  const next: SharePostResponseDTO = {
+  const next: SharePostResponse = {
     ...prev,
     title: body.title ?? prev.title,
     content: body.content ?? prev.content,
@@ -205,11 +205,11 @@ export const mockPatchShare = async (id: number, body: SharePostUpdateRequestDTO
   return structuredClone(next);
 };
 
-export const mockPatchStudy = async (id: number, body: StudyPostUpdateRequestDTO) => {
+export const mockPatchStudy = async (id: number, body: StudyPostUpdateRequest) => {
   const idx = dummyStudy.findIndex((x) => x.id === id);
   if (idx < 0) throw new Error('not found');
   const prev = dummyStudy[idx];
-  const next: StudyPostResponseDTO = {
+  const next: StudyPostResponse = {
     ...prev,
     title: body.title ?? prev.title,
     content: body.content ?? prev.content,
@@ -251,6 +251,15 @@ export const mockCreateComment = async (
   const list = (dummyComments[postId] = dummyComments[postId] ?? []);
   const nextId = Math.max(0, ...list.map((c) => c.id)) + 1;
   const now = new Date().toISOString();
+
+  if (parentId != null) {
+    const parent = list.find((c) => c.id === parentId);
+    if (!parent) throw new Error('parent not found');
+    if (parent.parent_id !== null) {
+      throw new Error('Replies are allowed only one level deep.');
+    }
+  }
+
   const item: CommentTreeItem = {
     id: nextId,
     post_id: postId,
@@ -263,6 +272,34 @@ export const mockCreateComment = async (
   list.push(item);
   return item;
 };
+
+// 검색동작 확인
+export function mockSearchAllCursor(
+  q: string,
+  scope: 'title' | 'content' | 'title+content',
+  cursor: number | null | undefined,
+  size = 20,
+) {
+  const text = q.trim().toLowerCase();
+  const all = [
+    ...dummyFree.map((x) => ({ ...x, category: 'free' as const })),
+    ...dummyShare.map((x) => ({ ...x, category: 'share' as const })),
+    ...dummyStudy.map((x) => ({ ...x, category: 'study' as const })),
+  ].filter((p: any) => {
+    if (!text) return false;
+    const t = (p.title ?? '').toLowerCase();
+    const c = (p.content ?? '').toLowerCase();
+    if (scope === 'title') return t.includes(text);
+    if (scope === 'content') return c.includes(text);
+    return t.includes(text) || c.includes(text);
+  });
+  all.sort(
+    (a: any, b: any) =>
+      new Date(b.created_at ?? b.createdAt).valueOf() -
+      new Date(a.created_at ?? a.createdAt).valueOf(),
+  );
+  return Promise.resolve(makeCursorPage(all, cursor, size));
+}
 
 export const dummyPosts: Post[] = [
   {

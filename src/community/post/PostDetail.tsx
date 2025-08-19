@@ -212,7 +212,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import { mockGetFree, mockGetShare, mockGetStudy, mockListComments } from '../__mock__/dummyPost';
-import type { FreePostResponseDTO, SharePostResponseDTO, StudyPostResponseDTO } from '../api/types';
+import type { FreePostResponse, SharePostResponse, StudyPostResponse } from '../api/types';
 
 import CommentList from './components/CommentList';
 import CommentForm from './components/CommentForm';
@@ -266,7 +266,7 @@ export default function PostDetailMock() {
     if (!dto || !category) return null;
 
     if (category === 'free') {
-      const d = dto as FreePostResponseDTO;
+      const d = dto as FreePostResponse;
       return {
         id: d.id,
         title: d.title,
@@ -280,7 +280,7 @@ export default function PostDetailMock() {
       };
     }
     if (category === 'share') {
-      const d = dto as SharePostResponseDTO;
+      const d = dto as SharePostResponse;
       return {
         id: d.id,
         title: d.title,
@@ -293,7 +293,7 @@ export default function PostDetailMock() {
         fileUrl: d.data_share?.file_url ?? null,
       };
     }
-    const d = dto as StudyPostResponseDTO;
+    const d = dto as StudyPostResponse;
     return {
       id: d.id,
       title: d.title,
@@ -318,7 +318,7 @@ export default function PostDetailMock() {
   const canEdit = vm.authorId === currentUserId;
 
   return (
-    <div className="max-w-[900px] mx-auto p-4">
+    <div className="max-w-[1000px]  mx-auto">
       <div className="bg-gray-100 rounded-2xl shadow px-6 py-5">
         <div className="flex items-start justify-between">
           <div>
@@ -350,7 +350,7 @@ export default function PostDetailMock() {
         <h1 className="text-2xl font-bold mt-3">{vm.title}</h1>
 
         {vm.category === 'study' && (
-          <div className="mt-2 text-sm text-gray-700 space-y-1">
+          <div className=" text-sm text-gray-700 space-y-1">
             <div>
               모집기간: {vm.recruitStart} ~ {vm.recruitEnd}
             </div>
@@ -378,7 +378,7 @@ export default function PostDetailMock() {
           </div>
         )}
 
-        <div className="mt-4 whitespace-pre-wrap leading-7 text-gray-800">{vm.content}</div>
+        <div className="mt-5 whitespace-pre-wrap leading-7 text-gray-800">{vm.content}</div>
       </div>
 
       <section className="mt-6">
