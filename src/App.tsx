@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
 import CommunityLayout from './community/CommunityLayout';
 import Header from './header/Header';
@@ -21,14 +21,17 @@ import PostDetailMock from './community/post/PostDetail';
 import { useEffect } from 'react';
 import useAuthStore from './store/authStore';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 function AppContent() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
   const logout = useAuthStore((state) => state.logout);
-  const location = useLocation();
 
   const checkLogin = async () => {
     try {
+      const token = Cookies.get('access_token');
+      if (!token) return;
+
       const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
         withCredentials: true,
       });
@@ -40,7 +43,7 @@ function AppContent() {
 
   useEffect(() => {
     checkLogin();
-  }, [location.pathname]);
+  }, []);
 
   return (
     <>
