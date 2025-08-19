@@ -1,8 +1,8 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import PostForm, { PostFormValues } from './PostForm';
 import { useCreateFree, useCreateShare, useCreateStudy } from '../hook/useCommunityPosts';
-import { FreePostRequestDTO, SharePostRequestDTO, StudyPostRequestDTO } from '../api/types';
+import { StudyPostRequest } from '../api/types';
 
 const toISODate = (d?: string) => (d ? new Date(`${d}T00:00:00`).toISOString() : '');
 
@@ -11,17 +11,14 @@ type Cat = 'free' | 'share' | 'study';
 export default function CreatePost() {
   const navigate = useNavigate();
   const [sp] = useSearchParams();
-
   const initialCategory = (sp.get('category') as Cat) ?? 'free';
-
-  const [shareFileUrl, setShareFileUrl] = useState<string>('');
-  const [shareImgUrl, setshareImgUrl] = useState<string>('');
 
   const currentUserId = 1001;
 
   const freeMut = useCreateFree();
   const shareMut = useCreateShare();
   const studyMut = useCreateStudy();
+
   const isPending = freeMut.isPending || shareMut.isPending || studyMut.isPending;
 
   const errorMsg =
@@ -39,31 +36,41 @@ export default function CreatePost() {
     async (v: PostFormValues) => {
       try {
         if (v.category === 'free') {
-          const body: FreePostRequestDTO = {
-            title: v.title,
-            content: v.content,
-            user_id: currentUserId,
-          };
-          const res = await freeMut.mutateAsync(body);
-          navigate(`/community/free/${res.id}`);
+          const fd = new FormData();
+          fd.append('title', v.title);
+          fd.append('content', v.content);
+          fd.append('user_id', String(currentUserId));
+          fd.append('category', 'free');
+
+          (v.freeImages ?? []).forEach((img) => {
+            fd.append('images', img, img.name);
+          });
+
+          const res = await freeMut.mutateAsync(fd);
+          const id = (res as any).id ?? (res as any).post_id;
+          navigate(`/community/free/${id}`);
           return;
         }
 
         if (v.category === 'share') {
-          const body: SharePostRequestDTO = {
-            title: v.title,
-            content: v.content,
-            user_id: currentUserId,
-            file_url: shareFileUrl || null,
-            img_url: shareImgUrl || null,
-          };
-          const res = await shareMut.mutateAsync(body);
-          navigate(`/community/share/${res.id}`);
+          const fd = new FormData();
+          fd.append('title', v.title);
+          fd.append('content', v.content);
+          fd.append('user_id', String(currentUserId));
+          fd.append('category', 'share');
+
+          (v.shareFiles ?? []).forEach((f) => {
+            fd.append('files', f, f.name);
+          });
+
+          const res = await shareMut.mutateAsync(fd);
+          const id = (res as any).id ?? (res as any).post_id;
+          navigate(`/community/share/${id}`);
           return;
         }
 
         if (v.category === 'study') {
-          const body: StudyPostRequestDTO = {
+          const body: StudyPostRequest = {
             title: v.title,
             content: v.content,
             user_id: currentUserId,
@@ -74,42 +81,26 @@ export default function CreatePost() {
             max_member: Number(v.maxMembers ?? 0),
           };
           const res = await studyMut.mutateAsync(body);
-          navigate(`/community/study/${res.id}`);
+          const id = (res as any).id ?? (res as any).post_id;
+          navigate(`/community/study/${id}`);
           return;
         }
       } catch (e) {
         console.error(e);
       }
     },
-    [currentUserId, freeMut, shareMut, studyMut, navigate, shareFileUrl],
+    [currentUserId, freeMut, shareMut, studyMut, navigate],
   );
 
   return (
     <div className="p-6 max-w-[720px] mx-auto space-y-4">
       <PostForm
         initialValues={initialValues}
-        submitLabel="저장"
+        submitLabel={isPending ? '등록 중...' : '등록'}
         disabled={isPending}
         onSubmit={handleSubmit}
       />
-
-      {(initialValues.category ?? 'free') === 'share' && (
-        <div className="space-y-2 border-t pt-4 mt-2">
-          <label className="block text-sm">첨부 파일 URL (옵션)</label>
-          <input
-            className="w-full border rounded-lg px-3 py-2"
-            placeholder="https://..."
-            value={shareFileUrl}
-            onChange={(e) => setShareFileUrl(e.target.value)}
-            disabled={isPending}
-          />
-          {errorMsg && <div className="text-red-600 text-sm">저장 실패: {errorMsg}</div>}
-        </div>
-      )}
-
-      {(initialValues.category ?? 'free') !== 'share' && errorMsg && (
-        <div className="text-red-600 text-sm">저장 실패: {errorMsg}</div>
-      )}
+      {errorMsg && <div className="text-red-600 text-sm">저장 실패: {errorMsg}</div>}
     </div>
   );
 }

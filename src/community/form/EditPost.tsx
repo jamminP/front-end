@@ -13,12 +13,12 @@
 // } from '../api/community';
 
 // import type {
-//   FreePostResponseDTO,
-//   SharePostResponseDTO,
-//   StudyPostResponseDTO,
-//   FreePostUpdateRequestDTO,
-//   SharePostUpdateRequestDTO,
-//   StudyPostUpdateRequestDTO,
+//   FreePostResponse,
+//   SharePostResponse,
+//   StudyPostResponse,
+//   FreePostUpdateRequest,
+//   SharePostUpdateRequest,
+//   StudyPostUpdateRequest,
 // } from '../api/types';
 
 // type Cat = 'free' | 'share' | 'study';
@@ -46,9 +46,9 @@
 //   type QK = readonly ['post', Cat, number];
 
 //   const q = useQuery<
-//     FreePostResponseDTO | SharePostResponseDTO | StudyPostResponseDTO,
+//     FreePostResponse | SharePostResponse | StudyPostResponse,
 //     Error,
-//     FreePostResponseDTO | SharePostResponseDTO | StudyPostResponseDTO,
+//     FreePostResponse | SharePostResponse | StudyPostResponse,
 //     QK
 //   >({
 //     queryKey: ['post', cat, postId] as const,
@@ -66,7 +66,7 @@
 //     if (!data) return undefined;
 
 //     if (cat === 'free') {
-//       const d = data as FreePostResponseDTO;
+//       const d = data as FreePostResponse;
 //       return {
 //         category: 'free',
 //         title: d.title,
@@ -74,7 +74,7 @@
 //       };
 //     }
 //     if (cat === 'share') {
-//       const d = data as SharePostResponseDTO;
+//       const d = data as SharePostResponse;
 //       return {
 //         category: 'share',
 //         title: d.title,
@@ -82,7 +82,7 @@
 //       };
 //     }
 
-//     const d = data as StudyPostResponseDTO;
+//     const d = data as StudyPostResponse;
 //     return {
 //       category: 'study',
 //       title: d.title,
@@ -101,10 +101,10 @@
 //   useMemo(() => {
 //     if (!q.data) return;
 //     if (cat === 'share') {
-//       const d = q.data as SharePostResponseDTO;
+//       const d = q.data as SharePostResponse;
 //       setShareFileUrl(d.data_share?.file_url ?? '');
 //     } else if (cat === 'free') {
-//       const d = q.data as FreePostResponseDTO;
+//       const d = q.data as FreePostResponse;
 //       setFreeImageUrl(d.free_board?.image_url ?? '');
 //     }
 //   }, [q.data, cat]);
@@ -112,21 +112,21 @@
 //   const mut = useMutation({
 //     mutationFn: async (v: PostFormValues) => {
 //       if (cat === 'free') {
-//         const body: FreePostUpdateRequestDTO = {
+//         const body: FreePostUpdateRequest = {
 //           title: v.title,
 //           content: v.content,
 //         };
 //         return await patchFreePost(postId, body, currentUserId);
 //       }
 //       if (cat === 'share') {
-//         const body: SharePostUpdateRequestDTO = {
+//         const body: SharePostUpdateRequest = {
 //           title: v.title,
 //           content: v.content,
 //           file_url: shareFileUrl || null,
 //         };
 //         return await patchSharePost(postId, body, currentUserId);
 //       }
-//       const body: StudyPostUpdateRequestDTO = {
+//       const body: StudyPostUpdateRequest = {
 //         title: v.title,
 //         content: v.content,
 //         recruit_start: toISODate(v.recruitStart),
@@ -224,12 +224,12 @@ import {
   mockPatchStudy,
 } from '../__mock__/dummyPost';
 import type {
-  FreePostResponseDTO,
-  SharePostResponseDTO,
-  StudyPostResponseDTO,
-  FreePostUpdateRequestDTO,
-  SharePostUpdateRequestDTO,
-  StudyPostUpdateRequestDTO,
+  FreePostResponse,
+  SharePostResponse,
+  StudyPostResponse,
+  FreePostUpdateRequest,
+  SharePostUpdateRequest,
+  StudyPostUpdateRequest,
 } from '../api/types';
 
 type Cat = 'free' | 'share' | 'study';
@@ -245,12 +245,11 @@ export default function EditPostMock() {
   const postId = Number(idParam ?? sp.get('id') ?? NaN);
   const currentUserId = 1001;
 
-  // 원본 조회
   type QK = readonly ['post', 'mock', Cat, number];
   const q = useQuery<
-    FreePostResponseDTO | SharePostResponseDTO | StudyPostResponseDTO,
+    FreePostResponse | SharePostResponse | StudyPostResponse,
     Error,
-    FreePostResponseDTO | SharePostResponseDTO | StudyPostResponseDTO,
+    FreePostResponse | SharePostResponse | StudyPostResponse,
     QK
   >({
     queryKey: ['post', 'mock', cat, postId] as const,
@@ -269,14 +268,14 @@ export default function EditPostMock() {
     if (!data) return undefined;
 
     if (cat === 'free') {
-      const d = data as FreePostResponseDTO;
+      const d = data as FreePostResponse;
       return { category: 'free', title: d.title, content: d.content };
     }
     if (cat === 'share') {
-      const d = data as SharePostResponseDTO;
+      const d = data as SharePostResponse;
       return { category: 'share', title: d.title, content: d.content };
     }
-    const d = data as StudyPostResponseDTO;
+    const d = data as StudyPostResponse;
     return {
       category: 'study',
       title: d.title,
@@ -289,17 +288,16 @@ export default function EditPostMock() {
     };
   }, [q.data, cat]);
 
-  // 카테고리별 보조 필드 state
   const [shareFileUrl, setShareFileUrl] = useState<string>('');
   const [freeImageUrl, setFreeImageUrl] = useState<string>('');
 
   useMemo(() => {
     if (!q.data) return;
     if (cat === 'share') {
-      const d = q.data as SharePostResponseDTO;
+      const d = q.data as SharePostResponse;
       setShareFileUrl(d.data_share?.file_url ?? '');
     } else if (cat === 'free') {
-      const d = q.data as FreePostResponseDTO;
+      const d = q.data as FreePostResponse;
       setFreeImageUrl(d.free_board?.image_url ?? '');
     }
   }, [q.data, cat]);
@@ -307,21 +305,21 @@ export default function EditPostMock() {
   const mut = useMutation({
     mutationFn: async (v: PostFormValues) => {
       if (cat === 'free') {
-        const body: FreePostUpdateRequestDTO = {
+        const body: FreePostUpdateRequest = {
           title: v.title,
           content: v.content,
         };
         return await mockPatchFree(postId, body);
       }
       if (cat === 'share') {
-        const body: SharePostUpdateRequestDTO = {
+        const body: SharePostUpdateRequest = {
           title: v.title,
           content: v.content,
           file_url: shareFileUrl || null,
         };
         return await mockPatchShare(postId, body);
       }
-      const body: StudyPostUpdateRequestDTO = {
+      const body: StudyPostUpdateRequest = {
         title: v.title,
         content: v.content,
         recruit_start: toISODate(v.recruitStart),
@@ -333,7 +331,6 @@ export default function EditPostMock() {
       return await mockPatchStudy(postId, body);
     },
     onSuccess: () => {
-      // 상세/목록 캐시 무효화 (mock 키 사용)
       qc.invalidateQueries({ queryKey: ['post', 'mock', cat, postId] });
       qc.invalidateQueries({ queryKey: ['mock', cat, 'cursor'] });
       navigate(`/community/${cat}/${postId}`);

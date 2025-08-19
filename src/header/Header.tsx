@@ -1,18 +1,29 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import bellIcon from '../header/img/bell.png';
 import { useState } from 'react';
 import useAuthStore from '@src/store/authStore';
+import axios from 'axios';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const logout = useAuthStore((state) => state.logout);
 
-  const handleLogout = () => {
-    logout();
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    setIsOpen(false);
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        'https://backend.evida.site/api/v1/users/auth/google/logout',
+        {},
+        { withCredentials: true },
+      );
+    } catch (err) {
+      // 오류가 나도 무시하고 로그아웃 처리
+      console.warn('Logout request failed, but front will log out anyway', err);
+    } finally {
+      logout(); // Zustand 상태 초기화
+      navigate('/'); // 메인 페이지로 이동
+    }
   };
 
   return (
