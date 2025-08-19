@@ -3,7 +3,7 @@ import { useUnifiedAiFeed } from '../hook/useUnifiedAiFeed';
 
 export default function ChatList({ collapsed }: { collapsed: boolean }) {
   if (collapsed) return null;
-  const userId = 17;
+  const userId = 23;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } =
     useUnifiedAiFeed(userId);
