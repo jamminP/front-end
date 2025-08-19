@@ -30,7 +30,7 @@ export default function BenefitLanding() {
           <img
             src={BenefitRendingImg}
             alt="BenefitRending Image"
-            className="w-full border-none rounded-2xl md:max-w-[30rem] h-auto mx-auto object-contain"
+            className="w-full border-none rounded-2xl md:max-w-[34rem] h-auto mx-auto object-contain"
           />
         </div>
       </div>

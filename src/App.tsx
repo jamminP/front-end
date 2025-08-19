@@ -10,13 +10,11 @@ import Login from './login/Login';
 import MyCalendar from './mypage/components/Calendar';
 import LandingPage from '@landing/LandingPage';
 import CommunityAll from './community/category/CommunityAll';
-import Footer from './footer/Footer';
 import CreatePost from './community/form/CreatePost';
 import CommunityFree from './community/category/CommunityFree';
 import CommunityShare from './community/category/CommunityShare';
 import AiPage from './ai/AiPage';
 import EditPost from './community/form/EditPost';
-import PostDetail from './community/post/components/CommentItem';
 import CommunityStudy from './community/category/CommunityStudy';
 import PostDetailMock from './community/post/PostDetail';
 import { useCallback, useEffect, useState } from 'react';
@@ -77,7 +75,7 @@ function AppContent() {
           <Route path="/ai" element={<AiPage />} />
         </Routes>
       </main>
-      <Footer />
+    </BrowserRouter>
     </>
   );
 }
