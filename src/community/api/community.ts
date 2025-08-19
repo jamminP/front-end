@@ -27,7 +27,7 @@ export type CommentTreeItem = {
 
 export async function listComments(postId: number): Promise<CommentTreeItem[]> {
   try {
-    return await http<CommentTreeItem[]>(`/api/community/post/${postId}/comments`);
+    return await http<CommentTreeItem[]>(`/api/v1/community/post/${postId}/comments`);
   } catch (e: any) {
     if (String(e?.message || '').startsWith('404')) return [];
     throw e;
@@ -65,14 +65,14 @@ function qs(params: Record<string, unknown>) {
 function pathForCursor(category: Category) {
   switch (category) {
     case 'free':
-      return '/api/community/post/free/list-cursor';
+      return '/api/v1/community/post/free/list-cursor';
     case 'share':
-      return '/api/community/post/share/list-cursor';
+      return '/api/v1/community/post/share/list-cursor';
     case 'study':
-      return '/api/community/post/study/list-cursor';
+      return '/api/v1/community/post/study/list-cursor';
     case 'all':
     default:
-      return '/api/community/post/all/list-cursor';
+      return '/api/v1/community/post/all/list-cursor';
   }
 }
 
@@ -97,61 +97,61 @@ export const getAllListCursor = (cursor: number | null | undefined, q?: string) 
 export type AnyPostResponse = FreePostResponse | SharePostResponse | StudyPostResponse;
 
 export const createFreePost = (body: FreePostRequest) =>
-  http<FreePostResponse>('/api/community/post/free', {
+  http<FreePostResponse>('/api/v1/community/post/free', {
     method: 'POST',
     body: JSON.stringify(body),
   });
 
 export const getFreePost = (postId: number) =>
-  http<FreePostResponse>(`/api/community/post/free/${postId}`);
+  http<FreePostResponse>(`/api/v1/community/post/free/${postId}`);
 
 export const patchFreePost = (postId: number, body: FreePostUpdateRequest, userId?: number) =>
-  http<FreePostResponse>(`/api/community/post/free/${postId}`, {
+  http<FreePostResponse>(`/api/v1/community/post/free/${postId}`, {
     method: 'PATCH',
     headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
     body: JSON.stringify(body),
   });
 
 export const createSharePost = (body: SharePostRequest) =>
-  http<SharePostResponse>('/api/community/post/share', {
+  http<SharePostResponse>('/api/v1/community/post/share', {
     method: 'POST',
     body: JSON.stringify(body),
   });
 
 export const getSharePost = (postId: number) =>
-  http<SharePostResponse>(`/api/community/post/share/${postId}`);
+  http<SharePostResponse>(`/api/v1/community/post/share/${postId}`);
 
 export const patchSharePost = (postId: number, body: SharePostUpdateRequest, userId?: number) =>
-  http<SharePostResponse>(`/api/community/post/share/${postId}`, {
+  http<SharePostResponse>(`/api/v1/community/post/share/${postId}`, {
     method: 'PATCH',
     headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
     body: JSON.stringify(body),
   });
 
 export const createStudyPost = (body: StudyPostRequest) =>
-  http<StudyPostResponse>('/api/community/post/study', {
+  http<StudyPostResponse>('/api/v1/community/post/study', {
     method: 'POST',
     body: JSON.stringify(body),
   });
 
 export const getStudyPost = (postId: number) =>
-  http<StudyPostResponse>(`/api/community/post/study/${postId}`);
+  http<StudyPostResponse>(`/api/v1/community/post/study/${postId}`);
 
 export const patchStudyPost = (postId: number, body: StudyPostUpdateRequest, userId?: number) =>
-  http<StudyPostResponse>(`/api/community/post/study/${postId}`, {
+  http<StudyPostResponse>(`/api/v1/community/post/study/${postId}`, {
     method: 'PATCH',
     headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
     body: JSON.stringify(body),
   });
 
 export const joinStudyPost = (postId: number, userId: number) =>
-  http<void>(`/api/community/post/study/${postId}/join`, {
+  http<void>(`/api/v1/community/post/study/${postId}/join`, {
     method: 'POST',
     body: JSON.stringify({ user_id: userId }),
   });
 
 export const createComment = (postId: number, content: string, userId: number, parentId?: number) =>
-  http<CommentResponse>(`/api/community/post/${postId}/comment`, {
+  http<CommentResponse>(`/api/v1/community/post/${postId}/comment`, {
     method: 'POST',
     body: JSON.stringify({
       post_id: postId,
@@ -162,27 +162,27 @@ export const createComment = (postId: number, content: string, userId: number, p
   });
 
 export const readLikeCount = (postId: number) =>
-  http<{ count: number }>(`/api/community/post/${postId}/likes`);
+  http<{ count: number }>(`/api/v1/community/post/${postId}/likes`);
 
 export const toggleLike = (postId: number, userId?: number) =>
-  http<void>(`/api/community/post/${postId}/like`, {
+  http<void>(`/api/v1/community/post/${postId}/like`, {
     method: 'POST',
     headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
   });
 
 export const likeStatus = (postId: number, userId?: number) =>
-  http<{ liked: boolean }>(`/api/community/post/${postId}/like/status`, {
+  http<{ liked: boolean }>(`/api/v1/community/post/${postId}/like/status`, {
     headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
   });
 
 export const deletePost = (postId: number, userId?: number) =>
-  http<void>(`/api/community/post/${postId}`, {
+  http<void>(`/api/v1/community/post/${postId}`, {
     method: 'DELETE',
     headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
   });
 
 //search
-const SEARCH_ENDPOINT = '/api/community/post/search';
+const SEARCH_ENDPOINT = '/api/v1/community/post/search';
 
 export interface SearchCursorParams {
   q: string;

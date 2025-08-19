@@ -33,16 +33,16 @@ export default function CommunityFree() {
 
   return (
     <div className="space-y-3">
-      {items.map((f) => {
+      {items.map((it) => {
         const post: Post = {
-          postId: f.id,
-          title: f.title,
-          author: `user#${f.author_id}`,
-          authorId: f.author_id,
+          postId: it.id,
+          title: it.title,
+          author: `user#${it.author_id}`,
+          authorId: it.author_id,
           category: 'free',
-          content: f.content,
-          createdAt: f.created_at,
-          views: f.views,
+          content: it.content,
+          createdAt: it.created_at,
+          views: it.views,
           likes: 0,
           comments: 0,
         };

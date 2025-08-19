@@ -245,7 +245,6 @@ export default function EditPostMock() {
   const postId = Number(idParam ?? sp.get('id') ?? NaN);
   const currentUserId = 1001;
 
-  // 원본 조회
   type QK = readonly ['post', 'mock', Cat, number];
   const q = useQuery<
     FreePostResponse | SharePostResponse | StudyPostResponse,

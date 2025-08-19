@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
 
 export type PostFormValues = {
   title: string;
@@ -9,6 +10,8 @@ export type PostFormValues = {
   studyStart?: string;
   studyEnd?: string;
   maxMembers?: number;
+  freeImages?: File[];
+  shareFiles?: File[];
 };
 
 interface PostFormProps {
@@ -22,9 +25,19 @@ const defaults: PostFormValues = {
   title: '',
   content: '',
   category: 'free',
+  freeImages: [],
+  shareFiles: [],
 };
 
-type Errors = Partial<Record<keyof PostFormValues | 'limitMembers', string>>;
+const BYTES_10MB = 10 * 1024 * 1024;
+
+type Errors = Partial<
+  Record<keyof PostFormValues | 'limitMembers' | 'shareLimit' | 'freeLimit', string>
+>;
+
+function bytesToMB(n: number) {
+  return (n / (1024 * 1024)).toFixed(2);
+}
 
 function validate(values: PostFormValues, limitMembers: boolean): Errors {
   const e: Errors = {};
@@ -54,6 +67,33 @@ function validate(values: PostFormValues, limitMembers: boolean): Errors {
       }
     }
   }
+  if (values.category === 'free') {
+    const imgs = values.freeImages ?? [];
+    if (imgs.length > 10) e.freeLimit = '이미지는 최대 10장까지 업로드할 수 있어요.';
+    const allow = new Set(['image/png', 'image/jpeg']);
+    const bad = imgs.find((f) => !allow.has(f.type));
+    if (bad) e.freeLimit = 'PNG 또는 JPG만 업로드할 수 있어요.';
+    const total = imgs.reduce((a, f) => a + f.size, 0);
+    if (total > BYTES_10MB)
+      e.freeLimit = `총 용량은 10MB 이하여야 합니다. (현재 ${bytesToMB(total)}MB)`;
+  }
+
+  if (values.category === 'share') {
+    const files = values.shareFiles ?? [];
+    if (files.length > 10) e.shareLimit = '파일은 최대 10개까지만 업로드할 수 있어요.';
+    const total = files.reduce((a, f) => a + f.size, 0);
+    if (total > BYTES_10MB)
+      e.shareLimit = `총 용량은 10MB 이하여야 합니다. (현재 ${bytesToMB(total)}MB)`;
+    const allow = new Set([
+      'image/png',
+      'image/jpeg',
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ]);
+    const bad = files.find((f) => !allow.has(f.type));
+    if (bad) e.shareLimit = '허용되지 않는 파일 형식이 있어요. (png, jpg, pdf, docx만 가능)';
+  }
+
   return e;
 }
 
@@ -73,7 +113,18 @@ export default function PostForm({
     setValues((prev) => ({ ...prev, ...initialValues }));
   }, [initialValues]);
 
+  useEffect(() => {
+    setValues((v) => {
+      if (v.category === 'free') return { ...v, shareFiles: [] };
+      if (v.category === 'share') return { ...v, freeImages: [] };
+      return v;
+    });
+  }, [values.category]);
+
   const isStudy = values.category === 'study';
+  const isFree = values.category === 'free';
+  const isShare = values.category === 'share';
+
   const errors = useMemo(
     () => validate(values, isStudy && limitMembers),
     [values, limitMembers, isStudy],
@@ -91,7 +142,7 @@ export default function PostForm({
       }));
     };
 
-  const onBlur = (name: keyof PostFormValues | 'limitMembers') => () =>
+  const onBlur = (name: keyof PostFormValues | 'limitMembers' | 'shareLimit' | 'freeLimit') => () =>
     setTouched((t) => ({ ...t, [name]: true }));
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -106,6 +157,10 @@ export default function PostForm({
       studyEnd: true,
       maxMembers: true,
       limitMembers: true,
+      freeImages: true,
+      freeLimit: true,
+      shareFiles: true,
+      shareLimit: true,
     });
     if (hasError) return;
     const payload: PostFormValues = {
@@ -113,10 +168,56 @@ export default function PostForm({
       maxMembers: isStudy && limitMembers ? values.maxMembers : undefined,
     };
 
-    onSubmit(values);
+    onSubmit(payload);
   };
 
-  const err = (k: keyof PostFormValues | 'limitMembers') => touched[k];
+  const err = (k: keyof PostFormValues | 'limitMembers' | 'shareLimit' | 'freeLimit') => touched[k];
+
+  const {
+    getRootProps: getFreeRootProps,
+    getInputProps: getFreeInputProps,
+    isDragActive: isFreeDrag,
+  } = useDropzone({
+    multiple: true,
+    accept: { 'image/*': ['.png', '.jpg', '.jpeg'] },
+    onDrop: (accepted) => {
+      setValues((v) => {
+        const next = [...(v.freeImages ?? []), ...accepted];
+        const dedup = Array.from(new Map(next.map((f) => [`${f.name}-${f.size}`, f])).values());
+        const trimmed = dedup.slice(0, 10);
+        return { ...v, freeImages: trimmed };
+      });
+      setTouched((t) => ({ ...t, freeImages: true, freeLimit: true }));
+    },
+    disabled: disabled || !isFree,
+  });
+
+  const freeTotalSize = (values.freeImages ?? []).reduce((a, f) => a + f.size, 0);
+
+  const {
+    getRootProps: getShareRootProps,
+    getInputProps: getShareInputProps,
+    isDragActive: isShareDrag,
+  } = useDropzone({
+    multiple: true,
+    accept: {
+      'image/*': ['.png', '.jpg', '.jpeg'],
+      'application/pdf': ['.pdf'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+    },
+    onDrop: (accepted) => {
+      setValues((v) => {
+        const next = [...(v.shareFiles ?? []), ...accepted];
+        const dedup = Array.from(new Map(next.map((f) => [`${f.name}-${f.size}`, f])).values());
+        const trimmed = dedup.slice(0, 10);
+        return { ...v, shareFiles: trimmed };
+      });
+      setTouched((t) => ({ ...t, shareFiles: true, shareLimit: true }));
+    },
+    disabled: disabled || !isShare,
+  });
+
+  const shareTotalSize = (values.shareFiles ?? []).reduce((a, f) => a + f.size, 0);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 mt-20 ">
@@ -277,6 +378,149 @@ export default function PostForm({
               </div>
             )}
           </div>
+        </div>
+      )}
+      {isFree && (
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            이미지 업로드 (PNG/JPG · 최대 10장 · 총 10MB 이하)
+          </label>
+          <div
+            {...getFreeRootProps()}
+            className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${isFreeDrag ? 'border-black' : 'border-slate-300'}`}
+          >
+            <input {...getFreeInputProps()} />
+            <p className="text-sm">
+              이곳에 이미지를 드래그하거나 <span className="underline">클릭해서 선택</span>하세요.
+            </p>
+          </div>
+
+          {(values.freeImages?.length ?? 0) > 0 && (
+            <>
+              <div className="mt-3 flex items-center justify-between text-sm">
+                <span>
+                  총 {values.freeImages!.length}장 · {bytesToMB(freeTotalSize)} MB
+                </span>
+                <button
+                  type="button"
+                  className="px-3 py-1 rounded-md border text-sm"
+                  onClick={() => setValues((v) => ({ ...v, freeImages: [] }))}
+                  disabled={disabled}
+                >
+                  모두 제거
+                </button>
+              </div>
+
+              <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {values.freeImages!.map((f, idx) => (
+                  <div key={`${f.name}-${f.size}-${idx}`} className="relative">
+                    <img
+                      src={URL.createObjectURL(f)}
+                      alt={f.name}
+                      className="w-full h-28 object-cover rounded border"
+                    />
+                    <button
+                      type="button"
+                      className="absolute top-1 right-1 px-2 py-0.5 text-xs bg-white/90 border rounded"
+                      onClick={() =>
+                        setValues((v) => ({
+                          ...v,
+                          freeImages: (v.freeImages ?? []).filter((_, i) => i !== idx),
+                        }))
+                      }
+                      disabled={disabled}
+                    >
+                      제거
+                    </button>
+                    <div className="mt-1 text-[11px] text-slate-600 truncate">{f.name}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {err('freeLimit') && errors.freeLimit && (
+            <p className="mt-2 text-xs text-red-500">{errors.freeLimit}</p>
+          )}
+        </div>
+      )}
+      {isShare && (
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            파일 업로드 (PNG/JPG/PDF/DOCX · 최대 10개 · 총 10MB 이하)
+          </label>
+          <div
+            {...getShareRootProps()}
+            className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${isShareDrag ? 'border-black' : 'border-slate-300'}`}
+          >
+            <input {...getShareInputProps()} />
+            <p className="text-sm">
+              이곳에 파일을 드래그하거나 <span className="underline">클릭해서 선택</span>하세요.
+            </p>
+          </div>
+
+          {(values.shareFiles?.length ?? 0) > 0 && (
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span>
+                  총 {values.shareFiles!.length}개 · {bytesToMB(shareTotalSize)} MB
+                </span>
+                <button
+                  type="button"
+                  className="px-3 py-1 rounded-md border text-sm"
+                  onClick={() => setValues((v) => ({ ...v, shareFiles: [] }))}
+                  disabled={disabled}
+                >
+                  모두 제거
+                </button>
+              </div>
+
+              <ul className="space-y-2">
+                {values.shareFiles!.map((f, idx) => {
+                  const isImg = f.type.startsWith('image/');
+                  return (
+                    <li
+                      key={`${f.name}-${f.size}-${idx}`}
+                      className="flex items-center gap-3 border rounded-md p-2"
+                    >
+                      {isImg ? (
+                        <img
+                          src={URL.createObjectURL(f)}
+                          alt={f.name}
+                          className="w-14 h-14 object-cover rounded border"
+                        />
+                      ) : (
+                        <div className="w-14 h-14 rounded border flex items-center justify-center text-xs">
+                          {f.type.includes('pdf') ? 'PDF' : 'DOCX'}
+                        </div>
+                      )}
+                      <div className="text-sm min-w-0 flex-1">
+                        <div className="font-medium truncate">{f.name}</div>
+                        <div className="text-slate-500">{bytesToMB(f.size)} MB</div>
+                      </div>
+                      <button
+                        type="button"
+                        className="px-3 py-1 rounded-md border text-sm"
+                        onClick={() =>
+                          setValues((v) => ({
+                            ...v,
+                            shareFiles: (v.shareFiles ?? []).filter((_, i) => i !== idx),
+                          }))
+                        }
+                        disabled={disabled}
+                      >
+                        제거
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
+          {err('shareLimit') && errors.shareLimit && (
+            <p className="mt-2 text-xs text-red-500">{errors.shareLimit}</p>
+          )}
         </div>
       )}
 
