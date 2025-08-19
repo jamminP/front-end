@@ -1,7 +1,6 @@
 import { sanitizeFilename } from '../utils/upload';
 
-const RAW_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
-const BASE = RAW_BASE.replace(/\/+$/, '');
+const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
 
 const CREATE_PREFIX = `${BASE}/api/v1/community/post`;
 
