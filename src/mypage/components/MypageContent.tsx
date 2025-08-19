@@ -50,7 +50,7 @@ export default function MypageContent() {
       if (user) {
         setAuthData({
           ...user,
-          nickname: res.data.nickname,
+          nickname: res.data.new_nickname,
         });
       }
       closeNicknameModal();
