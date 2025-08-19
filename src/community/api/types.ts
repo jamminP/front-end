@@ -1,4 +1,4 @@
-import { SrvRecord } from 'dns';
+export type Category = 'free' | 'share' | 'study' | 'all';
 
 export interface FreePostItem {
   id: number;
@@ -33,39 +33,40 @@ export interface StudyPostItem {
   studyStart?: string;
   studyEnd?: string;
   maxMembers?: number;
+  badge?: string;
 }
 
 export interface AllPostItem {
   id: number;
   title: string;
   content: string;
-  category: 'free' | 'share' | 'study';
+  category: Category;
   authorId: number;
   createdAt: string;
 }
 
-export interface FreePostRequestDTO {
+export interface FreePostRequest {
   title: string;
   content: string;
   user_id: number;
   category?: 'free';
 }
-export interface FreeBoardResponseDTO {
+export interface FreeBoardResponse {
   image_url: string | null;
 }
-export interface FreePostResponseDTO {
+export interface FreePostResponse {
   id: number;
   title: string;
   content: string;
   category: 'free';
   author_id: number;
   views: number;
-  free_board: FreeBoardResponseDTO;
+  free_board: FreeBoardResponse;
   created_at: string;
   updated_at: string;
 }
 
-export interface SharePostRequestDTO {
+export interface SharePostRequest {
   title: string;
   content: string;
   user_id: number;
@@ -73,22 +74,22 @@ export interface SharePostRequestDTO {
   img_url?: string | null;
   category?: 'share';
 }
-export interface DataShareResponseDTO {
+export interface DataShareResponse {
   file_url: string | null;
 }
-export interface SharePostResponseDTO {
+export interface SharePostResponse {
   id: number;
   title: string;
   content: string;
   category: 'share';
   author_id: number;
   views: number;
-  data_share: DataShareResponseDTO;
+  data_share: DataShareResponse;
   created_at: string;
   updated_at: string;
 }
 
-export interface StudyPostRequestDTO {
+export interface StudyPostRequest {
   title: string;
   content: string;
   user_id: number;
@@ -99,32 +100,32 @@ export interface StudyPostRequestDTO {
   study_end: string;
   max_member: number;
 }
-export interface StudyRecruitmentResponseDTO {
+export interface StudyRecruitmentResponse {
   recruit_start: string;
   recruit_end: string;
   study_start: string;
   study_end: string;
   max_member: number;
 }
-export interface StudyPostResponseDTO {
+export interface StudyPostResponse {
   id: number;
   title: string;
   content: string;
   category: 'study';
   author_id: number;
   views: number;
-  study_recruitment: StudyRecruitmentResponseDTO;
+  study_recruitment: StudyRecruitmentResponse;
   created_at: string;
   updated_at: string;
 }
 
-export type FreePostUpdateRequestDTO = Partial<Pick<FreePostRequestDTO, 'title' | 'content'>>;
-export type SharePostUpdateRequestDTO = Partial<Pick<SharePostRequestDTO, 'title' | 'content'>> & {
+export type FreePostUpdateRequest = Partial<Pick<FreePostRequest, 'title' | 'content'>>;
+export type SharePostUpdateRequest = Partial<Pick<SharePostRequest, 'title' | 'content'>> & {
   file_url?: string | null;
 };
-export type StudyPostUpdateRequestDTO = Partial<
+export type StudyPostUpdateRequest = Partial<
   Pick<
-    StudyPostRequestDTO,
+    StudyPostRequest,
     | 'title'
     | 'content'
     | 'recruit_start'
@@ -135,13 +136,13 @@ export type StudyPostUpdateRequestDTO = Partial<
   >
 >;
 
-export interface CommentRequestDTO {
+export interface CommentRequest {
   post_id: number;
   content: string;
   parent_id?: number | null;
   user_id: number;
 }
-export interface CommentResponseDTO {
+export interface CommentResponse {
   id: number;
   post_id: number;
   content: string;
@@ -151,9 +152,7 @@ export interface CommentResponseDTO {
   updated_at: string;
 }
 
-export type PostCategory = 'free' | 'share' | 'study';
-
-export type AllPostResponseDTO = FreePostResponseDTO | SharePostResponseDTO | StudyPostResponseDTO;
+export type AllPostResponse = FreePostResponse | SharePostResponse | StudyPostResponse;
 
 export interface Post {
   post_id: number;
@@ -161,24 +160,25 @@ export interface Post {
   content: string;
   author_id: number;
   author: string;
-  category: PostCategory;
+  category: Category;
   created_at: string;
   views: number;
   likes?: number;
   comments?: number;
 }
 
-export type SearchScope = 'title' | 'title_content' | 'content';
+export type SearchIn = 'title' | 'content' | 'title_content' | 'author_id';
 
-export interface SearchQuery {
-  q: string;
-  scope: SearchScope;
-  category?: 'free' | 'share' | 'study' | 'all';
+export interface ListCursorParams {
   limit?: number;
   cursor?: string | null;
+  search_in?: SearchIn;
+  keyword?: string;
+  date_from?: string;
+  date_to?: string;
 }
 
-export interface CursorListResult<T> {
+export interface ListCursorResult<T> {
   count: number;
   next_cursor: string | null;
   items: T[];
@@ -188,7 +188,7 @@ export interface SearchPostItem {
   post_id: number;
   title: string;
   content: string;
-  author_id: string;
-  category: 'free' | 'share' | 'study';
+  category: Category;
   created_at: string;
+  badge?: '모집중' | '모집완료';
 }

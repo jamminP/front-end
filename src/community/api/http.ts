@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_BASE_URL ?? '';
+export const BASE = import.meta.env.VITE_API_BASE_URL ?? '';
 
 export async function http<T>(url: string, init: RequestInit = {}): Promise<T> {
   const method = (init.method ?? 'GET').toUpperCase();
