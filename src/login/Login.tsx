@@ -3,7 +3,7 @@ import kakaoIcon from '../login/img/kakao-icon.png';
 
 export default function Login() {
   const handleGoogleLogin = () => {
-    window.location.href = 'https://www.evida.site/api/v1/users/auth/google/login';
+    window.location.href = 'https://backend.evida.site/api/v1/users/auth/google/login';
   };
   return (
     <section className="w-full h-screen max-w-[1400px] m-auto flex flex-col justify-center items-center">
