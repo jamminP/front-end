@@ -1,4 +1,4 @@
-import type { StudyPlan, SummaryItem } from './types';
+import type { StudyPlan, SummaryItem } from '../types/types';
 
 export type ChatSummary = { id: string; title: string };
 export type UnifiedItem = {

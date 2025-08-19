@@ -1,5 +1,5 @@
 import { http } from './http';
-import type { SummaryListRes } from './types';
+import type { SummaryListRes } from '../types/types';
 
 export function getSummaries(userId: number, limit = 100, offset = 0) {
   const qs = new URLSearchParams({ limit: String(limit), offset: String(offset) }).toString();
