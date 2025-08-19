@@ -55,10 +55,13 @@ function buildTree(flat: CommentTreeItem[]): TreeNode[] {
 
   flat.forEach((c) => map.set(c.id, { ...c, children: [] }));
   map.forEach((node) => {
-    if (node.parent_id && map.has(node.parent_id)) {
-      map.get(node.parent_id)!.children.push(node);
-    } else {
+    if (node.parent_id === null) {
       roots.push(node);
+    } else {
+      const parent = map.get(node.parent_id);
+      if (parent && parent.parent_id === null) {
+        parent.children.push(node);
+      }
     }
   });
 
@@ -71,7 +74,7 @@ export default function CommentListMock({ items, isLoading, postId, currentUserI
   if (isLoading) return <div className="p-4 text-sm text-gray-500">댓글 불러오는 중…</div>;
   const tree = buildTree(items);
   if (tree.length === 0)
-    return <div className="p-4 text-sm text-gray-500">첫 댓글을 남겨보세요!</div>;
+    return <div className="p-2 text-center text-sm text-gray-500">첫 댓글을 남겨보세요!</div>;
 
   return (
     <div className="space-y-3">

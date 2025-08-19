@@ -1,3 +1,49 @@
+import { SrvRecord } from 'dns';
+
+export interface FreePostItem {
+  id: number;
+  title: string;
+  content: string;
+  category: 'free';
+  authorId: number;
+  createdAt: string;
+  imageUrl?: string | null;
+}
+
+export interface SharePostItem {
+  id: number;
+  title: string;
+  content: string;
+  category: 'share';
+  authorId: number;
+  createdAt: string;
+  fileUrl?: string | null;
+  imgUrl?: string | null;
+}
+
+export interface StudyPostItem {
+  id: number;
+  title: string;
+  content: string;
+  category: 'study';
+  authorId: number;
+  createdAt: string;
+  recruitStart?: string;
+  recruitEnd?: string;
+  studyStart?: string;
+  studyEnd?: string;
+  maxMembers?: number;
+}
+
+export interface AllPostItem {
+  id: number;
+  title: string;
+  content: string;
+  category: 'free' | 'share' | 'study';
+  authorId: number;
+  createdAt: string;
+}
+
 export interface FreePostRequestDTO {
   title: string;
   content: string;
@@ -103,4 +149,46 @@ export interface CommentResponseDTO {
   parent_id: number | null;
   created_at: string;
   updated_at: string;
+}
+
+export type PostCategory = 'free' | 'share' | 'study';
+
+export type AllPostResponseDTO = FreePostResponseDTO | SharePostResponseDTO | StudyPostResponseDTO;
+
+export interface Post {
+  post_id: number;
+  title: string;
+  content: string;
+  author_id: number;
+  author: string;
+  category: PostCategory;
+  created_at: string;
+  views: number;
+  likes?: number;
+  comments?: number;
+}
+
+export type SearchScope = 'title' | 'title_content' | 'content';
+
+export interface SearchQuery {
+  q: string;
+  scope: SearchScope;
+  category?: 'free' | 'share' | 'study' | 'all';
+  limit?: number;
+  cursor?: string | null;
+}
+
+export interface CursorListResult<T> {
+  count: number;
+  next_cursor: string | null;
+  items: T[];
+}
+
+export interface SearchPostItem {
+  post_id: number;
+  title: string;
+  content: string;
+  author_id: string;
+  category: 'free' | 'share' | 'study';
+  created_at: string;
 }

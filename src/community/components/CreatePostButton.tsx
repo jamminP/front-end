@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import createPostIcon from '../img/pen-line.png';
 
 type Cat = 'free' | 'share' | 'study';
 
@@ -12,7 +13,7 @@ interface Props {
 }
 
 const baseClass =
-  'px-4 py-2 rounded-xl shadow hover:shadow-md bg-black text-white disabled:opacity-60 disabled:cursor-not-allowed';
+  'px-2 py-2 rounded-xl shadow hover:shadow-md disabled:opacity-60 disabled:cursor-not-allowed';
 
 function buildHref(to: string, params: Record<string, string | number | undefined>) {
   const qs = new URLSearchParams();
@@ -49,7 +50,7 @@ const CreatePostButton: React.FC<Props> = ({
       className={`${baseClass} ${className ?? ''}`}
       aria-label="새 글 작성"
     >
-      작성
+      <img src={createPostIcon} />
     </button>
   );
 };
