@@ -1,6 +1,7 @@
 type HttpInitX = RequestInit & { withCreds?: boolean };
 
-const BASE = import.meta.env.VITE_API_BASE_URL.replace(/\/+$/, '');
+const RAW_BASE = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_BASE_URL ?? '');
+const BASE = RAW_BASE ? RAW_BASE.replace(/\/+$/, '') : '';
 
 export async function http<T>(path: string, init: HttpInitX = {}): Promise<T> {
   const { withCreds = false, ...rest } = init;
@@ -17,20 +18,21 @@ export async function http<T>(path: string, init: HttpInitX = {}): Promise<T> {
     if (headers['Content-Type'].includes('application/json')) body = JSON.stringify(body);
   }
 
-  const res = await fetch(`${BASE}${path}`, {
+  const isAbs = /^https?:\/\//i.test(path);
+  const url = isAbs ? path : `${BASE}${path}`;
+
+  const res = await fetch(url, {
     ...rest,
     method,
     headers,
     body,
     credentials: withCreds ? 'include' : 'omit',
   });
-
   if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`${res.status} ${res.statusText}${text ? ` :: ${text}` : ''}`);
+    const txt = await res.text().catch(() => '');
+    throw new Error(`${res.status} ${res.statusText}${txt ? ` :: ${txt}` : ''}`);
   }
   if (res.status === 204) return undefined as unknown as T;
-
   const ct = res.headers.get('content-type') || '';
   return (ct.includes('application/json') ? await res.json() : await res.text()) as T;
 }
