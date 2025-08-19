@@ -1,6 +1,6 @@
 import { sanitizeFilename } from '../utils/upload';
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
+const BASE = 'https://backend.evida.site';
 
 export type Category = 'free' | 'share' | 'study';
 export type ApiId = { id?: number; post_id?: number } & Record<string, unknown>;
