@@ -32,3 +32,11 @@ export type SummaryListRes = {
   message: string;
   data: { summaries: SummaryItem[] };
 };
+
+export type ActionId = 'plan' | 'summary' | 'quiz' | 'research';
+
+export type StartCommand = {
+  type: 'start';
+  actionId: ActionId;
+  token: number;
+};

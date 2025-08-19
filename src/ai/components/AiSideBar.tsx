@@ -3,13 +3,15 @@ import { GrPlan } from 'react-icons/gr';
 import SidebarItem from './AISideItem';
 import { FaRegFileLines } from 'react-icons/fa6';
 import ChatList from './ChatList';
+import type { ActionId } from '../types/types';
 
 type Props = {
   collapsed: boolean;
   onToggle: () => void;
+  onSelectAction: (id: ActionId) => void;
 };
 
-export default function AiSideBar({ collapsed, onToggle }: Props) {
+export default function AiSideBar({ collapsed, onToggle, onSelectAction }: Props) {
   return (
     <div className="relative flex flex-col w-full h-full">
       <div className="h-10 flex items-center justify-between px-3">
@@ -22,8 +24,18 @@ export default function AiSideBar({ collapsed, onToggle }: Props) {
       </div>
 
       <nav className="py-3">
-        <SidebarItem icon={<GrPlan size={20} />} label="공부 계획" collapsed={collapsed} />
-        <SidebarItem icon={<FaRegFileLines size={20} />} label="정보 요약" collapsed={collapsed} />
+        <SidebarItem
+          icon={<GrPlan size={20} />}
+          label="공부 계획"
+          collapsed={collapsed}
+          onClick={() => onSelectAction('plan')}
+        />
+        <SidebarItem
+          icon={<FaRegFileLines size={20} />}
+          label="정보 요약"
+          collapsed={collapsed}
+          onClick={() => onSelectAction('summary')}
+        />
       </nav>
       <section className={collapsed ? 'px-0 py-5' : 'px-3.5 py-5'}>
         {!collapsed && <h3 className="mb-2 text-xs font-semibold text-gray-600">채팅</h3>}

@@ -5,8 +5,7 @@ import { FaRegFileLines } from 'react-icons/fa6';
 import { motion } from 'framer-motion';
 import ActionCard from './ActionCard';
 import Bubble from './Bubble';
-
-type ActionId = 'plan' | 'quiz' | 'summary' | 'research';
+import type { ActionId, StartCommand } from '../types/types';
 
 const ACTIONS: {
   id: ActionId;
@@ -33,7 +32,7 @@ const ACTIONS: {
 
 type Msg = { id: string; role: 'assistant' | 'user'; text: string; ts: number };
 
-export default function AiMain() {
+export default function AiMain({ externalCommand }: { externalCommand?: StartCommand | null }) {
   const [view, setView] = useState<'home' | 'chat'>('home');
   const [selected, setSelected] = useState<ActionId | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -63,10 +62,6 @@ export default function AiMain() {
     setMessages((prev) => [...prev, userMsg]);
     if (inputRef.current) inputRef.current.value = '';
 
-    // 실제 API 연동 위치
-    // await callChatAPI({ action: selectedAction?.id, messages: [...messages, userMsg] })
-    // setMessages([...prev, userMsg, { id: uid(), role: 'assistant', text: res.text, ts: Date.now() }])
-
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
@@ -84,6 +79,13 @@ export default function AiMain() {
     inputRef.current?.focus();
     setTimeout(() => inputRef.current?.focus(), 0);
   };
+
+  useEffect(() => {
+    if (!externalCommand) return;
+    if (externalCommand.type === 'start') {
+      startChat(externalCommand.actionId);
+    }
+  }, [externalCommand?.token]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
