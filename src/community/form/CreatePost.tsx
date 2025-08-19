@@ -88,7 +88,7 @@ export default function CreatePost() {
     <div className="p-6 max-w-[720px] mx-auto space-y-4">
       <PostForm
         initialValues={initialValues}
-        submitLabel="저장"
+        submitLabel="등록"
         disabled={isPending}
         onSubmit={handleSubmit}
       />

@@ -13,10 +13,10 @@ interface Props {
 }
 
 const dateToTail =
-  'text-xs w-37.5 h-6 mx-1 mt-1 outline-none focus:ring-0 focus:border-transparent border-[0.5px] border-gray-300 rounded-lg pl-0.5';
+  'text-xs w-36 h-6 mx-1 mt-1 outline-none focus:ring-0 focus:border-transparent border-[0.5px] border-gray-300 rounded-lg pl-0.5';
 
 const dateFromTail =
-  'text-xs w-37.5 h-6 mx-1 mt-1 mr-3 outline-none focus:ring-0 focus:border-transparent border-[0.5px] border-gray-300 rounded-lg pl-0.5';
+  'text-xs w-36 h-6 mx-1 mt-1 mr-3 outline-none focus:ring-0 focus:border-transparent border-[0.5px] border-gray-300 rounded-lg pl-0.5';
 
 export function SearchPopover({ onClose, defaultScope = 'title', category = 'all' }: Props) {
   const [search_in, setSearchIn] = useState<SearchIn>(defaultScope);
@@ -85,6 +85,7 @@ export function SearchPopover({ onClose, defaultScope = 'title', category = 'all
             isClearable
             className={dateToTail}
           />
+          <div className="pt-0.5">~</div>
           <DatePicker
             dateFormat="yyyy.MM.dd"
             selected={endDate}

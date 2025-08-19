@@ -24,9 +24,9 @@ const defaults: PostFormValues = {
   category: 'free',
 };
 
-type Errors = Partial<Record<keyof PostFormValues, string>>;
+type Errors = Partial<Record<keyof PostFormValues | 'limitMembers', string>>;
 
-function validate(values: PostFormValues): Errors {
+function validate(values: PostFormValues, limitMembers: boolean): Errors {
   const e: Errors = {};
   const req = (v?: string) => v && v.trim().length > 0;
 
@@ -42,9 +42,15 @@ function validate(values: PostFormValues): Errors {
     if (RS && RE && RS > RE) e.recruitEnd = '모집 마감은 시작 이후여야 합니다.';
     if (SS && SE && SS > SE) e.studyEnd = '스터디 종료는 시작 이후여야 합니다.';
 
-    if (values.maxMembers !== undefined) {
-      if (Number.isNaN(values.maxMembers) || values.maxMembers < 2) {
-        e.maxMembers = '최대 인원은 2명 이상이어야 합니다.';
+    if (limitMembers) {
+      if (values.maxMembers == undefined || Number.isNaN(values.maxMembers)) {
+        e.maxMembers = '최대 인원을 입력해주세요.';
+      } else if (!Number.isInteger(values.maxMembers)) {
+        e.maxMembers = '정수를 입력해주세요.';
+      } else if (values.maxMembers < 2) {
+        e.maxMembers = '2명 이상이어야 합니다.';
+      } else if (values.maxMembers > 30) {
+        e.maxMembers = '최대 인원은 30명을 넘을 수 없습니다.';
       }
     }
   }
@@ -58,6 +64,9 @@ export default function PostForm({
   disabled,
 }: PostFormProps) {
   const [values, setValues] = useState<PostFormValues>({ ...defaults, ...initialValues });
+  const [limitMembers, setLimitMembers] = useState<boolean>(
+    (initialValues?.maxMembers ?? undefined) !== undefined,
+  );
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -65,7 +74,10 @@ export default function PostForm({
   }, [initialValues]);
 
   const isStudy = values.category === 'study';
-  const errors = useMemo(() => validate(values), [values]);
+  const errors = useMemo(
+    () => validate(values, isStudy && limitMembers),
+    [values, limitMembers, isStudy],
+  );
   const hasError = Object.keys(errors).length > 0;
 
   const setField =
@@ -74,11 +86,13 @@ export default function PostForm({
       const raw = e.target.value;
       setValues((v) => ({
         ...v,
-        [name]: name === 'maxMembers' ? (raw === '' ? undefined : Number(raw)) : (raw as any),
+        [name]:
+          name === 'maxMembers' ? (raw === '' ? undefined : Math.floor(Number(raw))) : (raw as any),
       }));
     };
 
-  const onBlur = (name: keyof PostFormValues) => () => setTouched((t) => ({ ...t, [name]: true }));
+  const onBlur = (name: keyof PostFormValues | 'limitMembers') => () =>
+    setTouched((t) => ({ ...t, [name]: true }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,15 +105,21 @@ export default function PostForm({
       studyStart: true,
       studyEnd: true,
       maxMembers: true,
+      limitMembers: true,
     });
     if (hasError) return;
+    const payload: PostFormValues = {
+      ...values,
+      maxMembers: isStudy && limitMembers ? values.maxMembers : undefined,
+    };
+
     onSubmit(values);
   };
 
-  const err = (k: keyof PostFormValues) => touched[k];
+  const err = (k: keyof PostFormValues | 'limitMembers') => touched[k];
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 mt-20">
+    <form onSubmit={handleSubmit} className="space-y-4 mt-20 ">
       <div>
         <input
           name="title"
@@ -108,11 +128,11 @@ export default function PostForm({
           onBlur={onBlur('title')}
           placeholder="제목을 입력하세요"
           disabled={disabled}
-          className={`w-full border rounded-md px-3 py-3 ${
-            err('title') ? 'border-#1B3043' : 'border-#1B3043'
+          className={`w-full h-10 border border-gray-300 rounded-md px-4 py-3 ${
+            err('title') ? 'border-red-500' : 'border-#1B3043'
           }`}
         />
-        {err('title') && <p>{errors.title}</p>}
+        {err('title') && <p className="text-red-500 text-sm">{errors.title}</p>}
       </div>
 
       <div>
@@ -122,33 +142,17 @@ export default function PostForm({
           onChange={setField('category')}
           onBlur={onBlur('category')}
           disabled={disabled}
-          className="w-full border rounded-md px-3 py-2 border-#1B3043"
+          className="w-full h-10 border border-gray-300 rounded-md px-3 py-2 border-#1B3043"
         >
           <option value="free">자유</option>
           <option value="share">자료 공유</option>
           <option value="study">스터디</option>
         </select>
       </div>
-
-      <div>
-        <textarea
-          name="content"
-          value={values.content}
-          onChange={setField('content')}
-          onBlur={onBlur('content')}
-          placeholder="내용을 입력하세요"
-          disabled={disabled}
-          className={`w-full border rounded-md px-3 py-2 min-h-[400px] ${
-            err('content') ? 'border-#1B3043' : 'border-gray-300'
-          }`}
-        />
-        {err('content') && <p>{errors.content}</p>}
-      </div>
-
       {isStudy && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">모집 시작일</label>
+            <label className="block text-sm  font-medium mb-1 ">모집 시작일</label>
             <input
               type="date"
               name="recruitStart"
@@ -156,7 +160,7 @@ export default function PostForm({
               onChange={setField('recruitStart')}
               onBlur={onBlur('recruitStart')}
               disabled={disabled}
-              className="w-full border rounded-md px-3 py-2 border-gray-300"
+              className="w-full h-10 border rounded-md px-3 py-2 border-gray-300"
             />
           </div>
 
@@ -169,7 +173,7 @@ export default function PostForm({
               onChange={setField('recruitEnd')}
               onBlur={onBlur('recruitEnd')}
               disabled={disabled}
-              className={`w-full border rounded-md px-3 py-2 ${
+              className={`w-full h-10 border rounded-md px-3 py-2 ${
                 err('recruitEnd') ? 'border-red-400' : 'border-gray-300'
               }`}
             />
@@ -185,7 +189,7 @@ export default function PostForm({
               onChange={setField('studyStart')}
               onBlur={onBlur('studyStart')}
               disabled={disabled}
-              className="w-full border rounded-md px-3 py-2 border-gray-300"
+              className="w-full border h-10 rounded-md px-3 py-2 border-gray-300"
             />
           </div>
 
@@ -198,32 +202,98 @@ export default function PostForm({
               onChange={setField('studyEnd')}
               onBlur={onBlur('studyEnd')}
               disabled={disabled}
-              className={`w-full border rounded-md px-3 py-2 ${
-                err('studyEnd') ? 'border-red-400' : 'border-gray-300'
+              className={`w-full h-10 border rounded-md px-3 py-2 ${
+                err('studyEnd') ? 'border-red-500' : 'border-gray-300'
               }`}
             />
             {err('studyEnd') && <p className="mt-1 text-xs text-red-500">{errors.studyEnd}</p>}
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-1">최대 인원</label>
-            <input
-              type="number"
-              min={2}
-              name="maxMembers"
-              value={values.maxMembers ?? ''}
-              onChange={setField('maxMembers')}
-              onBlur={onBlur('maxMembers')}
-              disabled={disabled}
-              className={`w-full border rounded-md px-3 py-2 ${
-                err('maxMembers') ? 'border-red-400' : 'border-gray-300'
-              }`}
-            />
-            {err('maxMembers') && <p className="mt-1 text-xs text-red-500">{errors.maxMembers}</p>}
+            <label className="block text-sm font-medium mb-2">모집 인원</label>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setLimitMembers(true);
+                  setValues((v) => ({
+                    ...v,
+                    maxMembers:
+                      v.maxMembers && v.maxMembers >= 2
+                        ? Math.min(30, Math.floor(v.maxMembers))
+                        : 2,
+                  }));
+                }}
+                onBlur={onBlur('limitMembers')}
+                className={`px-1 py-1 w-20 text-sm rounded-md border ${
+                  limitMembers
+                    ? 'bg-[#1B3043] text-white border-black'
+                    : 'bg-white text-black border-slate-300'
+                }`}
+                disabled={disabled}
+              >
+                인원수 제한
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setLimitMembers(false);
+                  setValues((v) => ({ ...v, maxMembers: undefined }));
+                }}
+                onBlur={onBlur('limitMembers')}
+                className={`px-1 py-1 w-20 text-sm rounded-md border ${
+                  !limitMembers
+                    ? 'bg-[#1B3043] text-white border-black'
+                    : 'bg-white text-black border-slate-300'
+                }`}
+                disabled={disabled}
+              >
+                무제한
+              </button>
+            </div>
+
+            {limitMembers && (
+              <div className="mt-3">
+                <input
+                  type="number"
+                  min={2}
+                  max={30}
+                  step={1}
+                  name="maxMembers"
+                  value={values.maxMembers ?? ''}
+                  onChange={setField('maxMembers')}
+                  onBlur={onBlur('maxMembers')}
+                  disabled={disabled}
+                  className={`w-full border rounded-md px-3 py-2 ${
+                    err('maxMembers') && errors.maxMembers ? 'border-red-400' : 'border-gray-300'
+                  }`}
+                  placeholder="최대 30명"
+                />
+                {err('maxMembers') && errors.maxMembers && (
+                  <p className="mt-1 text-xs text-red-500">{errors.maxMembers}</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
 
+      <div>
+        <textarea
+          name="content"
+          value={values.content}
+          onChange={setField('content')}
+          onBlur={onBlur('content')}
+          placeholder="내용을 입력하세요"
+          disabled={disabled}
+          className={`w-full border border-gray-300 rounded-md px-3 py-2 min-h-[400px] ${
+            err('content') ? 'border-red-400' : 'border-gray-300'
+          }`}
+        />
+        {err('content') && <p className="text-red-500 text-sm">{errors.content}</p>}
+      </div>
       <div className="flex justify-end gap-2">
         <button
           type="submit"
