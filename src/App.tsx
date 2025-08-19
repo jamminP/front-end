@@ -31,16 +31,15 @@ function AppContent() {
 
   const checkLogin = useCallback(async () => {
     try {
+      // 실제 서버 호출
       const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
         withCredentials: true,
       });
       if (!isLoggedIn) setAuthData(res.data);
     } catch (err: any) {
-      // 401이면 조용히 로그아웃 처리
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         logout();
       } else {
-        // 다른 에러는 콘솔에 출력
         console.error(err);
       }
     }
@@ -48,9 +47,20 @@ function AppContent() {
 
   useEffect(() => {
     if (location.pathname !== '/login' && !isLoggedIn) {
-      checkLogin();
+      // 🚀 로컬 테스트용 임시 로그인
+      const LOCAL_TEST = true; // true면 서버 호출 대신 로컬 로그인
+
+      if (LOCAL_TEST) {
+        setAuthData({
+          id: 999,
+          email: 'test@example.com',
+          nickname: '테스트유저',
+        });
+      } else {
+        checkLogin();
+      }
     }
-  }, [location.pathname, checkLogin, isLoggedIn]);
+  }, [location.pathname, checkLogin, isLoggedIn, setAuthData]);
 
   return (
     <>
