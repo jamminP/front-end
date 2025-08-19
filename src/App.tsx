@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import './App.css';
 import CommunityLayout from './community/CommunityLayout';
 import Header from './header/Header';
@@ -18,49 +18,34 @@ import EditPost from './community/form/EditPost';
 import PostDetail from './community/post/components/CommentItem';
 import CommunityStudy from './community/category/CommunityStudy';
 import PostDetailMock from './community/post/PostDetail';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import useAuthStore from './store/authStore';
 import axios from 'axios';
-import Cookies from 'js-cookie';
-
-function useCookie(key: string) {
-  const [value, setValue] = useState(Cookies.get(key) || null);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const cookie = Cookies.get(key) || null;
-      if (cookie !== value) setValue(cookie); // 쿠키가 바뀌면 상태 업데이트
-    }, 500);
-    return () => clearInterval(interval);
-  }, [value, key]);
-
-  return value;
-}
 
 function AppContent() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
   const logout = useAuthStore((state) => state.logout);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const location = useLocation();
 
-  // 쿠키를 감지
-  const accessToken = useCookie('access_token');
-
-  const checkLogin = async () => {
+  const checkLogin = useCallback(async () => {
     try {
-      if (!accessToken) return;
-
       const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
         withCredentials: true,
       });
-      setAuthData(res.data);
+      if (!isLoggedIn) setAuthData(res.data);
     } catch {
       logout();
     }
-  };
+  }, [setAuthData, logout, isLoggedIn]);
 
-  // access_token이 생기거나 바뀌면 체크
   useEffect(() => {
-    checkLogin();
-  }, [accessToken]);
+    // 로그인 페이지는 호출하지 않고,
+    // 로그인 직후 또는 상태가 변할 때만 호출
+    if (location.pathname !== '/login' && !isLoggedIn) {
+      checkLogin();
+    }
+  }, [location.pathname, checkLogin, isLoggedIn]);
 
   return (
     <>
