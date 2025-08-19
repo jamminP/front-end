@@ -1,6 +1,7 @@
 import { sanitizeFilename } from '../utils/upload';
 
-const BASE = 'https://backend.evida.site';
+const BASE = import.meta.env.VITE_API_BASE_URL || 'https://backend.evida.site';
+const CREATE_PREFIX = `${BASE}/api/v1/community/post`;
 
 export type Category = 'free' | 'share' | 'study';
 export type ApiId = { id?: number; post_id?: number } & Record<string, unknown>;
@@ -20,31 +21,57 @@ export type CreatePostJSONBody =
     };
 
 export async function createPostJSON(body: CreatePostJSONBody): Promise<ApiId> {
-  const url = `${BASE}/api/v1/community/post/${body.category}`;
+  const url = `${CREATE_PREFIX}/${body.category}`;
+  const { category, ...payload } = body as any;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify(body),
+    body: JSON.stringify(payload),
   });
   const text = await res.text();
-  if (!res.ok) throw new Error(`createPostJSON ${res.status}: ${text}`);
+  if (!res.ok) {
+    console.error('[createPostJSON]', url, res.status, text);
+    throw new Error(`createPostJSON ${res.status}: ${text}`);
+  }
   return text ? JSON.parse(text) : {};
 }
 
-export type PresignReq = { filename: string; contentType: string; size: number };
-export type PresignRes = {
-  uploadUrl: string;
-  objectKey: string;
-  headers?: Record<string, string>;
+type PresignReq = { filename: string; content_type: string };
+
+type PresignRaw = {
+  key: string;
+  url: string;
+  fields: Record<string, string>;
+  expires_in: number;
 };
+
+export type PresignRes = {
+  key: string;
+  url: string;
+  fields: Record<string, string>;
+  expiresIn: number;
+};
+
+function normalizePresign(r: PresignRaw): PresignRes {
+  return {
+    key: r.key,
+    url: r.url,
+    fields: r.fields || {},
+    expiresIn: r.expires_in ?? 0,
+  };
+}
 
 async function requestPresignedJSON(
   category: Exclude<Category, 'study'>,
   postId: number,
-  body: PresignReq,
+  file: File,
 ): Promise<PresignRes> {
-  const url = `${BASE}/api/v1/community/post/${category}/${postId}/attachments/presigned`;
+  const url = `${CREATE_PREFIX}/${category}/${postId}/attachments/presigned`;
+  const body: PresignReq = {
+    filename: file.name,
+    content_type: file.type || 'application/octet-stream',
+  };
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -52,22 +79,41 @@ async function requestPresignedJSON(
     body: JSON.stringify(body),
   });
   const text = await res.text();
-  if (!res.ok) throw new Error(`presigned ${res.status}: ${text}`);
-  return (text ? JSON.parse(text) : {}) as PresignRes;
+  if (!res.ok) {
+    console.error('[presigned]', url, res.status, text);
+    throw new Error(`presigned ${res.status}: ${text}`);
+  }
+  const json = text ? JSON.parse(text) : {};
+  return normalizePresign(json as PresignRaw);
+}
+
+async function postPolicyToS3(p: PresignRes, file: File) {
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(p.fields)) {
+    fd.append(k, v);
+  }
+  fd.append('file', file);
+
+  const res = await fetch(p.url, { method: 'POST', body: fd });
+  if (!res.ok) {
+    const t = await res.text();
+    console.error('[S3 POST ERR]', res.status, t);
+    throw new Error(`S3 POST 실패: ${res.status} ${t}`);
+  }
 }
 
 async function attachJSON(
   category: Exclude<Category, 'study'>,
   postId: number,
   body: {
-    objectKey: string;
-    filename: string;
-    size: number;
-    contentType: string;
+    key: string;
+    file_name: string;
+    content_type: string;
+    file_size: number;
     order: number;
   },
 ) {
-  const url = `${BASE}/api/v1/community/post/${category}/${postId}/attachments/attach`;
+  const url = `${CREATE_PREFIX}/${category}/${postId}/attachments/attach`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -75,17 +121,11 @@ async function attachJSON(
     body: JSON.stringify(body),
   });
   const text = await res.text();
-  if (!res.ok) throw new Error(`attach ${res.status}: ${text}`);
+  if (!res.ok) {
+    console.error('[attach]', url, res.status, text);
+    throw new Error(`attach ${res.status}: ${text}`);
+  }
   return text ? JSON.parse(text) : {};
-}
-
-async function putToS3Binary(p: PresignRes, file: File) {
-  const headers = new Headers({
-    'Content-Type': file.type || 'application/octet-stream',
-  });
-  if (p.headers) for (const [k, v] of Object.entries(p.headers)) headers.set(k, v);
-  const r = await fetch(p.uploadUrl, { method: 'PUT', headers, body: file });
-  if (!r.ok) throw new Error(`S3 PUT 실패: ${r.status}`);
 }
 
 export async function uploadWithPresignedJson(
@@ -93,31 +133,25 @@ export async function uploadWithPresignedJson(
   postId: number,
   files: File[],
 ): Promise<string[]> {
-  const objectKeys: string[] = [];
-
+  const keys: string[] = [];
   await Promise.all(
     files.map(async (raw, i) => {
       const file = sanitizeFilename(raw);
 
-      const p = await requestPresignedJSON(category, postId, {
-        filename: file.name,
-        contentType: file.type || 'application/octet-stream',
-        size: file.size,
-      });
+      const p = await requestPresignedJSON(category, postId, file);
 
-      await putToS3Binary(p, file);
+      await postPolicyToS3(p, file);
 
       await attachJSON(category, postId, {
-        objectKey: p.objectKey,
-        filename: file.name,
-        size: file.size,
-        contentType: file.type || 'application/octet-stream',
+        key: p.key,
+        file_name: file.name,
+        content_type: file.type || 'application/octet-stream',
+        file_size: file.size,
         order: i,
       });
 
-      objectKeys.push(p.objectKey);
+      keys.push(p.key);
     }),
   );
-
-  return objectKeys;
+  return keys;
 }
