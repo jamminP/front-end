@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import bellIcon from '../header/img/bell.png';
 import { useState } from 'react';
 import useAuthStore from '@src/store/authStore';
@@ -6,7 +6,7 @@ import axios from 'axios';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-
+  const navigate = useNavigate();
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const logout = useAuthStore((state) => state.logout);
 
@@ -17,10 +17,11 @@ export default function Header() {
         {},
         { withCredentials: true },
       );
+      logout();
+      navigate('/');
     } catch (err) {
       console.error(err);
     }
-    logout(); // Zustand 상태 초기화
   };
 
   return (
