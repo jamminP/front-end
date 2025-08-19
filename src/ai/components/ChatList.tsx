@@ -1,25 +1,22 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { useStudyPlanInfiniteList } from '../hook/useStudyPlanInfiniteList';
+import { useUnifiedAiFeed } from '../hook/useUnifiedAiFeed';
 
 export default function ChatList({ collapsed }: { collapsed: boolean }) {
   if (collapsed) return null;
+  const userId = 17;
 
-  const testUserId = 17;
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } =
-    useStudyPlanInfiniteList(testUserId);
+    useUnifiedAiFeed(userId);
 
   const items = useMemo(() => (data?.pages ?? []).flatMap((p) => p.items), [data]);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
-
   useEffect(() => {
     if (!scrollRef.current || !sentinelRef.current) return;
     const obs = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
+        if (e.isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage();
       },
       { root: scrollRef.current, rootMargin: '200px 0px 200px 0px' },
     );

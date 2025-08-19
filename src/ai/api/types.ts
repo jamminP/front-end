@@ -14,3 +14,21 @@ export type StudyPlanListRes = {
   message: string;
   data: { study_plans: StudyPlan[] };
 };
+
+export type SummaryItem = {
+  id: number;
+  user_id: number;
+  title: string;
+  input_type: string;
+  input_data: string;
+  summary_type: string;
+  output_data: string;
+  file_url: string;
+  created_at: string;
+};
+
+export type SummaryListRes = {
+  success: boolean;
+  message: string;
+  data: { summaries: SummaryItem[] };
+};

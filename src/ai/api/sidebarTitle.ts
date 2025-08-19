@@ -1,6 +1,12 @@
-import type { StudyPlan } from './types';
+import type { StudyPlan, SummaryItem } from './types';
 
 export type ChatSummary = { id: string; title: string };
+export type UnifiedItem = {
+  id: string;
+  title: string;
+  createdAt: string;
+  kind: 'plan' | 'summary';
+};
 
 function extractTitle(output_data: string): string | null {
   try {
@@ -25,4 +31,31 @@ export function toChatSummaries(plans: StudyPlan[]): ChatSummary[] {
     const onlyTitle = extractTitle(p.output_data) ?? '제목 없음';
     return { id: String(p.id), title: onlyTitle };
   });
+}
+
+export function toPlanItems(plans: StudyPlan[]): UnifiedItem[] {
+  return plans.map((p) => {
+    let title = `대화 ${p.id}`;
+    try {
+      const v = JSON.parse(p.output_data);
+      if (v && typeof v === 'object' && typeof v.title === 'string' && v.title.trim()) {
+        title = v.title.trim();
+      } else if (typeof v === 'string') {
+        const v2 = JSON.parse(v);
+        if (v2 && typeof v2 === 'object' && typeof v2.title === 'string' && v2.title.trim()) {
+          title = v2.title.trim();
+        }
+      }
+    } catch {}
+    return { id: String(p.id), title, createdAt: p.created_at, kind: 'plan' as const };
+  });
+}
+
+export function toSummaryItems(rows: SummaryItem[]): UnifiedItem[] {
+  return rows.map((s) => ({
+    id: `s-${s.id}`,
+    title: s.title?.trim() || `요약 ${s.id}`,
+    createdAt: s.created_at,
+    kind: 'summary' as const,
+  }));
 }
