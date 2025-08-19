@@ -34,14 +34,18 @@ function AppContent() {
         withCredentials: true,
       });
       if (!isLoggedIn) setAuthData(res.data);
-    } catch {
-      logout();
+    } catch (err: any) {
+      // 401이면 조용히 로그아웃 처리
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        logout();
+      } else {
+        // 다른 에러는 콘솔에 출력
+        console.error(err);
+      }
     }
   }, [setAuthData, logout, isLoggedIn]);
 
   useEffect(() => {
-    // 로그인 페이지는 호출하지 않고,
-    // 로그인 직후 또는 상태가 변할 때만 호출
     if (location.pathname !== '/login' && !isLoggedIn) {
       checkLogin();
     }
