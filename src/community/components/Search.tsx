@@ -1,76 +1,126 @@
-import { useMemo, useState } from 'react';
-import { SearchScope } from '../api/types';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import useDebounce from '../hook/useDebounce';
-import { useSearchPosts } from '../hook/useSearchPosts';
+import { useCategoryListCursor } from '../hook/useCategoryListCursor';
+import type { SearchIn, Category } from '../api/types';
+import { format, startOfDay, startOfWeekYear } from 'date-fns';
+import DatePicker from 'react-datepicker';
 
 interface Props {
   onClose?: () => void;
-  defaultScope?: SearchScope;
-  category?: 'free' | 'share' | 'study' | 'all';
+  defaultScope?: SearchIn;
+  category?: Category;
 }
 
+const dateToTail =
+  'text-xs w-36 h-6 mx-1 mt-1 outline-none focus:ring-0 focus:border-transparent border-[0.5px] border-gray-300 rounded-lg pl-0.5';
+
+const dateFromTail =
+  'text-xs w-36 h-6 mx-1 mt-1 mr-3 outline-none focus:ring-0 focus:border-transparent border-[0.5px] border-gray-300 rounded-lg pl-0.5';
+
 export function SearchPopover({ onClose, defaultScope = 'title', category = 'all' }: Props) {
-  const [scope, setScope] = useState<SearchScope>(defaultScope);
-  const [q, setQ] = useState('');
+  const [search_in, setSearchIn] = useState<SearchIn>(defaultScope);
+  const [keyword, setKeyword] = useState('');
+  const [author, setAuthor] = useState('');
+  const [fromText] = useState('');
+  const [toText] = useState('');
 
-  const debouncedQ = useDebounce(q, 5000);
+  const debounced = useDebounce(keyword, 3000);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
 
-  const { data, isFetching, fetchNextPage, hasNextPage, isLoading, isError } = useSearchPosts({
-    q: debouncedQ,
-    scope,
-    category,
-    limit: 20,
-  });
+  const date_from = startDate ? format(startDate, 'yyyy-MM-dd') : undefined;
+  const date_to = endDate ? format(endDate, 'yyyy-MM-dd') : undefined;
 
-  const items = useMemo(() => {
-    return data?.pages.flatMap((p) => p.items) ?? [];
-  }, [data]);
+  const author_id = author.trim() !== '' ? author.trim() : undefined;
+
+  const { items, isFetching, fetchNextPage, hasNextPage, isLoading, isError } =
+    useCategoryListCursor(category, {
+      limit: 20,
+      search_in: debounced ? search_in : undefined,
+      keyword: debounced || undefined,
+      date_from,
+      date_to,
+    });
 
   return (
-    <div className="w-[400px] rounded-xl border-[0.5px] border-gray-300 shadow-lg bg-white pt-1.5 px-1.5">
+    <div className="w-[380px] rounded-xl border-[0.5px] border-gray-300 shadow-lg bg-white pt-1.5 px-1.5">
       <div className="flex gap-2 items-center">
         <select
-          value={scope}
-          onChange={(e) => setScope(e.target.value as SearchScope)}
-          className="border-[0.5px] border-gray-300 rounded-lg px-2 py-1.5 text-sm"
+          value={search_in}
+          onChange={(e) => setSearchIn(e.target.value as SearchIn)}
+          className=" border-[0.5px] border-gray-300 rounded-lg ml-1 px-2 py-1.5 text-sm"
         >
           <option value="title">제목만</option>
           <option value="title_content">제목 + 글</option>
           <option value="content">글만</option>
+          <option value="author_id">작성자만</option>
         </select>
 
         <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
           placeholder="검색어를 입력해주세요"
           className="flex-1 border-[0.5px] border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2"
         />
 
         <button
+          type="button"
           className="px-3 py-1.5 rounded-lg bg-[#1B3043] text-white text-sm"
-          onClick={onClose}
+          onClick={() => onClose?.()}
         >
           닫기
         </button>
       </div>
 
+      <div>
+        <div className="flex">
+          <DatePicker
+            dateFormat="yyyy.MM.dd"
+            selected={startDate}
+            onChange={(date) => setStartDate(date)}
+            selectsStart
+            startDate={startDate}
+            endDate={endDate}
+            isClearable
+            className={dateToTail}
+          />
+          <div className="pt-0.5">~</div>
+          <DatePicker
+            dateFormat="yyyy.MM.dd"
+            selected={endDate}
+            onChange={(date) => setEndDate(date)}
+            selectsEnd
+            startDate={startDate}
+            endDate={endDate}
+            minDate={startDate ?? undefined}
+            isClearable
+            className={dateFromTail}
+          />
+        </div>
+      </div>
+
       <div className="mt-2 text-xs text-gray-500">
-        {q && !debouncedQ && <p>입력 중…</p>}
-        {isLoading && debouncedQ && <p>검색 중…</p>}
-        {isError && <p>검색 중 오류가 발생했습니다.</p>}
-        {!isLoading && debouncedQ && items.length === 0 && <p>결과가 없습니다.</p>}
+        {keyword && !debounced && <p>입력 중…</p>}
+        {isLoading && (debounced || author_id || date_from || date_to) && <p>검색 중…</p>}
+        {isError && <p></p>}
+        {!isLoading && (debounced || author_id || date_from || date_to) && items.length === 0 && (
+          <p>결과가 없습니다.</p>
+        )}
+        {(fromText || toText) && !(date_from || date_to) && <p className="text-red-500"></p>}
       </div>
 
       <ul className="mt-2 max-h-72 overflow-auto divide-y">
         {items.map((it) => (
           <li key={`${it.category}-${it.post_id}`} className="py-2">
-            <a href={`/community/${it.category}/${it.post_id}`} className="block" onClick={onClose}>
+            <Link
+              to={`/community/${it.category}/${it.post_id}`}
+              className="block"
+              onClick={onClose}
+            >
               <div className="text-sm font-medium line-clamp-1">{it.title}</div>
               <div className="text-xs text-gray-500 line-clamp-1">{it.content}</div>
-              <div className="text-[11px] text-gray-400 mt-0.5">
-                {it.author_id} · {new Date(it.created_at).toLocaleString()}
-              </div>
-            </a>
+            </Link>
           </li>
         ))}
       </ul>
@@ -90,34 +140,4 @@ export function SearchPopover({ onClose, defaultScope = 'title', category = 'all
   );
 }
 
-export default function SearchIcon() {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative">
-      <button
-        aria-label="검색"
-        className="p-2 rounded-full hover:bg-gray-100"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="w-6 h-6"
-        >
-          <path
-            fillRule="evenodd"
-            d="M10.5 3a7.5 7.5 0 105.02 13.19l3.646 3.646a.75.75 0 101.06-1.06l-3.646-3.647A7.5 7.5 0 0010.5 3zm-6 7.5a6 6 0 1112 0 6 6 0 01-12 0z"
-            clipRule="evenodd"
-          />
-        </svg>
-      </button>
-
-      {open && (
-        <div className="absolute right-0 mt-2 z-50">
-          <SearchPopover onClose={() => setOpen(false)} />
-        </div>
-      )}
-    </div>
-  );
-}
+export default SearchPopover;
