@@ -47,7 +47,12 @@ export default function MypageContent() {
         { nickname: nicknameInput },
         { withCredentials: true },
       );
-      setAuthData(res.data);
+      if (user) {
+        setAuthData({
+          ...user,
+          nickname: res.data.nickname,
+        });
+      }
       closeNicknameModal();
     } catch (err) {
       console.error('닉네임 변경 실패', err);
