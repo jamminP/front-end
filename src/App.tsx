@@ -75,7 +75,6 @@ function AppContent() {
           <Route path="/ai" element={<AiPage />} />
         </Routes>
       </main>
-    </BrowserRouter>
     </>
   );
 }
