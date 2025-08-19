@@ -18,19 +18,35 @@ import EditPost from './community/form/EditPost';
 import PostDetail from './community/post/components/CommentItem';
 import CommunityStudy from './community/category/CommunityStudy';
 import PostDetailMock from './community/post/PostDetail';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import useAuthStore from './store/authStore';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+
+function useCookie(key: string) {
+  const [value, setValue] = useState(Cookies.get(key) || null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const cookie = Cookies.get(key) || null;
+      if (cookie !== value) setValue(cookie); // 쿠키가 바뀌면 상태 업데이트
+    }, 500);
+    return () => clearInterval(interval);
+  }, [value, key]);
+
+  return value;
+}
 
 function AppContent() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
   const logout = useAuthStore((state) => state.logout);
 
+  // 쿠키를 감지
+  const accessToken = useCookie('access_token');
+
   const checkLogin = async () => {
     try {
-      const token = Cookies.get('access_token');
-      if (!token) return;
+      if (!accessToken) return;
 
       const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
         withCredentials: true,
@@ -41,9 +57,10 @@ function AppContent() {
     }
   };
 
+  // access_token이 생기거나 바뀌면 체크
   useEffect(() => {
     checkLogin();
-  }, []);
+  }, [accessToken]);
 
   return (
     <>
