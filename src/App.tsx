@@ -22,33 +22,56 @@ import useAuthStore from './store/authStore';
 import axios from 'axios';
 
 function AppContent() {
-  const setAuthData = useAuthStore((state) => state.setAuthData);
-  const logout = useAuthStore((state) => state.logout);
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const location = useLocation();
+  const { isInitialized, setAuthData, logout, setInitialized } = useAuthStore();
 
   const checkLogin = useCallback(async () => {
     try {
       const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
         withCredentials: true,
       });
-      if (!isLoggedIn) setAuthData(res.data);
+      setAuthData(res.data); // setAuthData에서 isInitialized도 true로 설정됨
     } catch (err: any) {
-      // 401이면 조용히 로그아웃 처리
       if (axios.isAxiosError(err) && err.response?.status === 401) {
+        // 401은 예상된 상황이므로 조용히 처리
         logout();
       } else {
-        // 다른 에러는 콘솔에 출력
-        console.error(err);
+        // 네트워크 오류 등 예상치 못한 에러만 콘솔에 출력
+        console.error('Auth check error:', err);
       }
+      // 어떤 경우든 초기화 완료 처리
+      setInitialized();
     }
-  }, [setAuthData, logout, isLoggedIn]);
+  }, [setAuthData, logout, setInitialized]);
 
   useEffect(() => {
-    if (location.pathname !== '/login' && !isLoggedIn) {
-      checkLogin();
+    if (!isInitialized) {
+      if (location.pathname === '/login') {
+        // 로그인 페이지는 API 호출 없이 바로 초기화 완료
+        setInitialized();
+      } else {
+        // 다른 페이지들은 로그인 상태 체크
+        checkLogin();
+      }
     }
-  }, [location.pathname, checkLogin, isLoggedIn]);
+  }, [isInitialized, location.pathname, checkLogin, setInitialized]);
+
+  // 초기화가 완료되지 않았으면 로딩 표시
+  if (!isInitialized) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          fontSize: '18px',
+        }}
+      >
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <>

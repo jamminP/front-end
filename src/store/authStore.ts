@@ -11,23 +11,28 @@ interface User {
 interface AuthState {
   user: User | null;
   isLoggedIn: boolean;
+  isInitialized: boolean;
   setAuthData: (user: User) => void;
   logout: () => void;
+  setInitialized: () => void;
 }
 
 const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isLoggedIn: false,
+  isInitialized: false,
   setAuthData: (user) =>
     set({
       user,
       isLoggedIn: true,
+      isInitialized: true,
     }),
   logout: () =>
     set({
       user: null,
       isLoggedIn: false,
     }),
+  setInitialized: () => set({ isInitialized: true }),
 }));
 
 export default useAuthStore;
