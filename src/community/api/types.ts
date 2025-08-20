@@ -5,8 +5,8 @@ export interface FreePostItem {
   title: string;
   content: string;
   category: 'free';
-  authorId: number;
-  createdAt: string;
+  author_id: number;
+  created_at: string;
   imageUrl?: string | null;
 }
 
@@ -15,8 +15,8 @@ export interface SharePostItem {
   title: string;
   content: string;
   category: 'share';
-  authorId: number;
-  createdAt: string;
+  author_id: number;
+  created_at: string;
   fileUrl?: string | null;
   imgUrl?: string | null;
 }
@@ -26,13 +26,13 @@ export interface StudyPostItem {
   title: string;
   content: string;
   category: 'study';
-  authorId: number;
-  createdAt: string;
-  recruitStart?: string;
-  recruitEnd?: string;
-  studyStart?: string;
-  studyEnd?: string;
-  maxMembers?: number;
+  author_id: number;
+  created_at: string;
+  recruit_start?: string;
+  recruit_end?: string;
+  study_start?: string;
+  study_end?: string;
+  max_members?: number;
   badge?: string;
 }
 
@@ -41,8 +41,8 @@ export interface AllPostItem {
   title: string;
   content: string;
   category: Category;
-  authorId: number;
-  createdAt: string;
+  author_id: number;
+  created_at: string;
 }
 
 export interface FreePostRequest {
@@ -62,7 +62,7 @@ export interface FreePostResponse {
   author_id: string;
   views: number;
   created_at: string;
-  updated_at: string;
+  upd_ated_at: string;
   free_board?: FreeBoardResponse;
 }
 
@@ -74,7 +74,7 @@ export interface SharePostRequest {
   img_url?: string | null;
   category?: 'share';
 }
-export interface DataShareResponse {
+export interface d_ataShareResponse {
   file_url: string | null;
 }
 export interface SharePostResponse {
@@ -84,7 +84,7 @@ export interface SharePostResponse {
   category: 'share';
   author_id: string;
   views: number;
-  data_share: DataShareResponse;
+  data_share: d_ataShareResponse;
   created_at: string;
   updated_at: string;
 }
@@ -92,8 +92,8 @@ export interface SharePostResponse {
 export interface StudyPostRequest {
   title: string;
   content: string;
-  user_id: number;
   category?: 'study';
+  user_id: number;
   recruit_start: string;
   recruit_end: string;
   study_start: string;

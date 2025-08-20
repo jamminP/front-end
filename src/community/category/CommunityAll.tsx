@@ -9,7 +9,7 @@ const CommunityAll = () => {
   return (
     <div className="flex flex-col gap-4">
       {dummyPosts.map((post) => (
-        <PostCard key={post.postId} post={post} currentUserId={103} onClick={handleClick} />
+        <PostCard key={post.id} post={post} currentUserId={103} onClick={handleClick} />
       ))}
     </div>
   );

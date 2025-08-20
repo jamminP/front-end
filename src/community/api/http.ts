@@ -1,28 +1,66 @@
 const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
 
+// --- auth token helpers (http.ts 맨 위 근처에) ---
+let accessToken: string | null = null;
+
+export const setAccessToken = (t: string | null) => {
+  accessToken = t;
+};
+export const getAccessToken = () => accessToken;
+// -----------------------------------------------
+
+export class HttpError extends Error {
+  constructor(
+    public status: number,
+    public statusText: string,
+    public data: unknown,
+  ) {
+    super(`HTTP ${status} ${statusText}`);
+  }
+}
+
 export async function http<T>(url: string, init: RequestInit = {}): Promise<T> {
   const method = (init.method ?? 'GET').toUpperCase();
   const isSimpleGet = method === 'GET' || method === 'HEAD';
 
-  const headers: Record<string, string> = {
-    Accept: 'application/json',
-    ...(init.headers as Record<string, string> | undefined),
-  };
-  if (!isSimpleGet && !headers['Content-Type']) {
-    headers['Content-Type'] = 'application/json';
+  const h = new Headers(init.headers || {});
+  if (!h.has('Accept')) h.set('Accept', 'application/json');
+
+  // Authorization 자동 주입 (이미 넘겨온 헤더에 없을 때만)
+  if (!h.has('Authorization')) {
+    const token = getAccessToken();
+    if (token) h.set('Authorization', `Bearer ${token}`); // Bearer 접두어 필수
   }
 
-  const res = await fetch(`${BASE}${url}`, {
+  const body = init.body;
+  const isJsonString = typeof body === 'string';
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+  const isBlob = typeof Blob !== 'undefined' && body instanceof Blob;
+  const isURLSearch = typeof URLSearchParams !== 'undefined' && body instanceof URLSearchParams;
+
+  if (!isSimpleGet && body && !isFormData && !isBlob && !isURLSearch) {
+    if (!h.has('Content-Type')) h.set('Content-Type', 'application/json');
+  }
+
+  const res = await fetch(url.startsWith('http') ? url : `${BASE}${url}`, {
     ...init,
     method,
-    headers,
-    redirect: 'follow',
+    headers: h,
+    credentials: init.credentials ?? 'include',
+    redirect: init.redirect ?? 'follow',
   });
 
+  const ctype = res.headers.get('content-type') || '';
+  const isJson = ctype.includes('application/json');
+
   if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`${res.status} ${res.statusText} ${text ? `- ${text}` : ''}`);
+    const errorData = isJson
+      ? await res.json().catch(() => null)
+      : await res.text().catch(() => '');
+    console.error('[HTTP ERROR]', res.status, res.statusText, errorData);
+    throw new HttpError(res.status, res.statusText, errorData);
   }
+
   if (res.status === 204) return undefined as unknown as T;
-  return (await res.json()) as T;
+  return (isJson ? await res.json() : await res.text()) as T;
 }

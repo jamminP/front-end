@@ -39,7 +39,7 @@
 //   maxMembers?: number;
 // };
 
-// const currentUserId = 1001; // 로그인 연동 전 임시
+// const currentUserId = 18; // 로그인 연동 전 임시
 
 // export default function PostDetail() {
 //   const nav = useNavigate();
@@ -237,7 +237,7 @@ type VM = {
   max_members?: number;
 };
 
-const currentUserId = 1001;
+const currentUserId = 18;
 
 export default function PostDetailMock() {
   const nav = useNavigate();

@@ -14,7 +14,7 @@ export default function CreatePost() {
   const [sp] = useSearchParams();
   const initialCategory = (sp.get('category') as Cat) ?? 'free';
 
-  const currentUserId = 1001;
+  const currentUserId = 18;
 
   const freeMut = useCreateFree();
   const shareMut = useCreateShare();

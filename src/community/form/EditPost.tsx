@@ -41,7 +41,7 @@
 //   const cat: Cat = (catFromParams as Cat) ?? ((sp.get('category') as Cat) || 'free');
 //   const postId = Number(idParam ?? sp.get('id') ?? NaN);
 
-//   const currentUserId = 1001;
+//   const currentUserId = 18;
 
 //   type QK = readonly ['post', Cat, number];
 
@@ -243,7 +243,7 @@ export default function EditPostMock() {
   const [sp] = useSearchParams();
   const cat: Cat = (catFromParams as Cat) ?? ((sp.get('category') as Cat) || 'free');
   const postId = Number(idParam ?? sp.get('id') ?? NaN);
-  const currentUserId = 1001;
+  const currentUserId = 18;
 
   type QK = readonly ['post', 'mock', Cat, number];
   const q = useQuery<

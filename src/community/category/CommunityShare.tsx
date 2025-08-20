@@ -9,7 +9,7 @@ type QK = readonly ['mock', 'share', 'cursor'];
 
 export default function CommunityShare() {
   const navigate = useNavigate();
-  const currentUserId = 1001;
+  const currentUserId = 18;
 
   const q = useInfiniteQuery<
     CursorPage<SharePostResponse>,
@@ -35,10 +35,9 @@ export default function CommunityShare() {
     <div className="space-y-3">
       {items.map((sha) => {
         const post: Post = {
-          postId: sha.id,
+          id: sha.id,
           title: sha.title,
-          author: `user#${sha.author_id}`,
-          authorId: sha.author_id,
+          author_id: sha.author_id,
           category: 'share',
           content: sha.content,
           createdAt: sha.created_at,
@@ -48,7 +47,7 @@ export default function CommunityShare() {
         };
         return (
           <PostCard
-            key={post.postId}
+            key={post.id}
             post={post}
             currentUserId={currentUserId}
             onClick={(id) => navigate(`/community/share/${id}`)}

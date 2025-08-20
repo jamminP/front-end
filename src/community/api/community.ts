@@ -109,7 +109,7 @@ export const patchFreePost = (postId: number, body: FreePostUpdateRequest, userI
     body: JSON.stringify(body),
   });
 
-/// createPost
+/// createPost ///
 export const createFreePost = (body: FreePostRequest) =>
   http<FreePostResponse>('/api/v1/community/post/free', {
     method: 'POST',

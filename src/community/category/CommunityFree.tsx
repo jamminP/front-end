@@ -9,7 +9,7 @@ type QK = readonly ['mock', 'free', 'cursor'];
 
 export default function CommunityFree() {
   const navigate = useNavigate();
-  const currentUserId = 1001;
+  const currentUserId = 18;
 
   const q = useInfiniteQuery<
     CursorPage<FreePostResponse>,
@@ -35,10 +35,9 @@ export default function CommunityFree() {
     <div className="space-y-3">
       {items.map((it) => {
         const post: Post = {
-          postId: it.id,
+          id: it.id,
           title: it.title,
-          author: `user#${it.author_id}`,
-          authorId: it.author_id,
+          author_id: `${it.author_id}`,
           category: 'free',
           content: it.content,
           createdAt: it.created_at,
@@ -48,7 +47,7 @@ export default function CommunityFree() {
         };
         return (
           <PostCard
-            key={post.postId}
+            key={post.id}
             post={post}
             currentUserId={currentUserId}
             onClick={(id) => navigate(`/community/free/${id}`)}

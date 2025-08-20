@@ -304,10 +304,9 @@ export function mockSearchAllCursor(
 
 export const dummyPosts: Post[] = [
   {
-    post_id: 1,
+    id: 1,
     title: 'React 자료 모음.zip 공유합니다',
-    author: '쟂니',
-    authorId: 2,
+    author_id: '쟂니',
     category: 'share',
     content: 'React 공식 문서, 강의, 유튜브 모음입니다.',
     createdAt: '2025-08-06',
@@ -316,10 +315,9 @@ export const dummyPosts: Post[] = [
     comments: 53,
   },
   {
-    post_id: 2,
+    id: 2,
     title: '오늘 너무 덥다...',
-    author: '무무',
-    authorId: 3,
+    author_id: '아아',
     category: 'free',
     content: '밖에 나갔다가 익을 뻔',
     createdAt: '2025-08-06',
@@ -328,10 +326,9 @@ export const dummyPosts: Post[] = [
     comments: 34,
   },
   {
-    post_id: 3,
+    id: 3,
     title: 'React 스터디 주말 모집합니다',
-    author: '에뷔의에뷔',
-    authorId: 4,
+    author_id: '3',
     category: 'study',
     content: '기초부터 실전까지 함께해요!',
     createdAt: '2025-08-06',
