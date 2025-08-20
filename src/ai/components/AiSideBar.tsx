@@ -4,6 +4,7 @@ import SidebarItem from './AISideItem';
 import { FaRegFileLines } from 'react-icons/fa6';
 import ChatList from './ChatList';
 import type { ActionId } from '../types/types';
+import { useResolvedNickname } from '../hook/useUserProfile';
 
 type Props = {
   collapsed: boolean;
@@ -12,6 +13,8 @@ type Props = {
 };
 
 export default function AiSideBar({ collapsed, onToggle, onSelectAction }: Props) {
+  const nickname = useResolvedNickname();
+
   return (
     <div className="relative flex flex-col w-full h-full">
       <div className="h-10 flex items-center justify-between px-3">
@@ -44,7 +47,7 @@ export default function AiSideBar({ collapsed, onToggle, onSelectAction }: Props
 
       <div className={['mt-auto mb-3 flex', collapsed ? 'flex justify-center' : 'px-3'].join(' ')}>
         <div className="w-8 h-8 rounded-full bg-gray-200" />
-        {collapsed ? '' : <p className="ml-3 mt-0.5 text-xl">닉네임</p>}
+        {collapsed ? '' : <p className="ml-3 mt-0.5 text-xl">{nickname}</p>}
       </div>
     </div>
   );
