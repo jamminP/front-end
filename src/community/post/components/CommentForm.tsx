@@ -44,7 +44,6 @@
 //목 코드
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { mockCreateComment } from '../../__mock__/dummyPost';
 
 export default function CommentFormMock({
   postId,
@@ -59,7 +58,6 @@ export default function CommentFormMock({
   const [value, setValue] = useState('');
 
   const mut = useMutation({
-    mutationFn: () => mockCreateComment(postId, value.trim(), currentUserId, parentId),
     onSuccess: () => {
       setValue('');
       qc.invalidateQueries({ queryKey: ['comments', 'mock', postId] });
