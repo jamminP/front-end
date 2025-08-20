@@ -58,6 +58,9 @@ export class HttpError extends Error {
 // 요청 인터셉터
 http.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    if (typeof window !== 'undefined' && !navigator.onLine) {
+      return Promise.reject(new HttpError('오프라인 상태입니다.', { isNetwork: true }));
+    }
     return config;
   },
   (error) => Promise.reject(error),
