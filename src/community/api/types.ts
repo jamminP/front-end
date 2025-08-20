@@ -36,14 +36,18 @@ export interface StudyPostItem {
   badge?: string;
 }
 
-export interface AllPostItem {
+export type AllPostItem = {
   id: number;
+  contents: string;
+  category: 'free' | 'share' | 'study';
   title: string;
-  content: string;
-  category: Category;
-  author_id: number;
+  author_id: string;
+  views: number;
   created_at: string;
-}
+  badge?: string;
+  remaining?: number;
+  max_member?: number;
+};
 
 export interface FreePostRequest {
   title: string;
@@ -62,7 +66,7 @@ export interface FreePostResponse {
   author_id: string;
   views: number;
   created_at: string;
-  upd_ated_at: string;
+  updated_at: string;
   free_board?: FreeBoardResponse;
 }
 

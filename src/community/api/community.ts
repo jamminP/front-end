@@ -76,23 +76,28 @@ function pathForCursor(category: Category) {
   }
 }
 
-async function getListCursor<T>(category: Category, cursor: number | null | undefined, q?: string) {
-  const url = `${pathForCursor(category)}${qs({ cursor, q })}`;
+async function getListCursor<T>(
+  category: Category,
+  cursor: number | null | undefined,
+  q?: string,
+  limit = 20,
+) {
+  const url = `${pathForCursor(category)}${qs({ cursor, q, limit })}`;
   const res = await http<any>(url);
   return normalizeCursorPage<T>(res);
 }
 
-export const getFreeListCursor = (cursor: number | null | undefined, q?: string) =>
-  getListCursor<FreePostResponse>('free', cursor, q);
+export const getFreeListCursor = (cursor: number | null | undefined, q?: string, limit?: number) =>
+  getListCursor<FreePostResponse>('free', cursor, q, limit);
 
-export const getShareListCursor = (cursor: number | null | undefined, q?: string) =>
-  getListCursor<SharePostResponse>('share', cursor, q);
+export const getShareListCursor = (cursor: number | null | undefined, q?: string, limit?: number) =>
+  getListCursor<SharePostResponse>('share', cursor, q, limit);
 
-export const getStudyListCursor = (cursor: number | null | undefined, q?: string) =>
-  getListCursor<StudyPostResponse>('study', cursor, q);
+export const getStudyListCursor = (cursor: number | null | undefined, q?: string, limit?: number) =>
+  getListCursor<StudyPostResponse>('study', cursor, q, limit);
 
-export const getAllListCursor = (cursor: number | null | undefined, q?: string) =>
-  getListCursor<any>('all', cursor, q);
+export const getAllListCursor = (cursor: number | null | undefined, q?: string, limit?: number) =>
+  getListCursor<any>('all', cursor, q, limit);
 
 export type AnyPostResponse = FreePostResponse | SharePostResponse | StudyPostResponse;
 

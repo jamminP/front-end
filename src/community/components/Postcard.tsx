@@ -6,19 +6,17 @@ export interface Post {
   author_id: string;
   category: 'free' | 'share' | 'study';
   content: string;
-  createdAt: string;
+  created_at: string;
   views: number;
-  likes: number;
-  comments: number;
 
-  recruitStart?: string;
-  recruitEnd?: string;
-  studyStart?: string;
-  studyEnd?: string;
-  maxMembers?: number;
+  recruit_start?: string;
+  recruit_end?: string;
+  study_start?: string;
+  study_end?: string;
+  max_members?: number;
 }
 
-interface PostCardProps {
+export interface PostCardProps {
   post: Post;
   currentUserId: number;
   isAdmin?: boolean;
@@ -47,7 +45,7 @@ const PostCard: FC<PostCardProps> = ({ post, currentUserId, isAdmin = false, onC
     >
       <nav>
         <span className="font-semibold text-gray-800">{post.author_id}</span>
-        <span className="ml-2 text-xs">{post.createdAt}</span>
+        <span className="ml-2 text-xs">{post.created_at}</span>
       </nav>
       {canEdit && (
         <div className="flex gap-2">
@@ -64,17 +62,17 @@ const PostCard: FC<PostCardProps> = ({ post, currentUserId, isAdmin = false, onC
         <div className="mt-2 text-sm text-gray-700 space-y-1">
           <p>{post.content}</p>
           <p>
-            모집기간 : {post.recruitStart} ~ {post.recruitEnd}
+            모집기간 : {post.recruit_start} ~ {post.recruit_end}
           </p>
-          <p>모집인원 : {post.maxMembers}명</p>
+          <p>모집인원 : {post.max_members}명</p>
         </div>
       ) : (
         <p className="text-sm text-gray-700 mt-1 line-clamp-3">{post.content}</p>
       )}
       <div className="flex justify-end items-center mt-3 text-xs text-gray-500 gap-4">
-        <span>💬 {post.comments}</span>
+        {/* <span>💬 {post.comments}</span>
         <span>❤️ {post.likes}</span>
-        <span>👁 {post.views}</span>
+        <span>👁 {post.views}</span> */}
       </div>
     </div>
   );
