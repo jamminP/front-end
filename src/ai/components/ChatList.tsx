@@ -1,17 +1,26 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useUnifiedAiFeed } from '../hook/useUnifiedAiFeed';
+import { HttpError } from '../api/http';
 
 export default function ChatList({ collapsed }: { collapsed: boolean }) {
   if (collapsed) return null;
-  const userId = 23;
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } =
-    useUnifiedAiFeed(userId);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    error,
+    userIdReady,
+  } = useUnifiedAiFeed();
 
   const items = useMemo(() => (data?.pages ?? []).flatMap((p) => p.items), [data]);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     if (!scrollRef.current || !sentinelRef.current) return;
     const obs = new IntersectionObserver(
@@ -24,8 +33,19 @@ export default function ChatList({ collapsed }: { collapsed: boolean }) {
     return () => obs.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  if (isError)
-    return <div className="px-2 py-2 text-xs text-red-600">목록을 불러오지 못했습니다.</div>;
+  if (!userIdReady) return <div className="px-2 py-2 text-xs text-gray-500">유저 확인 중…</div>;
+
+  if (isError) {
+    const e = error as unknown;
+    let msg = '목록을 불러오지 못했습니다.';
+    if (e instanceof HttpError) {
+      if (e.isNetwork) msg = '네트워크 오류가 발생했습니다.';
+      else if (e.status === 404) msg = 'Not Found';
+      else if (e.status === 422) msg = '올바른 데이터 형식이 아닙니다.';
+      else msg = e.message || msg;
+    }
+    return <div className="px-2 py-2 text-xs text-red-600">{msg}</div>;
+  }
 
   return (
     <div ref={scrollRef} className="h-[56vh] overflow-y-auto">

@@ -10,19 +10,17 @@ export type UnifiedItem = {
 
 function extractTitle(output_data: string): string | null {
   try {
-    const v = JSON.parse(output_data);
-    if (v && typeof v === 'object' && typeof v.title === 'string' && v.title.trim()) {
-      return v.title.trim();
+    const parsedData = JSON.parse(output_data);
+    const jsonData = typeof parsedData === 'string' ? JSON.parse(parsedData) : parsedData;
+    if (
+      jsonData &&
+      typeof jsonData === 'object' &&
+      typeof jsonData.title === 'string' &&
+      jsonData.title.trim()
+    ) {
+      return jsonData.title.trim();
     }
-    if (typeof v === 'string') {
-      const v2 = JSON.parse(v);
-      if (v2 && typeof v2 === 'object' && typeof v2.title === 'string' && v2.title.trim()) {
-        return v2.title.trim();
-      }
-    }
-  } catch (err) {
-    console.log(`Error: ${err}`);
-  }
+  } catch (err) {}
   return null;
 }
 
@@ -35,18 +33,7 @@ export function toChatSummaries(plans: StudyPlan[]): ChatSummary[] {
 
 export function toPlanItems(plans: StudyPlan[]): UnifiedItem[] {
   return plans.map((p) => {
-    let title = `대화 ${p.id}`;
-    try {
-      const v = JSON.parse(p.output_data);
-      if (v && typeof v === 'object' && typeof v.title === 'string' && v.title.trim()) {
-        title = v.title.trim();
-      } else if (typeof v === 'string') {
-        const v2 = JSON.parse(v);
-        if (v2 && typeof v2 === 'object' && typeof v2.title === 'string' && v2.title.trim()) {
-          title = v2.title.trim();
-        }
-      }
-    } catch {}
+    const title = extractTitle(p.output_data) ?? `대화 ${p.id}`;
     return { id: String(p.id), title, createdAt: p.created_at, kind: 'plan' as const };
   });
 }
