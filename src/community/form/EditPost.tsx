@@ -87,11 +87,11 @@
 //       category: 'study',
 //       title: d.title,
 //       content: d.content,
-//       recruitStart: toInputDate(d.study_recruitment.recruit_start),
-//       recruitEnd: toInputDate(d.study_recruitment.recruit_end),
-//       studyStart: toInputDate(d.study_recruitment.study_start),
+//       recruit_start: toInputDate(d.study_recruitment.recruit_start),
+//       recruit_end: toInputDate(d.study_recruitment.recruit_end),
+//       study_start: toInputDate(d.study_recruitment.study_start),
 //       studyEnd: toInputDate(d.study_recruitment.study_end),
-//       maxMembers: d.study_recruitment.max_member,
+//       max_members: d.study_recruitment.max_member,
 //     };
 //   }, [q.data, cat]);
 
@@ -129,11 +129,11 @@
 //       const body: StudyPostUpdateRequest = {
 //         title: v.title,
 //         content: v.content,
-//         recruit_start: toISODate(v.recruitStart),
-//         recruit_end: toISODate(v.recruitEnd),
-//         study_start: toISODate(v.studyStart),
+//         recruit_start: toISODate(v.recruit_start),
+//         recruit_end: toISODate(v.recruit_end),
+//         study_start: toISODate(v.study_start),
 //         study_end: toISODate(v.studyEnd),
-//         max_member: v.maxMembers,
+//         max_member: v.max_members,
 //       };
 //       return await patchStudyPost(postId, body, currentUserId);
 //     },
@@ -280,11 +280,11 @@ export default function EditPostMock() {
       category: 'study',
       title: d.title,
       content: d.content,
-      recruitStart: toInputDate(d.study_recruitment.recruit_start),
-      recruitEnd: toInputDate(d.study_recruitment.recruit_end),
-      studyStart: toInputDate(d.study_recruitment.study_start),
+      recruit_start: toInputDate(d.study_recruitment.recruit_start),
+      recruit_end: toInputDate(d.study_recruitment.recruit_end),
+      study_start: toInputDate(d.study_recruitment.study_start),
       studyEnd: toInputDate(d.study_recruitment.study_end),
-      maxMembers: d.study_recruitment.max_member,
+      max_members: d.study_recruitment.max_member,
     };
   }, [q.data, cat]);
 
@@ -322,11 +322,11 @@ export default function EditPostMock() {
       const body: StudyPostUpdateRequest = {
         title: v.title,
         content: v.content,
-        recruit_start: toISODate(v.recruitStart),
-        recruit_end: toISODate(v.recruitEnd),
-        study_start: toISODate(v.studyStart),
-        study_end: toISODate(v.studyEnd),
-        max_member: v.maxMembers,
+        recruit_start: toISODate(v.recruit_start),
+        recruit_end: toISODate(v.recruit_end),
+        study_start: toISODate(v.study_start),
+        study_end: toISODate(v.study_end),
+        max_member: v.max_members,
       };
       return await mockPatchStudy(postId, body);
     },

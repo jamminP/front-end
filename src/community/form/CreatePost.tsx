@@ -76,11 +76,11 @@ export default function CreatePost() {
             title: v.title,
             content: v.content,
             user_id: currentUserId,
-            recruit_start: toISODate(v.recruitStart),
-            recruit_end: toISODate(v.recruitEnd),
-            study_start: toISODate(v.studyStart),
-            study_end: toISODate(v.studyEnd),
-            max_member: Number(v.maxMembers ?? 0),
+            recruit_start: toISODate(v.recruit_start),
+            recruit_end: toISODate(v.recruit_end),
+            study_start: toISODate(v.study_start),
+            study_end: toISODate(v.study_end),
+            max_member: Number(v.max_members ?? 0),
           };
           const res = await studyMut.mutateAsync(body);
           const id = (res as any).id ?? (res as any).post_id;

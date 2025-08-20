@@ -96,21 +96,25 @@ export const getAllListCursor = (cursor: number | null | undefined, q?: string) 
 
 export type AnyPostResponse = FreePostResponse | SharePostResponse | StudyPostResponse;
 
-export const createFreePost = (body: FreePostRequest) =>
-  http<FreePostResponse>('/api/v1/community/post/free', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(body),
-  });
-
 export const getFreePost = (postId: number) =>
   http<FreePostResponse>(`/api/v1/community/post/free/${postId}`);
 
 export const patchFreePost = (postId: number, body: FreePostUpdateRequest, userId?: number) =>
   http<FreePostResponse>(`/api/v1/community/post/free/${postId}`, {
     method: 'PATCH',
-    headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(userId ? { x_user_id: String(userId) } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+
+/// createPost
+export const createFreePost = (body: FreePostRequest) =>
+  http<FreePostResponse>('/api/v1/community/post/free', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(body),
   });
 
@@ -122,6 +126,13 @@ export const createSharePost = (body: SharePostRequest) =>
     body: JSON.stringify(body),
   });
 
+export const createStudyPost = (body: StudyPostRequest) =>
+  http<StudyPostResponse>('/api/v1/community/post/study', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
 export const getSharePost = (postId: number) =>
   http<SharePostResponse>(`/api/v1/community/post/share/${postId}`);
 
@@ -129,12 +140,6 @@ export const patchSharePost = (postId: number, body: SharePostUpdateRequest, use
   http<SharePostResponse>(`/api/v1/community/post/share/${postId}`, {
     method: 'PATCH',
     headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
-    body: JSON.stringify(body),
-  });
-
-export const createStudyPost = (body: StudyPostRequest) =>
-  http<StudyPostResponse>('/api/v1/community/post/study', {
-    method: 'POST',
     body: JSON.stringify(body),
   });
 
@@ -213,7 +218,6 @@ export const toPost = (src: _All): _Post => ({
   title: src.title ?? '',
   content: src.content ?? '',
   author_id: src.author_id,
-  author: `user#${src.author_id}`,
   category: src.category,
   created_at: src.created_at,
   views: toNum((src as any).views ?? (src as any).view_count),

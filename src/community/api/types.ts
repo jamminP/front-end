@@ -49,7 +49,7 @@ export interface FreePostRequest {
   title: string;
   content: string;
   user_id: number;
-  category?: 'free';
+  category: 'free';
 }
 export interface FreeBoardResponse {
   image_url: string | null;
@@ -59,11 +59,11 @@ export interface FreePostResponse {
   title: string;
   content: string;
   category: 'free';
-  author_id: number;
+  author_id: string;
   views: number;
-  free_board: FreeBoardResponse;
   created_at: string;
   updated_at: string;
+  free_board?: FreeBoardResponse;
 }
 
 export interface SharePostRequest {
@@ -82,7 +82,7 @@ export interface SharePostResponse {
   title: string;
   content: string;
   category: 'share';
-  author_id: number;
+  author_id: string;
   views: number;
   data_share: DataShareResponse;
   created_at: string;
@@ -112,7 +112,7 @@ export interface StudyPostResponse {
   title: string;
   content: string;
   category: 'study';
-  author_id: number;
+  author_id: string;
   views: number;
   study_recruitment: StudyRecruitmentResponse;
   created_at: string;
@@ -146,8 +146,8 @@ export interface CommentResponse {
   id: number;
   post_id: number;
   content: string;
-  author_id: number;
-  parent_id: number | null;
+  author_id: string;
+  parent_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -158,8 +158,7 @@ export interface Post {
   post_id: number;
   title: string;
   content: string;
-  author_id: number;
-  author: string;
+  author_id: string;
   category: Category;
   created_at: string;
   views: number;

@@ -9,7 +9,7 @@ type QK = readonly ['mock', 'study', 'cursor'];
 
 export default function CommunityStudy() {
   const navigate = useNavigate();
-  const currentUserId = 1001;
+  const currentUserId = 18;
 
   const q = useInfiniteQuery<
     CursorPage<StudyPostResponse>,
@@ -35,10 +35,9 @@ export default function CommunityStudy() {
     <div className="space-y-3">
       {items.map((std) => {
         const post: Post = {
-          postId: std.id,
+          id: std.id,
           title: std.title,
-          author: `user#${std.author_id}`,
-          authorId: std.author_id,
+          author_id: `${std.author_id}`,
           category: 'study',
           content: std.content,
           createdAt: std.created_at,
@@ -54,7 +53,7 @@ export default function CommunityStudy() {
         };
         return (
           <PostCard
-            key={post.postId}
+            key={post.id}
             post={post}
             currentUserId={currentUserId}
             onClick={(id) => navigate(`/community/study/${id}`)}

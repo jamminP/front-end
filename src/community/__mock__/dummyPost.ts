@@ -1,3 +1,4 @@
+import { string } from 'zod';
 import { CursorPage } from '../api/community';
 import type {
   FreePostResponse,
@@ -13,7 +14,7 @@ export type CommentTreeItem = {
   id: number;
   post_id: number;
   content: string;
-  author_id: number;
+  author_id: string;
   parent_id: number | null;
   created_at: string;
   updated_at: string;
@@ -27,7 +28,7 @@ export const dummyFree: FreePostResponse[] = [
     title: '오늘 날씨가 좋아요',
     content: '점심에 산책 어떰?',
     category: 'free',
-    author_id: 2001,
+    author_id: '이재은',
     views: 12,
     free_board: { image_url: null },
     created_at: iso('2025-08-08T10:00:00'),
@@ -38,7 +39,7 @@ export const dummyFree: FreePostResponse[] = [
     title: '무무의 잡담',
     content: '오늘 너무 덥다…',
     category: 'free',
-    author_id: 2002,
+    author_id: '이종찬',
     views: 34,
     free_board: { image_url: 'https://picsum.photos/seed/free102/800/400' },
     created_at: iso('2025-08-08T09:30:00'),
@@ -52,7 +53,7 @@ export const dummyShare: SharePostResponse[] = [
     title: 'React 자료 모음.zip 공유합니다',
     content: '공식 문서/정리/유튜브 링크 묶음',
     category: 'share',
-    author_id: 2004,
+    author_id: '박재민',
     views: 55,
     data_share: { file_url: 'https://example.com/react-pack.zip' },
     created_at: iso('2025-08-08T11:00:00'),
@@ -63,7 +64,7 @@ export const dummyShare: SharePostResponse[] = [
     title: '면접 질문 리스트',
     content: 'FE/BE 공통 50문항',
     category: 'share',
-    author_id: 2001,
+    author_id: '김희수',
     views: 18,
     data_share: { file_url: null },
     created_at: iso('2025-08-07T13:00:00'),
@@ -77,7 +78,7 @@ export const dummyStudy: StudyPostResponse[] = [
     title: 'React 스터디 주말 모집합니다',
     content: '기초부터 실전까지 함께해요!',
     category: 'study',
-    author_id: 2006,
+    author_id: '유승협',
     views: 41,
     study_recruitment: {
       recruit_start: iso('2025-08-07T00:00:00'),
@@ -98,7 +99,7 @@ export const dummyComments: Record<number, CommentTreeItem[]> = {
       id: 5001,
       post_id: 201,
       content: '와 감사합니다!',
-      author_id: 3001,
+      author_id: '권여진',
       parent_id: null,
       created_at: iso('2025-08-08T11:10:00'),
       updated_at: iso('2025-08-08T11:10:00'),
@@ -107,7 +108,7 @@ export const dummyComments: Record<number, CommentTreeItem[]> = {
       id: 5002,
       post_id: 201,
       content: '도움 많이 됐어요 🙏',
-      author_id: 3002,
+      author_id: '김은빈',
       parent_id: 5001,
       created_at: iso('2025-08-08T11:12:00'),
       updated_at: iso('2025-08-08T11:12:00'),
@@ -118,7 +119,7 @@ export const dummyComments: Record<number, CommentTreeItem[]> = {
       id: 5101,
       post_id: 301,
       content: '참여하고 싶어요!',
-      author_id: 3003,
+      author_id: '3003',
       parent_id: null,
       created_at: iso('2025-08-08T09:10:00'),
       updated_at: iso('2025-08-08T09:10:00'),
@@ -142,18 +143,18 @@ export const mockShareListCursor = (cursor: number | null | undefined) =>
 export const mockStudyListCursor = (cursor: number | null | undefined) =>
   Promise.resolve(makeCursorPage(dummyStudy, cursor));
 
-const likeStore = new Map<number, Set<number>>(); // postId -> Set<userId>
-export const mockReadLikeCount = async (postId: number) => ({
-  count: likeStore.get(postId)?.size ?? 0,
+const likeStore = new Map<number, Set<number>>(); // post_id -> Set<userId>
+export const mockReadLikeCount = async (post_id: number) => ({
+  count: likeStore.get(post_id)?.size ?? 0,
 });
-export const mockLikeStatus = async (postId: number, userId?: number) => ({
-  liked: !!userId && likeStore.get(postId)?.has(userId) === true,
+export const mockLikeStatus = async (post_id: number, userId?: number) => ({
+  liked: !!userId && likeStore.get(post_id)?.has(userId) === true,
 });
-export const mockToggleLike = async (postId: number, userId?: number) => {
+export const mockToggleLike = async (post_id: number, userId?: number) => {
   if (!userId) return;
-  const set = likeStore.get(postId) ?? new Set<number>();
+  const set = likeStore.get(post_id) ?? new Set<number>();
   set.has(userId) ? set.delete(userId) : set.add(userId);
-  likeStore.set(postId, set);
+  likeStore.set(post_id, set);
 };
 
 export const mockGetFree = async (id: number) => {
@@ -172,8 +173,8 @@ export const mockGetStudy = async (id: number) => {
   return d;
 };
 
-export const mockListComments = async (postId: number): Promise<CommentTreeItem[]> => {
-  return dummyComments[postId] ? [...dummyComments[postId]] : [];
+export const mockListComments = async (post_id: number): Promise<CommentTreeItem[]> => {
+  return dummyComments[post_id] ? [...dummyComments[post_id]] : [];
 };
 
 export const mockPatchFree = async (id: number, body: FreePostUpdateRequest) => {
@@ -243,17 +244,17 @@ export const mockDeletePost = async (category: 'free' | 'share' | 'study', id: n
 };
 
 export const mockCreateComment = async (
-  postId: number,
+  post_id: number,
   content: string,
-  userId: number,
-  parentId?: number,
+  user_id: string,
+  parent_id?: number,
 ): Promise<CommentTreeItem> => {
-  const list = (dummyComments[postId] = dummyComments[postId] ?? []);
-  const nextId = Math.max(0, ...list.map((c) => c.id)) + 1;
+  const list = (dummyComments[post_id] = dummyComments[post_id] ?? []);
+  const next_id = Math.max(0, ...list.map((c) => c.id)) + 1;
   const now = new Date().toISOString();
 
-  if (parentId != null) {
-    const parent = list.find((c) => c.id === parentId);
+  if (parent_id != null) {
+    const parent = list.find((c) => c.id === parent_id);
     if (!parent) throw new Error('parent not found');
     if (parent.parent_id !== null) {
       throw new Error('Replies are allowed only one level deep.');
@@ -261,11 +262,11 @@ export const mockCreateComment = async (
   }
 
   const item: CommentTreeItem = {
-    id: nextId,
-    post_id: postId,
+    id: next_id,
+    post_id: post_id,
     content,
-    author_id: userId,
-    parent_id: parentId ?? null,
+    author_id: user_id,
+    parent_id: parent_id ?? null,
     created_at: now,
     updated_at: now,
   };
@@ -303,7 +304,7 @@ export function mockSearchAllCursor(
 
 export const dummyPosts: Post[] = [
   {
-    postId: 1,
+    post_id: 1,
     title: 'React 자료 모음.zip 공유합니다',
     author: '쟂니',
     authorId: 2,
@@ -315,7 +316,7 @@ export const dummyPosts: Post[] = [
     comments: 53,
   },
   {
-    postId: 2,
+    post_id: 2,
     title: '오늘 너무 덥다...',
     author: '무무',
     authorId: 3,
@@ -327,7 +328,7 @@ export const dummyPosts: Post[] = [
     comments: 34,
   },
   {
-    postId: 3,
+    post_id: 3,
     title: 'React 스터디 주말 모집합니다',
     author: '에뷔의에뷔',
     authorId: 4,

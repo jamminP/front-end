@@ -24,7 +24,7 @@
 //   id: number;
 //   title: string;
 //   content: string;
-//   authorId: number;
+//   author_id: number;
 //   authorName: string;
 //   createdAt: string;
 //   views: number;
@@ -72,7 +72,7 @@
 //         id: d.id,
 //         title: d.title,
 //         content: d.content,
-//         authorId: d.author_id,
+//         authot_id: d.author_id,
 //         authorName: `user#${d.author_id}`,
 //         createdAt: d.created_at,
 //         views: d.views,
@@ -86,7 +86,7 @@
 //         id: d.id,
 //         title: d.title,
 //         content: d.content,
-//         authorId: d.author_id,
+//         authot_id: d.author_id,
 //         authorName: `user#${d.author_id}`,
 //         createdAt: d.created_at,
 //         views: d.views,
@@ -100,7 +100,7 @@
 //       id: d.id,
 //       title: d.title,
 //       content: d.content,
-//       authorId: d.author_id,
+//       authot_id: d.author_id,
 //       authorName: `user#${d.author_id}`,
 //       createdAt: d.created_at,
 //       views: d.views,
@@ -116,7 +116,7 @@
 //   if (qPost.status === 'pending') return <div className="p-6">불러오는 중…</div>;
 //   if (qPost.status === 'error' || !vm) return <div className="p-6 text-red-600">글을 불러오지 못했습니다.</div>;
 
-//   const canEdit = vm.authorId === currentUserId;
+//   const canEdit = vm.authot_id === currentUserId;
 
 //   const handleDelete = async () => {
 //     if (!confirm('정말 삭제하시겠어요?')) return;
@@ -224,18 +224,17 @@ type VM = {
   id: number;
   title: string;
   content: string;
-  authorId: number;
-  authorName: string;
-  createdAt: string;
+  author_id: string;
+  created_at: string;
   views: number;
   category: Cat;
   imageUrl?: string | null;
   fileUrl?: string | null;
-  recruitStart?: string;
-  recruitEnd?: string;
-  studyStart?: string;
-  studyEnd?: string;
-  maxMembers?: number;
+  recruit_start?: string;
+  recruit_end?: string;
+  study_start?: string;
+  study_end?: string;
+  max_members?: number;
 };
 
 const currentUserId = 1001;
@@ -271,12 +270,10 @@ export default function PostDetailMock() {
         id: d.id,
         title: d.title,
         content: d.content,
-        authorId: d.author_id,
-        authorName: `user#${d.author_id}`,
-        createdAt: d.created_at,
+        author_id: d.author_id,
+        created_at: d.created_at,
         views: d.views,
         category: 'free',
-        imageUrl: d.free_board?.image_url ?? null,
       };
     }
     if (category === 'share') {
@@ -285,9 +282,8 @@ export default function PostDetailMock() {
         id: d.id,
         title: d.title,
         content: d.content,
-        authorId: d.author_id,
-        authorName: `user#${d.author_id}`,
-        createdAt: d.created_at,
+        author_id: d.author_id,
+        created_at: d.created_at,
         views: d.views,
         category: 'share',
         fileUrl: d.data_share?.file_url ?? null,
@@ -298,16 +294,15 @@ export default function PostDetailMock() {
       id: d.id,
       title: d.title,
       content: d.content,
-      authorId: d.author_id,
-      authorName: `user#${d.author_id}`,
-      createdAt: d.created_at,
+      author_id: d.author_id,
+      created_at: d.created_at,
       views: d.views,
       category: 'study',
-      recruitStart: d.study_recruitment.recruit_start,
-      recruitEnd: d.study_recruitment.recruit_end,
-      studyStart: d.study_recruitment.study_start,
-      studyEnd: d.study_recruitment.study_end,
-      maxMembers: d.study_recruitment.max_member,
+      recruit_start: d.study_recruitment.recruit_start,
+      recruit_end: d.study_recruitment.recruit_end,
+      study_start: d.study_recruitment.study_start,
+      study_end: d.study_recruitment.study_end,
+      max_members: d.study_recruitment.max_member,
     };
   }, [qPost.data, category]);
 
@@ -315,15 +310,15 @@ export default function PostDetailMock() {
   if (qPost.status === 'error' || !vm)
     return <div className="p-6 text-red-600">글을 불러오지 못했습니다.</div>;
 
-  const canEdit = vm.authorId === currentUserId;
+  const canEdit = vm.id === currentUserId;
 
   return (
     <div className="max-w-[1000px]  mx-auto">
       <div className="bg-gray-100 rounded-2xl shadow px-6 py-5">
         <div className="flex items-start justify-between">
           <div>
-            <div className="font-semibold text-gray-800">{vm.authorName}</div>
-            <div className="text-xs text-gray-500">{vm.createdAt}</div>
+            <div className="font-semibold text-gray-800">{vm.author_id}</div>
+            <div className="text-xs text-gray-500">{vm.created_at}</div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -352,12 +347,12 @@ export default function PostDetailMock() {
         {vm.category === 'study' && (
           <div className=" text-sm text-gray-700 space-y-1">
             <div>
-              모집기간: {vm.recruitStart} ~ {vm.recruitEnd}
+              모집기간: {vm.recruit_start} ~ {vm.recruit_end}
             </div>
             <div>
-              스터디기간: {vm.studyStart} ~ {vm.studyEnd}
+              스터디기간: {vm.study_start} ~ {vm.study_end}
             </div>
-            <div>모집인원: {vm.maxMembers}명</div>
+            <div>모집인원: {vm.max_members}명</div>
           </div>
         )}
         {vm.category === 'share' && vm.fileUrl && (

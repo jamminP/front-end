@@ -1,10 +1,9 @@
 import React, { FC } from 'react';
 
 export interface Post {
-  postId: number;
+  id: number;
   title: string;
-  author: string;
-  authorId: number;
+  author_id: string;
   category: 'free' | 'share' | 'study';
   content: string;
   createdAt: string;
@@ -27,10 +26,10 @@ interface PostCardProps {
 }
 
 const PostCard: FC<PostCardProps> = ({ post, currentUserId, isAdmin = false, onClick }) => {
-  const canEdit = isAdmin || post.authorId === currentUserId;
+  const canEdit = isAdmin || post.id === currentUserId;
 
   const handleCardClick = () => {
-    onClick(post.postId);
+    onClick(post.id);
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
@@ -47,7 +46,7 @@ const PostCard: FC<PostCardProps> = ({ post, currentUserId, isAdmin = false, onC
       onClick={handleCardClick}
     >
       <nav>
-        <span className="font-semibold text-gray-800">{post.author}</span>
+        <span className="font-semibold text-gray-800">{post.author_id}</span>
         <span className="ml-2 text-xs">{post.createdAt}</span>
       </nav>
       {canEdit && (
