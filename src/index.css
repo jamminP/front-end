@@ -35,7 +35,7 @@ body {
   font-display: swap;
   src:
     local('Pretendard Bold'),
-    url('/fonts/pretendard/woff2/Pretendard-Bold.woff2') format('woff2');
+    url('/fonts/pretendard/Pretendard-Bold.woff2') format('woff2');
 }
 
 @font-face {
@@ -44,7 +44,7 @@ body {
   font-display: swap;
   src:
     local('Pretendard SemiBold'),
-    url('/fonts/pretendard/woff2/Pretendard-SemiBold.woff2') format('woff2');
+    url('/fonts/pretendard/Pretendard-SemiBold.woff2') format('woff2');
 }
 
 @font-face {
