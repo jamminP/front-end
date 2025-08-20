@@ -41,6 +41,11 @@ export default function MypageContent() {
   // 작성한 글
   const [myPosts, setMyPosts] = useState<MyPost[]>([]);
   const [myPostsLoading, setMyPostsLoading] = useState(true);
+  const [cursor, setCursor] = useState<number | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+
+  // 카테고리
+  const [category, setCategory] = useState<'all' | 'free' | 'study' | 'share'>('all');
 
   // 찜한 글
   const [likedPosts, setLikedPosts] = useState<MyPost[]>([]);
@@ -53,7 +58,6 @@ export default function MypageContent() {
   };
   const closeNicknameModal = () => setNicknameModal(false);
 
-  // 닉네임 수정 요청
   const handleNicknameUpdate = async () => {
     if (!nicknameInput.trim()) {
       alert('닉네임을 입력해주세요');
@@ -79,10 +83,14 @@ export default function MypageContent() {
   };
 
   // 작성한 글 불러오기
-  const fetchPosts = async (cursor?: number) => {
+  const fetchPosts = async (nextCursor: number | null = null, selectedCategory?: string) => {
+    if (!hasMore && nextCursor) return;
+    setMyPostsLoading(true);
     try {
       const params: any = { limit: 6 };
-      if (cursor) params.cursor = cursor;
+      if (nextCursor) params.cursor = nextCursor;
+      if (selectedCategory && selectedCategory !== 'all') params.category = selectedCategory;
+
       const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo/posts', {
         params,
         withCredentials: true,
@@ -94,15 +102,18 @@ export default function MypageContent() {
         content: item.content,
         date: item.created_at,
       }));
-      setMyPosts(posts);
+
+      setMyPosts((prev) => [...prev, ...posts]);
+      setCursor(res.data.next_cursor);
+      setHasMore(res.data.next_cursor !== 0);
     } catch (err) {
-      console.error('게시글을 불러오지 못했습니다');
+      console.error('게시글을 불러오지 못했습니다', err);
     } finally {
       setMyPostsLoading(false);
     }
   };
 
-  // 찜한 글 (현재는 더미, 나중에 API 대체)
+  // 찜한 글 (더미)
   const fetchLikedPosts = async () => {
     try {
       const dummyLikedPosts: MyPost[] = [
@@ -177,10 +188,37 @@ export default function MypageContent() {
         )}
       </div>
 
+      {/* 카테고리 버튼 */}
+      <div className="flex gap-3 mt-5">
+        {['all', 'share', 'free', 'study'].map((cat) => (
+          <button
+            key={cat}
+            className={`px-4 py-2 rounded-full font-medium ${
+              category === cat ? 'bg-[#1b3043] text-white' : 'bg-gray-200 text-gray-700'
+            }`}
+            onClick={() => {
+              setCategory(cat as any);
+              setMyPosts([]);
+              setCursor(null);
+              setHasMore(true);
+              fetchPosts(null, cat as any);
+            }}
+          >
+            {cat === 'all'
+              ? '전체'
+              : cat === 'share'
+                ? '자료공유'
+                : cat === 'free'
+                  ? '자유'
+                  : '스터디'}
+          </button>
+        ))}
+      </div>
+
       {/* 작성한 글 */}
       <div className="m-[60px_0]">
         <h3 className="text-[1.5rem] font-light tracking-[-0.05rem] pl-[5px]">작성한 글 보기</h3>
-        {myPostsLoading ? (
+        {myPostsLoading && myPosts.length === 0 ? (
           <ul className="flex flex-wrap gap-[2%] mt-[15px]">
             {Array(6)
               .fill(0)
@@ -189,11 +227,23 @@ export default function MypageContent() {
               ))}
           </ul>
         ) : myPosts.length > 0 ? (
-          <ul className="flex flex-wrap gap-[2%] mt-[15px]">
-            {myPosts.map((post) => (
-              <MyPostCard key={post.id} {...post} />
-            ))}
-          </ul>
+          <>
+            <ul className="flex flex-wrap gap-[2%] mt-[15px]">
+              {myPosts.map((post) => (
+                <MyPostCard key={post.id} {...post} />
+              ))}
+            </ul>
+            {hasMore && (
+              <div className="flex justify-center mt-5">
+                <button
+                  className="px-5 py-2 bg-[#1b3043] text-white rounded-full"
+                  onClick={() => fetchPosts(cursor, category)}
+                >
+                  더보기
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <p>아직 작성한 글이 없습니다</p>
         )}
