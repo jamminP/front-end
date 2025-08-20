@@ -5,7 +5,7 @@ import type {
   SearchIn,
   SearchPostItem,
 } from '../api/types';
-import { dummyFree, dummyPosts, dummyShare, dummyStudy } from '../__mock__/dummyPost';
+import { dummyAll, dummyFree, dummyShare, dummyStudy } from '../__mock__/dummyPost';
 
 const enc = (i: number) => btoa(String(i));
 const dec = (c: string | null | undefined) => (c ? Number(atob(c)) || 0 : 0);
@@ -23,7 +23,7 @@ const POOLS: Record<Category, SearchPostItem[]> = {
   free: dummyFree.map(MAP),
   share: dummyShare.map(MAP),
   study: dummyStudy.map(MAP),
-  all: dummyPosts.map(MAP),
+  all: dummyAll.map(MAP),
 };
 
 const norm = (s: string) => (s ?? '').toLowerCase();

@@ -35,7 +35,7 @@ export default function CommunityAll() {
                 views: post.views,
               }}
               currentUserId={currentUserId}
-              onClick={() => navigate(`/community/post/${post.id}`)}
+              onClick={() => navigate(`/community/${post.category}/${post.id}`)}
             />
           </li>
         ))}

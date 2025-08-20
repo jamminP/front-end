@@ -164,6 +164,19 @@ export const joinStudyPost = (postId: number, userId: number) =>
     body: JSON.stringify({ user_id: userId }),
   });
 
+function normalizeComments(raw: any): CommentResponse[] {
+  if (Array.isArray(raw)) return raw as CommentResponse[];
+  if (Array.isArray(raw?.items)) return raw.items as CommentResponse[];
+  if (Array.isArray(raw?.data)) return raw.data as CommentResponse[];
+  if (Array.isArray(raw?.item)) return raw.item as CommentResponse[];
+  return [];
+}
+
+export const getComments = async (postId: number): Promise<CommentResponse[]> => {
+  const raw = await http<any>(`/api/v1/community/post/${postId}/comments`); // ← comments 복수형 확인
+  return normalizeComments(raw);
+};
+
 export const createComment = (postId: number, content: string, userId: number, parentId?: number) =>
   http<CommentResponse>(`/api/v1/community/post/${postId}/comment`, {
     method: 'POST',

@@ -5,7 +5,8 @@ export interface FreePostItem {
   title: string;
   content: string;
   category: 'free';
-  author_id: number;
+  author_id: string;
+  views: number;
   created_at: string;
   imageUrl?: string | null;
 }
@@ -15,10 +16,11 @@ export interface SharePostItem {
   title: string;
   content: string;
   category: 'share';
-  author_id: number;
+  author_id: string;
+  views: number;
   created_at: string;
-  fileUrl?: string | null;
-  imgUrl?: string | null;
+  updated_at: string;
+  data_share?: { file_url?: string | null; img_url?: string | null; description?: string | null };
 }
 
 export interface StudyPostItem {
@@ -26,14 +28,18 @@ export interface StudyPostItem {
   title: string;
   content: string;
   category: 'study';
-  author_id: number;
+  author_id: string;
+  views: number;
   created_at: string;
-  recruit_start?: string;
-  recruit_end?: string;
-  study_start?: string;
-  study_end?: string;
-  max_members?: number;
-  badge?: string;
+  updated_at: string;
+  study_recruitment: {
+    badge?: string;
+    max_member?: number;
+    recruit_start?: string;
+    recruit_end?: string;
+    study_start?: string;
+    study_end?: string;
+  };
 }
 
 export type AllPostItem = {
@@ -151,7 +157,7 @@ export interface CommentResponse {
   post_id: number;
   content: string;
   author_id: string;
-  parent_id: string | null;
+  parent_id: number | null;
   created_at: string;
   updated_at: string;
 }

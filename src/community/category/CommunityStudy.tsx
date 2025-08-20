@@ -1,4 +1,3 @@
-// /src/Community/Category/CommunityStudy.tsx
 import { useMemo, useState } from 'react';
 import { useInfiniteCursor } from '../hook/useInfiniteCursor';
 import { useIntersection } from '../hook/useIntersection';
@@ -19,9 +18,9 @@ type StudyPostResponse = {
 };
 
 export default function CommunityStudy() {
-  const [q, setQ] = useState('');
+  const [q] = useState('');
   const navigate = useNavigate();
-  const currentUserId = 0; // TODO: 로그인 상태에서 받아오기
+  const currentUserId = 0;
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteCursor<StudyPostResponse>('study', q);
@@ -40,7 +39,7 @@ export default function CommunityStudy() {
             <PostCard
               post={post}
               currentUserId={currentUserId}
-              onClick={() => navigate(`/community/post/study/${post.id}`)}
+              onClick={() => navigate(`/community/study/${post.id}`)}
             />
             {(post.badge || post.remaining !== undefined) && (
               <div className="mt-1 text-sm text-gray-600">
@@ -57,7 +56,7 @@ export default function CommunityStudy() {
       <div ref={sentinelRef} className="h-12" />
       {isFetchingNextPage && <div className="py-4 text-center">더 불러오는 중…</div>}
       {!hasNextPage && !isLoading && items.length > 0 && (
-        <div className="py-6 text-center text-gray-500">마지막이에요.</div>
+        <div className="py-6 text-center text-gray-500">더 이상 불러올 게시물이 없습니다.</div>
       )}
     </>
   );

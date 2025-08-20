@@ -15,7 +15,7 @@ type FreePostResponse = {
 };
 
 export default function CommunityFree() {
-  const [q, setQ] = useState('');
+  const [q] = useState('');
   const navigate = useNavigate();
   const currentUserId = 18;
 
@@ -36,7 +36,7 @@ export default function CommunityFree() {
             <PostCard
               post={post}
               currentUserId={currentUserId}
-              onClick={() => navigate(`/community/post/free/${post.id}`)}
+              onClick={() => navigate(`/community/free/${post.id}`)}
             />
           </li>
         ))}

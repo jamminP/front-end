@@ -17,7 +17,7 @@ type SharePostResponse = {
 };
 
 export default function CommunityShare() {
-  const [q, setQ] = useState('');
+  const [q] = useState('');
   const navigate = useNavigate();
   const currentUserId = 18;
 
@@ -38,7 +38,7 @@ export default function CommunityShare() {
             <PostCard
               post={post}
               currentUserId={currentUserId}
-              onClick={() => navigate(`/community/post/share/${post.id}`)}
+              onClick={() => navigate(`/community/share/${post.id}`)}
             />
           </li>
         ))}
