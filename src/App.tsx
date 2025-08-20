@@ -22,61 +22,33 @@ import useAuthStore from './store/authStore';
 import axios from 'axios';
 
 function AppContent() {
+  const setAuthData = useAuthStore((state) => state.setAuthData);
+  const logout = useAuthStore((state) => state.logout);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const location = useLocation();
-  const { isInitialized, setAuthData, logout, setInitialized } = useAuthStore();
-
-  // localStorage 플래그 체크 함수
-  const hasAuthFlag = useCallback((): boolean => {
-    return localStorage.getItem('hasAuthToken') === 'true';
-  }, []);
 
   const checkLogin = useCallback(async () => {
     try {
       const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
         withCredentials: true,
       });
-      setAuthData(res.data); // 성공시 localStorage 플래그 저장
+      if (!isLoggedIn) setAuthData(res.data);
     } catch (err: any) {
+      // 401이면 조용히 로그아웃 처리
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         logout();
       } else {
-        console.error('Auth check error:', err);
+        // 다른 에러는 콘솔에 출력
+        console.error(err);
       }
-      setInitialized();
     }
-  }, [setAuthData, logout, setInitialized]);
+  }, [setAuthData, logout, isLoggedIn]);
 
   useEffect(() => {
-    if (!isInitialized) {
-      if (location.pathname === '/login') {
-        // 로그인 페이지는 바로 초기화
-        setInitialized();
-      } else if (hasAuthFlag()) {
-        // localStorage 플래그가 있을 때만 API 호출
-        checkLogin();
-      } else {
-        // 플래그가 없으면 API 호출 없이 바로 초기화
-        setInitialized();
-      }
+    if (location.pathname !== '/login' && !isLoggedIn) {
+      checkLogin();
     }
-  }, [isInitialized, location.pathname, checkLogin, setInitialized]);
-
-  // 초기화가 완료되지 않았으면 로딩 표시
-  if (!isInitialized) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          fontSize: '18px',
-        }}
-      >
-        Loading...
-      </div>
-    );
-  }
+  }, [location.pathname, checkLogin, isLoggedIn]);
 
   return (
     <>
