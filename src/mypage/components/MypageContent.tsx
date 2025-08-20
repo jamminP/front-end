@@ -188,36 +188,37 @@ export default function MypageContent() {
         )}
       </div>
 
-      {/* 카테고리 버튼 */}
-      <div className="flex gap-3 mt-5">
-        {['all', 'share', 'free', 'study'].map((cat) => (
-          <button
-            key={cat}
-            className={`px-4 py-2 rounded-full font-medium ${
-              category === cat ? 'bg-[#1b3043] text-white' : 'bg-gray-200 text-gray-700'
-            }`}
-            onClick={() => {
-              setCategory(cat as any);
-              setMyPosts([]);
-              setCursor(null);
-              setHasMore(true);
-              fetchPosts(null, cat as any);
-            }}
-          >
-            {cat === 'all'
-              ? '전체'
-              : cat === 'share'
-                ? '자료공유'
-                : cat === 'free'
-                  ? '자유'
-                  : '스터디'}
-          </button>
-        ))}
-      </div>
-
       {/* 작성한 글 */}
       <div className="m-[60px_0]">
         <h3 className="text-[1.5rem] font-light tracking-[-0.05rem] pl-[5px]">작성한 글 보기</h3>
+
+        {/* 카테고리 버튼 */}
+        <div className="flex md:gap-3 gap-2 mt-2">
+          {['all', 'share', 'free', 'study'].map((cat) => (
+            <button
+              key={cat}
+              className={`md:px-4 md:py-2 px-3 py-2 rounded-full font-medium md:text-[1rem] text-[.9rem] ${
+                category === cat ? 'bg-[#1b3043] text-white' : 'bg-gray-200 text-gray-700'
+              }`}
+              onClick={() => {
+                setCategory(cat as any);
+                setMyPosts([]);
+                setCursor(null);
+                setHasMore(true);
+                fetchPosts(null, cat as any);
+              }}
+            >
+              {cat === 'all'
+                ? '전체'
+                : cat === 'share'
+                  ? '자료공유'
+                  : cat === 'free'
+                    ? '자유'
+                    : '스터디'}
+            </button>
+          ))}
+        </div>
+
         {myPostsLoading && myPosts.length === 0 ? (
           <ul className="flex flex-wrap gap-[2%] mt-[15px]">
             {Array(6)
@@ -245,7 +246,9 @@ export default function MypageContent() {
             )}
           </>
         ) : (
-          <p>아직 작성한 글이 없습니다</p>
+          <p className="text-[1.2rem] text-[#999] font-light tracking-[-0.03rem] mt-5 pl-[5px]">
+            아직 작성한 글이 없습니다
+          </p>
         )}
       </div>
 
