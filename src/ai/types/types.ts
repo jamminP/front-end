@@ -18,7 +18,7 @@ export type StudyPlanListRes = {
 export type SummaryItem = {
   id: number;
   user_id: number;
-  title: string;
+  title?: string;
   input_type: string;
   input_data: string;
   summary_type: string;
