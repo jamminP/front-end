@@ -25,21 +25,23 @@ function AppContent() {
   const location = useLocation();
   const { isInitialized, setAuthData, logout, setInitialized } = useAuthStore();
 
+  // localStorage 플래그 체크 함수
+  const hasAuthFlag = (): boolean => {
+    return localStorage.getItem('hasAuthToken') === 'true';
+  };
+
   const checkLogin = useCallback(async () => {
     try {
       const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
         withCredentials: true,
       });
-      setAuthData(res.data); // setAuthData에서 isInitialized도 true로 설정됨
+      setAuthData(res.data); // 성공시 localStorage 플래그 저장
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
-        // 401은 예상된 상황이므로 조용히 처리
         logout();
       } else {
-        // 네트워크 오류 등 예상치 못한 에러만 콘솔에 출력
         console.error('Auth check error:', err);
       }
-      // 어떤 경우든 초기화 완료 처리
       setInitialized();
     }
   }, [setAuthData, logout, setInitialized]);
@@ -47,11 +49,16 @@ function AppContent() {
   useEffect(() => {
     if (!isInitialized) {
       if (location.pathname === '/login') {
-        // 로그인 페이지는 API 호출 없이 바로 초기화 완료
+        // 로그인 페이지는 바로 초기화
         setInitialized();
-      } else {
-        // 다른 페이지들은 로그인 상태 체크
+      } else if (hasAuthFlag()) {
+        // localStorage 플래그가 있을 때만 API 호출
+        console.log('Auth flag found, checking login status...');
         checkLogin();
+      } else {
+        // 플래그가 없으면 API 호출 없이 바로 초기화
+        console.log('No auth flag found, skipping login check');
+        setInitialized();
       }
     }
   }, [isInitialized, location.pathname, checkLogin, setInitialized]);
