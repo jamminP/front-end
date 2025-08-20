@@ -26,9 +26,9 @@ function AppContent() {
   const { isInitialized, setAuthData, logout, setInitialized } = useAuthStore();
 
   // localStorage 플래그 체크 함수
-  const hasAuthFlag = (): boolean => {
+  const hasAuthFlag = useCallback((): boolean => {
     return localStorage.getItem('hasAuthToken') === 'true';
-  };
+  }, []);
 
   const checkLogin = useCallback(async () => {
     try {
@@ -53,11 +53,9 @@ function AppContent() {
         setInitialized();
       } else if (hasAuthFlag()) {
         // localStorage 플래그가 있을 때만 API 호출
-        console.log('Auth flag found, checking login status...');
         checkLogin();
       } else {
         // 플래그가 없으면 API 호출 없이 바로 초기화
-        console.log('No auth flag found, skipping login check');
         setInitialized();
       }
     }
