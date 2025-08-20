@@ -39,8 +39,12 @@ export default function MypageContent() {
     setNicknameModal(false);
   };
 
+  //닉네임 수정
   const handleNicknameUpdate = async () => {
-    if (!nicknameInput.trim()) return; //공백 방지
+    if (!nicknameInput.trim()) {
+      alert('닉네임을 입력해주세요');
+      return;
+    } //공백 방지
     try {
       const res = await axios.patch(
         'https://backend.evida.site/api/v1/users/myinfo',
@@ -52,13 +56,33 @@ export default function MypageContent() {
           ...user,
           nickname: res.data.new_nickname,
         });
+        alert('수정되었습니다');
       }
       closeNicknameModal();
     } catch (err) {
       console.error('닉네임 변경 실패', err);
     }
   };
-  //더미데이터
+
+  //게시글 불러오기
+  const fetchPosts = async (cursor?: number) => {
+    try {
+      const params: any = { limit: 6 };
+      if (cursor) params.cursor = cursor;
+      const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo/posts', {
+        params,
+        withCredentials: true,
+      });
+      console.log(res.data);
+      return res.data;
+    } catch (err) {
+      console.error('게시글을 불러오지 못했습니다');
+    }
+  };
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
   const dummyMyPosts: MyPost[] = [
     {
       id: 1,
