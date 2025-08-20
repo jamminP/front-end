@@ -4,7 +4,7 @@ import { getResolvedUserId } from '../hook/useUserId';
 import { pickStudyPlans } from './normalize';
 
 export function getStudyPlans(userId: number, limit = 10, offset = 0) {
-  return http.get<StudyPlanListRes>('/api/v1/ai/study_plan', {
+  return http.get<StudyPlanListRes>(`/api/v1/ai/study_plan/${userId}`, {
     params: { user_id: userId, limit, offset },
   });
 }
