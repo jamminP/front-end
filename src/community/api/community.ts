@@ -13,6 +13,8 @@ import {
   Post,
   AllPostResponse,
   SearchIn,
+  TopCategory,
+  TopWeeklyResponse,
 } from './types';
 
 export type CommentTreeItem = {
@@ -260,3 +262,20 @@ export async function searchPostsAllPages(
   mapped.sort((a, b) => new Date(b.created_at).valueOf() - new Date(a.created_at).valueOf());
   return mapped;
 }
+
+// 위클리 탑5
+const TOP_WEEKLY_PATH: Record<TopCategory, string> = {
+  study: '/api/v1/community/post/study/top-weekly',
+  free: '/api/v1/community/post/free/top-weekly',
+  share: '/api/v1/community/post/share/top-weekly',
+};
+
+export async function getTopWeekly(category: TopCategory, limit = 5): Promise<TopWeeklyResponse> {
+  const path = TOP_WEEKLY_PATH[category];
+  const url = `${path}?limit=${encodeURIComponent(limit)}`;
+  return http<TopWeeklyResponse>(url);
+}
+
+export const getTopWeeklyStudy = (limit = 5) => getTopWeekly('study', limit);
+export const getTopWeeklyFree = (limit = 5) => getTopWeekly('free', limit);
+export const getTopWeeklyShare = (limit = 5) => getTopWeekly('share', limit);
