@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import '../css/calendar.css';
-import StudyPlanFetcher from './StudyPlanFetcher';
+import axios from 'axios';
 
 interface Event {
   id: string;
@@ -18,11 +18,54 @@ const formatDate = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
-interface MyCalendarProps {
-  aiPlanId?: string; // AI 채팅에서 받아오는 planId
-}
+// StudyPlanFetcher 기능 통합
+const fetchStudyPlanEvents = async (userId: number): Promise<Event[]> => {
+  try {
+    const res = await axios.get(
+      `https://backend.evida.site/api/v1/ai/study_plan/?user_id=${userId}&limit=10&offset=0`,
+    );
+    if (!res.data.success) return [];
 
-export default function MyCalendar({ aiPlanId }: MyCalendarProps) {
+    const plans = res.data.data.study_plans;
+    const events: Event[] = [];
+
+    plans.forEach((plan: any) => {
+      const output = JSON.parse(plan.output_data);
+      output.weekly_plans.forEach((week: any) => {
+        // daily_goals 배열이 있을 경우 날짜 단위로 이벤트 생성
+        if (week.daily_goals) {
+          week.daily_goals.forEach((goal: string, idx: number) => {
+            // 계획 시작일 기준으로 날짜 계산
+            const startDate = new Date(plan.start_date);
+            startDate.setDate(startDate.getDate() + idx);
+            events.push({
+              id: `${plan.id}-${week.week}-${idx}`,
+              title: week.title,
+              description: goal,
+              date: formatDate(startDate),
+            });
+          });
+        } else {
+          // daily_goals 없으면 주 단위 제목만 이벤트로 추가
+          const startDate = new Date(plan.start_date);
+          events.push({
+            id: `${plan.id}-${week.week}`,
+            title: week.title,
+            description: week.topics?.join('\n') || '',
+            date: formatDate(startDate),
+          });
+        }
+      });
+    });
+
+    return events;
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+};
+
+export default function MyCalendar() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [events, setEvents] = useState<Event[]>(() => {
     const stored = localStorage.getItem('calendar-events');
@@ -36,15 +79,24 @@ export default function MyCalendar({ aiPlanId }: MyCalendarProps) {
   const [formDescription, setFormDescription] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
-  const [moreEvents, setMoreEvents] = useState<{
-    date: string;
-    events: Event[];
-  }>({ date: '', events: [] });
+  const [moreEvents, setMoreEvents] = useState<{ date: string; events: Event[] }>({
+    date: '',
+    events: [],
+  });
 
-  // 로컬스토리지에 이벤트 저장
+  // 로컬스토리지 저장
   useEffect(() => {
     localStorage.setItem('calendar-events', JSON.stringify(events));
   }, [events]);
+
+  // AI 계획 가져오기 (userId 17)
+  useEffect(() => {
+    const fetchData = async () => {
+      const aiEvents = await fetchStudyPlanEvents(17);
+      setEvents((prev) => [...prev, ...aiEvents]);
+    };
+    fetchData();
+  }, []);
 
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);
@@ -71,16 +123,11 @@ export default function MyCalendar({ aiPlanId }: MyCalendarProps) {
 
     setShowForm(false);
     setModalEvent(null);
-    if (isEditing) {
-      alert('수정되었습니다');
-    } else {
-      alert('등록되었습니다');
-    }
+    alert(isEditing ? '수정되었습니다' : '등록되었습니다');
   };
 
   const handleDelete = (id: string) => {
     if (!confirm('삭제하시겠습니까?')) return;
-
     setEvents((prev) => prev.filter((e) => e.id !== id));
     setModalEvent(null);
   };
@@ -107,14 +154,6 @@ export default function MyCalendar({ aiPlanId }: MyCalendarProps) {
     <div>
       <h1 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">캘린더</h1>
 
-      {/* AI planId가 있을 때만 StudyPlanFetcher 실행 */}
-      {aiPlanId && (
-        <StudyPlanFetcher
-          planId={aiPlanId}
-          onEventsGenerated={(newEvents) => setEvents((prev) => [...prev, ...newEvents])}
-        />
-      )}
-
       <Calendar
         onClickDay={handleDayClick}
         value={selectedDate}
@@ -139,10 +178,7 @@ export default function MyCalendar({ aiPlanId }: MyCalendarProps) {
                   className="more"
                   onClick={(ev) => {
                     ev.stopPropagation();
-                    setMoreEvents({
-                      date: formatDate(date),
-                      events: dayEvents,
-                    });
+                    setMoreEvents({ date: formatDate(date), events: dayEvents });
                   }}
                 >
                   +{dayEvents.length - 3} more
@@ -162,7 +198,7 @@ export default function MyCalendar({ aiPlanId }: MyCalendarProps) {
         ))}
       </ul>
 
-      {/* 일정 상세 모달 */}
+      {/* 상세 모달 */}
       {modalEvent && (
         <div className="modal-overlay">
           <div className="modal-container">
@@ -221,7 +257,7 @@ export default function MyCalendar({ aiPlanId }: MyCalendarProps) {
         </div>
       )}
 
-      {/* 여러 개 일정 모달 (more 클릭 시) */}
+      {/* more 이벤트 모달 */}
       {moreEvents.date && (
         <div className="modal-overlay">
           <div className="modal-container">
