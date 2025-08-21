@@ -40,3 +40,10 @@ export type StartCommand = {
   actionId: ActionId;
   token: number;
 };
+
+export type Msg = {
+  id: string;
+  role: 'assistant' | 'user';
+  text: string;
+  ts: number;
+};
