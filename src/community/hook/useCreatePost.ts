@@ -38,7 +38,7 @@ export function useCreatePost(currentUserId: number) {
         category: payload.category,
         title: payload.title,
         content: payload.content,
-        user_id: 1,
+        user_id: currentUserId,
       });
 
       const postId: number = (basePost as any).id ?? (basePost as any).post_id;

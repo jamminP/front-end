@@ -1,70 +1,83 @@
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
+import { useTopWeeklyAll } from '../hook/useTopWeekly';
+import type { TopWeeklyItem } from '../api/types';
 
-interface RankingPost {
-  id: number;
-  title: string;
-}
-
-interface SidebarRankingProps {
-  shareTop5?: RankingPost[];
-  freeTop5?: RankingPost[];
-  studyTop5?: RankingPost[];
-}
-
-const SidebarRanking = ({
-  shareTop5 = [],
-  freeTop5 = [],
-  studyTop5 = [],
-}: SidebarRankingProps) => {
+function ItemRow({ idx, item }: { idx: number; item: TopWeeklyItem }) {
   return (
-    <div className="bg-[#0180F5] text-white p-4 rounded-lg w-[240px] text-sm">
-      <div>
-        <h2> 자유 게시판 Top 5 </h2>
-        <ul>
-          {freeTop5.map((post) => (
-            <li key={post.id}>
-              <Link
-                to={`/community/post/${post.id}`}
-                className="block bg-white p-2 text-black my-1 rounded-md shadow hover:bg-gray-50"
-              >
-                {post.title}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div>
-        <h2> 자료 공유 게시판 Top 5 </h2>
-        <ul>
-          {shareTop5.map((post) => (
-            <li key={post.id}>
-              <Link
-                to={`/community/post/${post.id}`}
-                className="block bg-white p-2 text-black my-1 rounded-md shadow hover:bg-gray-50"
-              >
-                {post.title}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div>
-        <h2> 스터디 모집 게시판 Top 5 </h2>
-        <ul>
-          {studyTop5.map((post) => (
-            <li key={post.id}>
-              <Link
-                to={`/community/post/${post.id}`}
-                className="block bg-white p-2 text-black my-1 rounded-md shadow hover:bg-gray-50"
-              >
-                {post.title}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+    <li className="flex items-start gap-2 py-1">
+      <span className="w-5 text-sm shrink-0 text-gray-500">{idx + 1}.</span>
+      <Link
+        to={`/community/${item.category}/${item.post_id}`}
+        className="truncate hover:underline"
+        title={item.title}
+      >
+        {item.title}
+      </Link>
+      <span className="ml-auto text-xs text-gray-400">
+        {item.total_views_7d.toLocaleString()} views
+      </span>
+    </li>
   );
-};
+}
 
-export default SidebarRanking;
+function Block({
+  title,
+  items,
+  isLoading,
+  isError,
+}: {
+  title: string;
+  items?: TopWeeklyItem[];
+  isLoading: boolean;
+  isError: boolean;
+}) {
+  return (
+    <section className="p-4 rounded-2xl shadow">
+      <h3 className="font-semibold mb-2">{title}</h3>
+      {isLoading ? (
+        <ul className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <li key={i} className="h-5 animate-pulse rounded bg-gray-100" />
+          ))}
+        </ul>
+      ) : isError ? (
+        <div className="text-sm text-red-500">불러오기에 실패했어요.</div>
+      ) : items && items.length > 0 ? (
+        <ul>
+          {items.slice(0, 5).map((it, i) => (
+            <ItemRow key={it.post_id} idx={i} item={it} />
+          ))}
+        </ul>
+      ) : (
+        <div className="text-sm text-gray-400">데이터가 없어요.</div>
+      )}
+    </section>
+  );
+}
+
+export default function SidebarRanking() {
+  const { study, free, share, isLoading, isError } = useTopWeeklyAll(5);
+
+  return (
+    <aside className="space-y-4">
+      <Block
+        title="스터디 TOP 5"
+        items={study.data?.items}
+        isLoading={study.isLoading}
+        isError={!!study.error}
+      />
+      <Block
+        title="자유 TOP 5"
+        items={free.data?.items}
+        isLoading={free.isLoading}
+        isError={!!free.error}
+      />
+      <Block
+        title="자료공유 TOP 5"
+        items={share.data?.items}
+        isLoading={share.isLoading}
+        isError={!!share.error}
+      />
+    </aside>
+  );
+}
