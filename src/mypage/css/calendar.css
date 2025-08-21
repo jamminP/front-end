@@ -103,6 +103,7 @@ button.react-calendar__navigation__arrow {
   background-color: #ffffff;
   border-radius: 20px;
   padding: 30px;
+  overflow-y: auto;
 }
 .modal-container input,
 .modal-container textarea {
