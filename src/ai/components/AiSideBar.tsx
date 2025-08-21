@@ -1,8 +1,8 @@
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { GrPlan } from 'react-icons/gr';
-import SidebarItem from './AISideItem';
+import SidebarItem from './aiside/AISideItem';
 import { FaRegFileLines } from 'react-icons/fa6';
-import ChatList from './ChatList';
+import ChatList from './aiside/ChatList';
 import type { ActionId } from '../types/types';
 import { useResolvedNickname } from '../hook/useUserProfile';
 
