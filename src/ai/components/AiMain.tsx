@@ -13,14 +13,14 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
     useChat(externalCommand);
 
   return (
-    <div className="h-full grid grid-rows-[1fr_auto]">
+    <div className="h-full grid grid-rows-[1fr] overflow-y-auto [scrollbar-gutter:stable]">
       <AnimatePresence mode="wait">
         {view === 'home' ? (
           <motion.section
             key="home"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="overflow-y-auto"
           >
             <ActionGrid
@@ -35,14 +35,17 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
         ) : (
           <motion.section
             key="chat"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="grid grid-rows-[auto_1fr] h-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="h-full"
           >
-            <ChatHeader title={selectedAction?.title ?? '대화'} onBack={backHome} />
-            <div className="grid grid-rows-[1fr_auto] bg-white">
-              <MessageList messages={messages} />
+            <div className="grid grid-rows-[auto_1fr_auto] h-full bg-white rounded-2xl border divide-y overflow-hidden">
+              <ChatHeader title={selectedAction?.title ?? '대화'} onBack={backHome} />
+              <div className="min-h-0">
+                {' '}
+                <MessageList messages={messages} />
+              </div>
               <InputBar inputRef={inputRef} onSend={send} />
             </div>
           </motion.section>

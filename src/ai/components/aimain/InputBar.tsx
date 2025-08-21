@@ -1,5 +1,4 @@
 import { FaPaperPlane } from 'react-icons/fa';
-import { RefObject } from 'react';
 
 type Props = {
   inputRef: React.Ref<HTMLInputElement>;
@@ -8,7 +7,7 @@ type Props = {
 
 export default function InputBar({ inputRef, onSend }: Props) {
   return (
-    <div className="border-t bg-white p-3">
+    <div className="bg-white p-3">
       <div className="max-w-screen-md mx-auto flex items-center gap-2">
         <input
           ref={inputRef}
