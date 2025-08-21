@@ -5,11 +5,11 @@ export type PostFormValues = {
   title: string;
   content: string;
   category: 'free' | 'share' | 'study';
-  recruitStart?: string;
-  recruitEnd?: string;
-  studyStart?: string;
-  studyEnd?: string;
-  maxMembers?: number;
+  recruit_start?: string;
+  recruit_end?: string;
+  study_start?: string;
+  study_end?: string;
+  max_members?: number;
   freeImages?: File[];
   shareFiles?: File[];
 };
@@ -47,23 +47,23 @@ function validate(values: PostFormValues, limitMembers: boolean): Errors {
   if (!req(values.content)) e.content = '내용은 필수입니다.';
 
   if (values.category === 'study') {
-    const RS = values.recruitStart ?? '';
-    const RE = values.recruitEnd ?? '';
-    const SS = values.studyStart ?? '';
-    const SE = values.studyEnd ?? '';
+    const RS = values.recruit_start ?? '';
+    const RE = values.recruit_end ?? '';
+    const SS = values.study_start ?? '';
+    const SE = values.study_end ?? '';
 
-    if (RS && RE && RS > RE) e.recruitEnd = '모집 마감은 시작 이후여야 합니다.';
-    if (SS && SE && SS > SE) e.studyEnd = '스터디 종료는 시작 이후여야 합니다.';
+    if (RS && RE && RS > RE) e.recruit_end = '모집 마감은 시작 이후여야 합니다.';
+    if (SS && SE && SS > SE) e.study_end = '스터디 종료는 시작 이후여야 합니다.';
 
     if (limitMembers) {
-      if (values.maxMembers == undefined || Number.isNaN(values.maxMembers)) {
-        e.maxMembers = '최대 인원을 입력해주세요.';
-      } else if (!Number.isInteger(values.maxMembers)) {
-        e.maxMembers = '정수를 입력해주세요.';
-      } else if (values.maxMembers < 2) {
-        e.maxMembers = '2명 이상이어야 합니다.';
-      } else if (values.maxMembers > 30) {
-        e.maxMembers = '최대 인원은 30명을 넘을 수 없습니다.';
+      if (values.max_members == undefined || Number.isNaN(values.max_members)) {
+        e.max_members = '최대 인원을 입력해주세요.';
+      } else if (!Number.isInteger(values.max_members)) {
+        e.max_members = '정수를 입력해주세요.';
+      } else if (values.max_members < 2) {
+        e.max_members = '2명 이상이어야 합니다.';
+      } else if (values.max_members > 30) {
+        e.max_members = '최대 인원은 30명을 넘을 수 없습니다.';
       }
     }
   }
@@ -105,7 +105,7 @@ export default function PostForm({
 }: PostFormProps) {
   const [values, setValues] = useState<PostFormValues>({ ...defaults, ...initialValues });
   const [limitMembers, setLimitMembers] = useState<boolean>(
-    (initialValues?.maxMembers ?? undefined) !== undefined,
+    (initialValues?.max_members ?? undefined) !== undefined,
   );
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
@@ -138,7 +138,11 @@ export default function PostForm({
       setValues((v) => ({
         ...v,
         [name]:
-          name === 'maxMembers' ? (raw === '' ? undefined : Math.floor(Number(raw))) : (raw as any),
+          name === 'max_members'
+            ? raw === ''
+              ? undefined
+              : Math.floor(Number(raw))
+            : (raw as any),
       }));
     };
 
@@ -151,11 +155,11 @@ export default function PostForm({
       title: true,
       content: true,
       category: true,
-      recruitStart: true,
-      recruitEnd: true,
-      studyStart: true,
-      studyEnd: true,
-      maxMembers: true,
+      recruit_start: true,
+      recruit_end: true,
+      study_start: true,
+      study_end: true,
+      max_members: true,
       limitMembers: true,
       freeImages: true,
       freeLimit: true,
@@ -165,7 +169,7 @@ export default function PostForm({
     if (hasError) return;
     const payload: PostFormValues = {
       ...values,
-      maxMembers: isStudy && limitMembers ? values.maxMembers : undefined,
+      max_members: isStudy && limitMembers ? values.max_members : undefined,
     };
 
     onSubmit(payload);
@@ -256,10 +260,10 @@ export default function PostForm({
             <label className="block text-sm  font-medium mb-1 ">모집 시작일</label>
             <input
               type="date"
-              name="recruitStart"
-              value={values.recruitStart ?? ''}
-              onChange={setField('recruitStart')}
-              onBlur={onBlur('recruitStart')}
+              name="recruit_start"
+              value={values.recruit_start ?? ''}
+              onChange={setField('recruit_start')}
+              onBlur={onBlur('recruit_start')}
               disabled={disabled}
               className="w-full h-10 border rounded-md px-3 py-2 border-gray-300"
             />
@@ -269,26 +273,28 @@ export default function PostForm({
             <label className="block text-sm font-medium mb-1">모집 마감일</label>
             <input
               type="date"
-              name="recruitEnd"
-              value={values.recruitEnd ?? ''}
-              onChange={setField('recruitEnd')}
-              onBlur={onBlur('recruitEnd')}
+              name="recruit_end"
+              value={values.recruit_end ?? ''}
+              onChange={setField('recruit_end')}
+              onBlur={onBlur('recruit_end')}
               disabled={disabled}
               className={`w-full h-10 border rounded-md px-3 py-2 ${
-                err('recruitEnd') ? 'border-red-400' : 'border-gray-300'
+                err('recruit_end') ? 'border-red-400' : 'border-gray-300'
               }`}
             />
-            {err('recruitEnd') && <p className="mt-1 text-xs text-red-500">{errors.recruitEnd}</p>}
+            {err('recruit_end') && (
+              <p className="mt-1 text-xs text-red-500">{errors.recruit_end}</p>
+            )}
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1">스터디 시작일</label>
             <input
               type="date"
-              name="studyStart"
-              value={values.studyStart ?? ''}
-              onChange={setField('studyStart')}
-              onBlur={onBlur('studyStart')}
+              name="study_start"
+              value={values.study_start ?? ''}
+              onChange={setField('study_start')}
+              onBlur={onBlur('study_start')}
               disabled={disabled}
               className="w-full border h-10 rounded-md px-3 py-2 border-gray-300"
             />
@@ -298,16 +304,16 @@ export default function PostForm({
             <label className="block text-sm font-medium mb-1">스터디 종료일</label>
             <input
               type="date"
-              name="studyEnd"
-              value={values.studyEnd ?? ''}
-              onChange={setField('studyEnd')}
-              onBlur={onBlur('studyEnd')}
+              name="study_end"
+              value={values.study_end ?? ''}
+              onChange={setField('study_end')}
+              onBlur={onBlur('study_end')}
               disabled={disabled}
               className={`w-full h-10 border rounded-md px-3 py-2 ${
-                err('studyEnd') ? 'border-red-500' : 'border-gray-300'
+                err('study_end') ? 'border-red-500' : 'border-gray-300'
               }`}
             />
-            {err('studyEnd') && <p className="mt-1 text-xs text-red-500">{errors.studyEnd}</p>}
+            {err('study_end') && <p className="mt-1 text-xs text-red-500">{errors.study_end}</p>}
           </div>
 
           <div className="md:col-span-2">
@@ -320,9 +326,9 @@ export default function PostForm({
                   setLimitMembers(true);
                   setValues((v) => ({
                     ...v,
-                    maxMembers:
-                      v.maxMembers && v.maxMembers >= 2
-                        ? Math.min(30, Math.floor(v.maxMembers))
+                    max_members:
+                      v.max_members && v.max_members >= 2
+                        ? Math.min(30, Math.floor(v.max_members))
                         : 2,
                   }));
                 }}
@@ -341,7 +347,7 @@ export default function PostForm({
                 type="button"
                 onClick={() => {
                   setLimitMembers(false);
-                  setValues((v) => ({ ...v, maxMembers: undefined }));
+                  setValues((v) => ({ ...v, max_members: undefined }));
                 }}
                 onBlur={onBlur('limitMembers')}
                 className={`px-1 py-1 w-20 text-sm rounded-md border ${
@@ -362,18 +368,18 @@ export default function PostForm({
                   min={2}
                   max={30}
                   step={1}
-                  name="maxMembers"
-                  value={values.maxMembers ?? ''}
-                  onChange={setField('maxMembers')}
-                  onBlur={onBlur('maxMembers')}
+                  name="max_members"
+                  value={values.max_members ?? ''}
+                  onChange={setField('max_members')}
+                  onBlur={onBlur('max_members')}
                   disabled={disabled}
                   className={`w-full border rounded-md px-3 py-2 ${
-                    err('maxMembers') && errors.maxMembers ? 'border-red-400' : 'border-gray-300'
+                    err('max_members') && errors.max_members ? 'border-red-400' : 'border-gray-300'
                   }`}
                   placeholder="최대 30명"
                 />
-                {err('maxMembers') && errors.maxMembers && (
-                  <p className="mt-1 text-xs text-red-500">{errors.maxMembers}</p>
+                {err('max_members') && errors.max_members && (
+                  <p className="mt-1 text-xs text-red-500">{errors.max_members}</p>
                 )}
               </div>
             )}

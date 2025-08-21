@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import useDebounce from '../hook/useDebounce';
 import { useCategoryListCursor } from '../hook/useCategoryListCursor';
 import type { SearchIn, Category } from '../api/types';
-import { format, startOfDay, startOfWeekYear } from 'date-fns';
+import { format } from 'date-fns';
 import DatePicker from 'react-datepicker';
 
 interface Props {
@@ -21,7 +21,7 @@ const dateFromTail =
 export function SearchPopover({ onClose, defaultScope = 'title', category = 'all' }: Props) {
   const [search_in, setSearchIn] = useState<SearchIn>(defaultScope);
   const [keyword, setKeyword] = useState('');
-  const [author, setAuthor] = useState('');
+  const [author] = useState('');
   const [fromText] = useState('');
   const [toText] = useState('');
 

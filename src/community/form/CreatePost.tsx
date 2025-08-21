@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import PostForm, { PostFormValues } from './PostForm';
 import { useCreateFree, useCreateShare, useCreateStudy } from '../hook/useCommunityPosts';
 import { StudyPostRequest } from '../api/types';
+import { uploadWithPresignedJson } from '../api/presignedJson';
 
 const toISODate = (d?: string) => (d ? new Date(`${d}T00:00:00`).toISOString() : '');
 
@@ -13,7 +14,7 @@ export default function CreatePost() {
   const [sp] = useSearchParams();
   const initialCategory = (sp.get('category') as Cat) ?? 'free';
 
-  const currentUserId = 1001;
+  const currentUserId = 18;
 
   const freeMut = useCreateFree();
   const shareMut = useCreateShare();
@@ -36,36 +37,37 @@ export default function CreatePost() {
     async (v: PostFormValues) => {
       try {
         if (v.category === 'free') {
-          const fd = new FormData();
-          fd.append('title', v.title);
-          fd.append('content', v.content);
-          fd.append('user_id', String(currentUserId));
-          fd.append('category', 'free');
-
-          (v.freeImages ?? []).forEach((img) => {
-            fd.append('images', img, img.name);
+          const created = await freeMut.mutateAsync({
+            title: v.title,
+            content: v.content,
+            user_id: currentUserId,
+            category: 'free',
           });
+          const postId = (created as any).id ?? (created as any).post_id;
+          const imgs = v.freeImages ?? [];
+          if (imgs.length) {
+            await uploadWithPresignedJson('free', postId, imgs);
+          }
 
-          const res = await freeMut.mutateAsync(fd);
-          const id = (res as any).id ?? (res as any).post_id;
-          navigate(`/community/free/${id}`);
+          navigate(`/community/free/${postId}`);
           return;
         }
 
         if (v.category === 'share') {
-          const fd = new FormData();
-          fd.append('title', v.title);
-          fd.append('content', v.content);
-          fd.append('user_id', String(currentUserId));
-          fd.append('category', 'share');
-
-          (v.shareFiles ?? []).forEach((f) => {
-            fd.append('files', f, f.name);
+          const created = await shareMut.mutateAsync({
+            title: v.title,
+            content: v.content,
+            user_id: currentUserId,
+            category: 'share',
           });
+          const postId = (created as any).id ?? (created as any).post_id;
 
-          const res = await shareMut.mutateAsync(fd);
-          const id = (res as any).id ?? (res as any).post_id;
-          navigate(`/community/share/${id}`);
+          const files = v.shareFiles ?? [];
+          if (files.length) {
+            await uploadWithPresignedJson('share', postId, files);
+          }
+
+          navigate(`/community/share/${postId}`);
           return;
         }
 
@@ -74,11 +76,11 @@ export default function CreatePost() {
             title: v.title,
             content: v.content,
             user_id: currentUserId,
-            recruit_start: toISODate(v.recruitStart),
-            recruit_end: toISODate(v.recruitEnd),
-            study_start: toISODate(v.studyStart),
-            study_end: toISODate(v.studyEnd),
-            max_member: Number(v.maxMembers ?? 0),
+            recruit_start: toISODate(v.recruit_start),
+            recruit_end: toISODate(v.recruit_end),
+            study_start: toISODate(v.study_start),
+            study_end: toISODate(v.study_end),
+            max_member: Number(v.max_members ?? 0),
           };
           const res = await studyMut.mutateAsync(body);
           const id = (res as any).id ?? (res as any).post_id;
@@ -91,7 +93,6 @@ export default function CreatePost() {
     },
     [currentUserId, freeMut, shareMut, studyMut, navigate],
   );
-
   return (
     <div className="p-6 max-w-[720px] mx-auto space-y-4">
       <PostForm
