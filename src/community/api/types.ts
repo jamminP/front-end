@@ -216,5 +216,5 @@ export interface TopWeeklyItem {
 export interface TopWeeklyResponse {
   category: TopCategory;
   count: number;
-  items: TopWeeklyItem;
+  items: TopWeeklyItem[];
 }
