@@ -24,21 +24,15 @@ interface StudyPlanData {
   created_at: string;
 }
 
-export interface Event {
-  id: string;
-  title: string;
-  description: string;
-  date: string; // YYYY-MM-DD
-}
-
 interface StudyPlanFetcherProps {
-  onEventsGenerated: (events: Event[]) => void;
+  onEventsGenerated: (
+    events: { id: string; title: string; description: string; date: string }[],
+  ) => void;
 }
 
 export default function StudyPlanFetcher({ onEventsGenerated }: StudyPlanFetcherProps) {
   const [studyPlans, setStudyPlans] = useState<StudyPlanData[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [fetched, setFetched] = useState(false); // 이미 한 번 추가했는지 체크
 
   const userId = 17; // 테스트용 user_id
   const pollInterval = 5000; // 5초마다 자동 폴링
@@ -55,68 +49,45 @@ export default function StudyPlanFetcher({ onEventsGenerated }: StudyPlanFetcher
 
       if (response.data.success) {
         setStudyPlans(response.data.data.study_plans);
-        setError(null);
 
-        // 이벤트 생성
-        const events: Event[] = [];
-        response.data.data.study_plans.forEach((plan: StudyPlanData) => {
-          const output = JSON.parse(plan.output_data);
+        if (!fetched) {
+          // 이벤트 한 번만 추가
+          const allEvents: { id: string; title: string; description: string; date: string }[] = [];
+          response.data.data.study_plans.forEach((plan: StudyPlanData) => {
+            const output = JSON.parse(plan.output_data);
+            const startDate = new Date(plan.start_date);
+            const totalWeeks = output.total_weeks || 0;
+            const weeklyPlans: WeeklyPlan[] = output.weekly_plans || [];
 
-          output.weekly_plans?.forEach((week: WeeklyPlan) => {
-            const weekDates = calculateWeeklyDates(plan.start_date, week.week);
-            weekDates.forEach((date) => {
-              events.push({
-                id: `${plan.id}-${week.week}-${date}`,
-                title: week.title,
-                description: week.goals.join('\n'),
-                date,
+            weeklyPlans.forEach((week) => {
+              week.daily_goals?.forEach((goal, idx) => {
+                const eventDate = new Date(startDate);
+                eventDate.setDate(eventDate.getDate() + (week.week - 1) * 7 + idx);
+                allEvents.push({
+                  id: `${plan.id}-${week.week}-${idx}`,
+                  title: goal,
+                  description: `Week ${week.week}: ${week.title}`,
+                  date: eventDate.toISOString().slice(0, 10),
+                });
               });
             });
           });
-        });
 
-        onEventsGenerated(events);
-      } else {
-        setError('학습 계획을 가져오는 데 실패했습니다.');
+          onEventsGenerated(allEvents);
+          setFetched(true);
+        }
       }
     } catch (err: any) {
       console.error('study_plan fetch error:', err);
-      setError(err.message || '알 수 없는 에러');
-    } finally {
-      setLoading(false);
     }
   };
 
-  // 페이지 로드 시 및 interval 폴링
   useEffect(() => {
-    fetchStudyPlans(); // 처음 로드 시
+    fetchStudyPlans();
     const intervalId = setInterval(fetchStudyPlans, pollInterval);
     return () => clearInterval(intervalId);
   }, []);
 
-  if (loading) return <div>로딩 중...</div>;
-  if (error) return <div>에러 발생: {error}</div>;
-  if (studyPlans.length === 0) return <div>학습 계획이 없습니다.</div>;
-
-  return null; // 이벤트는 캘린더로 바로 전달되므로 화면 렌더링은 없음
+  // UI는 캘린더가 담당하므로 null 반환
+  return null;
 }
-
-// startDate 기준으로 weekNumber 주차 날짜 배열 생성 (YYYY-MM-DD)
-const calculateWeeklyDates = (startDate: string, weekNumber: number): string[] => {
-  const start = new Date(startDate);
-  const dates: string[] = [];
-
-  // 각 주차는 7일 단위
-  const weekStart = new Date(start);
-  weekStart.setDate(start.getDate() + (weekNumber - 1) * 7);
-
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(weekStart);
-    d.setDate(weekStart.getDate() + i);
-    dates.push(
-      `${d.getFullYear()}-${('0' + (d.getMonth() + 1)).slice(-2)}-${('0' + d.getDate()).slice(-2)}`,
-    );
-  }
-
-  return dates;
-};

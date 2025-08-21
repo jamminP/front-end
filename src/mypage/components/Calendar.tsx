@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import '../css/calendar.css';
-import axios from 'axios';
+import StudyPlanFetcher from './StudyPlanFetcher';
 
 interface Event {
   id: string;
@@ -16,53 +16,6 @@ const formatDate = (date: Date): string => {
   const month = `0${date.getMonth() + 1}`.slice(-2);
   const day = `0${date.getDate()}`.slice(-2);
   return `${year}-${month}-${day}`;
-};
-
-// StudyPlanFetcher 기능 통합
-const fetchStudyPlanEvents = async (userId: number): Promise<Event[]> => {
-  try {
-    const res = await axios.get(
-      `https://backend.evida.site/api/v1/ai/study_plan/?user_id=${userId}&limit=10&offset=0`,
-    );
-    if (!res.data.success) return [];
-
-    const plans = res.data.data.study_plans;
-    const events: Event[] = [];
-
-    plans.forEach((plan: any) => {
-      const output = JSON.parse(plan.output_data);
-      output.weekly_plans.forEach((week: any) => {
-        // daily_goals 배열이 있을 경우 날짜 단위로 이벤트 생성
-        if (week.daily_goals) {
-          week.daily_goals.forEach((goal: string, idx: number) => {
-            // 계획 시작일 기준으로 날짜 계산
-            const startDate = new Date(plan.start_date);
-            startDate.setDate(startDate.getDate() + idx);
-            events.push({
-              id: `${plan.id}-${week.week}-${idx}`,
-              title: week.title,
-              description: goal,
-              date: formatDate(startDate),
-            });
-          });
-        } else {
-          // daily_goals 없으면 주 단위 제목만 이벤트로 추가
-          const startDate = new Date(plan.start_date);
-          events.push({
-            id: `${plan.id}-${week.week}`,
-            title: week.title,
-            description: week.topics?.join('\n') || '',
-            date: formatDate(startDate),
-          });
-        }
-      });
-    });
-
-    return events;
-  } catch (err) {
-    console.error(err);
-    return [];
-  }
 };
 
 export default function MyCalendar() {
@@ -84,19 +37,9 @@ export default function MyCalendar() {
     events: [],
   });
 
-  // 로컬스토리지 저장
   useEffect(() => {
     localStorage.setItem('calendar-events', JSON.stringify(events));
   }, [events]);
-
-  // AI 계획 가져오기 (userId 17)
-  useEffect(() => {
-    const fetchData = async () => {
-      const aiEvents = await fetchStudyPlanEvents(17);
-      setEvents((prev) => [...prev, ...aiEvents]);
-    };
-    fetchData();
-  }, []);
 
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);
@@ -123,7 +66,8 @@ export default function MyCalendar() {
 
     setShowForm(false);
     setModalEvent(null);
-    alert(isEditing ? '수정되었습니다' : '등록되었습니다');
+    if (isEditing) alert('수정되었습니다');
+    else alert('등록되었습니다');
   };
 
   const handleDelete = (id: string) => {
@@ -137,10 +81,7 @@ export default function MyCalendar() {
     return events.filter((e) => e.date === dateStr);
   };
 
-  const handleEventClick = (event: Event) => {
-    setModalEvent(event);
-  };
-
+  const handleEventClick = (event: Event) => setModalEvent(event);
   const handleEdit = () => {
     if (!modalEvent) return;
     setFormDate(modalEvent.date);
@@ -152,7 +93,18 @@ export default function MyCalendar() {
 
   return (
     <div>
-      <h1 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">캘린더</h1>
+      <h1 className="text-3xl md:text-4xl mb-[30px]">캘린더</h1>
+
+      {/* StudyPlanFetcher */}
+      <StudyPlanFetcher
+        onEventsGenerated={(newEvents) => {
+          // 중복 방지
+          setEvents((prev) => {
+            const existingIds = new Set(prev.map((e) => e.id));
+            return [...prev, ...newEvents.filter((e) => !existingIds.has(e.id))];
+          });
+        }}
+      />
 
       <Calendar
         onClickDay={handleDayClick}
@@ -189,6 +141,16 @@ export default function MyCalendar() {
         }}
       />
 
+      {/* 일정 목록 */}
+      <ul className="mt-4 space-y-2">
+        {events.map((ev) => (
+          <li key={ev.id} className="border p-2 rounded">
+            <strong>{ev.date}</strong> - {ev.title}
+            <p className="text-xs text-gray-500">{ev.description}</p>
+          </li>
+        ))}
+      </ul>
+
       {/* 상세 모달 */}
       {modalEvent && (
         <div className="modal-overlay">
@@ -212,7 +174,7 @@ export default function MyCalendar() {
         </div>
       )}
 
-      {/* 일정 추가/수정 폼 모달 */}
+      {/* 일정 추가/수정 폼 */}
       {showForm && (
         <div className="modal-overlay">
           <div className="modal-container">
@@ -248,7 +210,7 @@ export default function MyCalendar() {
         </div>
       )}
 
-      {/* more 이벤트 모달 */}
+      {/* 더보기 일정 모달 */}
       {moreEvents.date && (
         <div className="modal-overlay">
           <div className="modal-container">
