@@ -176,15 +176,17 @@ export interface Post {
   comments?: number;
 }
 
-export type SearchIn = 'title' | 'content' | 'title_content' | 'author_id';
+export type SearchIn = 'title' | 'content' | 'title_content' | 'author';
 
 export interface ListCursorParams {
   limit?: number;
+  author_id?: number;
   cursor?: string | null;
   search_in?: SearchIn;
   keyword?: string;
   date_from?: string;
   date_to?: string;
+  badge?: string;
 }
 
 export interface ListCursorResult<T> {
