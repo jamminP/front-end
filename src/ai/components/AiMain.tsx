@@ -1,13 +1,11 @@
 import { AnimatePresence } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { FaCalendarCheck, FaChevronLeft, FaPaperPlane, FaSearch } from 'react-icons/fa';
+import { FaCalendarCheck, FaChevronLeft, FaPaperPlane } from 'react-icons/fa';
 import { FaRegFileLines } from 'react-icons/fa6';
-import { MdQuiz } from 'react-icons/md';
 import { motion } from 'framer-motion';
 import ActionCard from './ActionCard';
 import Bubble from './Bubble';
-
-type ActionId = 'plan' | 'quiz' | 'summary' | 'research';
+import type { ActionId, StartCommand } from '../types/types';
 
 const ACTIONS: {
   id: ActionId;
@@ -24,31 +22,17 @@ const ACTIONS: {
     firstPrompt: '어떤 공부 계획을 원하시나요? 과목/기간/하루 가능 시간을 알려주세요.',
   },
   {
-    id: 'quiz',
-    title: '예상 문제',
-    desc: '출제 가능성이 높은 문제를 만들어 드려요.',
-    icon: MdQuiz,
-    firstPrompt: '어떤 주제의 예상 문제를 원하시나요? 난이도/문항수도 알려주세요.',
-  },
-  {
     id: 'summary',
     title: '정보 요약',
     desc: '긴 글/강의 내용을 한 눈에 보이게 요약합니다.',
     icon: FaRegFileLines,
     firstPrompt: '어떤 내용을 요약할까요? 텍스트나 핵심 포인트를 붙여 넣어주세요.',
   },
-  {
-    id: 'research',
-    title: '리서드파인만 AI',
-    desc: '자신이 공부했던 것을 다른 이에게 알려주며 학습을 진행합니다.',
-    icon: FaSearch,
-    firstPrompt: '어떤 주제를 조사할까요? 범위/목적/관심 키워드를 알려주세요.',
-  },
 ];
 
 type Msg = { id: string; role: 'assistant' | 'user'; text: string; ts: number };
 
-export default function AiMain() {
+export default function AiMain({ externalCommand }: { externalCommand?: StartCommand | null }) {
   const [view, setView] = useState<'home' | 'chat'>('home');
   const [selected, setSelected] = useState<ActionId | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -78,10 +62,6 @@ export default function AiMain() {
     setMessages((prev) => [...prev, userMsg]);
     if (inputRef.current) inputRef.current.value = '';
 
-    // 실제 API 연동 위치
-    // await callChatAPI({ action: selectedAction?.id, messages: [...messages, userMsg] })
-    // setMessages([...prev, userMsg, { id: uid(), role: 'assistant', text: res.text, ts: Date.now() }])
-
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
@@ -99,6 +79,13 @@ export default function AiMain() {
     inputRef.current?.focus();
     setTimeout(() => inputRef.current?.focus(), 0);
   };
+
+  useEffect(() => {
+    if (!externalCommand) return;
+    if (externalCommand.type === 'start') {
+      startChat(externalCommand.actionId);
+    }
+  }, [externalCommand?.token]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {

@@ -1,7 +1,7 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import path from "path";
-import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import tailwindcss from '@tailwindcss/vite';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -9,17 +9,26 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: "@src",
-        replacement: path.resolve(__dirname, "src"),
+        find: '@src',
+        replacement: path.resolve(__dirname, 'src'),
       },
       {
-        find: "@components",
-        replacement: path.resolve(__dirname, "src/components"),
+        find: '@components',
+        replacement: path.resolve(__dirname, 'src/components'),
       },
       {
-        find: "@landing",
-        replacement: path.resolve(__dirname, "src/landing"),
+        find: '@landing',
+        replacement: path.resolve(__dirname, 'src/landing'),
       },
     ],
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://backend.evida.site',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
 });
