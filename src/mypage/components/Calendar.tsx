@@ -18,9 +18,12 @@ const formatDate = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
-export default function MyCalendar() {
+interface MyCalendarProps {
+  aiPlanId?: string; // AI 채팅에서 받아오는 planId
+}
+
+export default function MyCalendar({ aiPlanId }: MyCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [selectedPlanId, setSelectedPlanId] = useState<string>('');
   const [events, setEvents] = useState<Event[]>(() => {
     const stored = localStorage.getItem('calendar-events');
     return stored ? JSON.parse(stored) : [];
@@ -33,17 +36,12 @@ export default function MyCalendar() {
   const [formDescription, setFormDescription] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
-  // AI 응답으로 받은 plan_id를 처리
-  const handleAiResponse = (planId: string) => {
-    setSelectedPlanId(planId);
-  };
+  const [moreEvents, setMoreEvents] = useState<{
+    date: string;
+    events: Event[];
+  }>({ date: '', events: [] });
 
-  // 특정 날짜의 모든 이벤트 보여주는 모달용
-  const [moreEvents, setMoreEvents] = useState<{ date: string; events: Event[] }>({
-    date: '',
-    events: [],
-  });
-
+  // 로컬스토리지에 이벤트 저장
   useEffect(() => {
     localStorage.setItem('calendar-events', JSON.stringify(events));
   }, [events]);
@@ -73,11 +71,16 @@ export default function MyCalendar() {
 
     setShowForm(false);
     setModalEvent(null);
-    alert(isEditing ? '수정되었습니다' : '등록되었습니다');
+    if (isEditing) {
+      alert('수정되었습니다');
+    } else {
+      alert('등록되었습니다');
+    }
   };
 
   const handleDelete = (id: string) => {
     if (!confirm('삭제하시겠습니까?')) return;
+
     setEvents((prev) => prev.filter((e) => e.id !== id));
     setModalEvent(null);
   };
@@ -104,23 +107,14 @@ export default function MyCalendar() {
     <div>
       <h1 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">캘린더</h1>
 
-      {/* AI 계획 버튼 */}
-      <button
-        onClick={() => handleAiResponse('12345')} // 테스트용 planId
-        className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
-      >
-        AI 학습계획 요청하기
-      </button>
-
-      {/* planId가 있으면 StudyPlanFetcher 실행 */}
-      {selectedPlanId && (
+      {/* AI planId가 있을 때만 StudyPlanFetcher 실행 */}
+      {aiPlanId && (
         <StudyPlanFetcher
-          planId={selectedPlanId}
+          planId={aiPlanId}
           onEventsGenerated={(newEvents) => setEvents((prev) => [...prev, ...newEvents])}
         />
       )}
 
-      {/* 캘린더 */}
       <Calendar
         onClickDay={handleDayClick}
         value={selectedDate}
@@ -145,7 +139,10 @@ export default function MyCalendar() {
                   className="more"
                   onClick={(ev) => {
                     ev.stopPropagation();
-                    setMoreEvents({ date: formatDate(date), events: dayEvents });
+                    setMoreEvents({
+                      date: formatDate(date),
+                      events: dayEvents,
+                    });
                   }}
                 >
                   +{dayEvents.length - 3} more
@@ -155,6 +152,15 @@ export default function MyCalendar() {
           );
         }}
       />
+
+      <ul className="mt-4 space-y-2">
+        {events.map((ev) => (
+          <li key={ev.id} className="border p-2 rounded">
+            <strong>{ev.date}</strong> - {ev.title}
+            <p className="text-xs text-gray-500">{ev.description}</p>
+          </li>
+        ))}
+      </ul>
 
       {/* 일정 상세 모달 */}
       {modalEvent && (
