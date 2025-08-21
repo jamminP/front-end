@@ -141,16 +141,6 @@ export default function MyCalendar() {
         }}
       />
 
-      {/* 일정 목록 */}
-      <ul className="mt-4 space-y-2">
-        {events.map((ev) => (
-          <li key={ev.id} className="border p-2 rounded">
-            <strong>{ev.date}</strong> - {ev.title}
-            <p className="text-xs text-gray-500">{ev.description}</p>
-          </li>
-        ))}
-      </ul>
-
       {/* 상세 모달 */}
       {modalEvent && (
         <div className="modal-overlay">
