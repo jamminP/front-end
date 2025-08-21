@@ -8,6 +8,7 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = async () => {
@@ -70,7 +71,9 @@ export default function Header() {
               <span className="absolute w-[8px] h-[8px] bg-[#f00] rounded-full top-0 right-0"></span>
             </div>
             <Link to="/mypage" onClick={() => setIsOpen(false)}>
-              <div className="w-[40px] h-[40px] rounded-full bg-[#cfcfcf]"></div>
+              <div className="w-[40px] h-[40px] rounded-full overflow-hidden">
+                <img src={user?.profile_image} className="w-full h-full object-cover" />
+              </div>
             </Link>
             <button
               onClick={handleLogout}

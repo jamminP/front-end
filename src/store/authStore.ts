@@ -5,6 +5,7 @@ interface User {
   id: number;
   email: string;
   nickname: string;
+  profile_image: string;
 }
 
 // 스토어 상태 타입
