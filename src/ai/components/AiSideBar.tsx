@@ -20,7 +20,7 @@ export default function AiSideBar({ collapsed, onToggle, onSelectAction }: Props
       <div className="h-10 flex items-center justify-between px-3">
         <button
           onClick={onToggle}
-          className="ml-auto mt-4.5 inline-flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100"
+          className="ml-auto mt-4.5 inline-flex items-center justify-center w-8 h-8 rounded-xl hover:bg-gray-100"
         >
           {collapsed ? <FaChevronRight size={20} /> : <FaChevronLeft size={20} />}
         </button>
