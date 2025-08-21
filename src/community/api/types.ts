@@ -201,3 +201,20 @@ export interface SearchPostItem {
   created_at: string;
   badge?: '모집중' | '모집완료';
 }
+
+export type TopCategory = 'study' | 'free' | 'share';
+
+export interface TopWeeklyItem {
+  post_id: number;
+  title: string;
+  category: TopCategory;
+  author_id: number; // author_id 타입 재정립 필요가 있음 일단 int로 받기.
+  total_views_7d: number;
+  created_at: string;
+}
+
+export interface TopWeeklyResponse {
+  category: TopCategory;
+  count: number;
+  items: TopWeeklyItem;
+}
