@@ -2,6 +2,7 @@ import { useQueries, useQuery } from '@tanstack/react-query';
 import { TopCategory, TopWeeklyResponse } from '../api/types';
 import { getTopWeekly } from '../api/community';
 
+//쿼리키 규칙 표준화
 export const topWeeklyKeys = {
   all: ['community', 'topWeekly'] as const,
   list: (category: TopCategory, limit: number) =>
