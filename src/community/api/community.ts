@@ -10,8 +10,6 @@ import {
   SharePostResponse,
   StudyPostResponse,
   CommentResponse,
-  Post,
-  AllPostResponse,
   SearchIn,
   TopCategory,
   TopWeeklyResponse,
@@ -40,7 +38,7 @@ type Category = 'all' | 'free' | 'share' | 'study';
 
 export type CursorPage<T> = {
   items: T[];
-  nextCursor: number | null;
+  next_cursor: number | null;
 };
 
 function normalizeCursorPage<T>(raw: any): CursorPage<T> {
@@ -52,7 +50,7 @@ function normalizeCursorPage<T>(raw: any): CursorPage<T> {
         ? raw.item
         : [];
   const nc = raw?.next_cursor ?? raw?.nextCursor ?? raw?.cursor ?? null;
-  return { items, nextCursor: (nc ?? null) as number | null };
+  return { items, next_cursor: (nc ?? null) as number | null };
 }
 
 function qs(params: Record<string, unknown>) {
