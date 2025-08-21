@@ -15,6 +15,7 @@ type Fetcher<T> = (
   limit?: number,
 ) => Promise<CursorPage<T>>;
 
+//래핑화 같은 인자를 받아서 내가 쓰는 표준 타입으로 바꿔줌
 const wrapAll = <T>(
   api: (
     cursor: string | number | null | undefined,
@@ -33,7 +34,6 @@ const wrapAll = <T>(
           : Number(r.next_cursor) || null;
 
     return {
-      // items는 제네릭 T로 캐스팅 (호출부에서 T=ListCursorItem 등으로 사용)
       items: (r.items ?? []) as unknown as T[],
       next_cursor: next,
     };
