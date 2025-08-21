@@ -3,6 +3,7 @@ import bellIcon from '../header/img/bell.png';
 import { useState } from 'react';
 import useAuthStore from '@src/store/authStore';
 import axios from 'axios';
+import profileImage from '../login/img/profile.jpg';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -75,7 +76,10 @@ export default function Header() {
             </button>
             <Link to="/mypage" onClick={() => setIsOpen(false)}>
               <div className="w-[35px] h-[35px] rounded-full overflow-hidden">
-                <img src={user?.profile_image} className="w-full h-full object-cover" />
+                <img
+                  src={user?.profile_image || profileImage}
+                  className="w-full h-full object-cover"
+                />
               </div>
             </Link>
             <div className="relative">
