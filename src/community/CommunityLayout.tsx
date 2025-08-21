@@ -37,11 +37,6 @@ const CommunityLayout = () => {
       ? 'study'
       : 'free';
 
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
   return (
     <div className="w-full flex justify-center px-4 pt-30">
       <div className="w-full max-w-[1000px]">
