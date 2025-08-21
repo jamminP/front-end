@@ -16,6 +16,7 @@ export default function MyPostsSection() {
   const [loading, setLoading] = useState(true);
   const [cursor, setCursor] = useState<number | null>(null);
   const [hasMore, setHasMore] = useState(true);
+  const [skeletonCount, setSkeletonCount] = useState(6);
 
   const fetchPosts = async (
     nextCursor: number | null = null,
@@ -41,6 +42,8 @@ export default function MyPostsSection() {
         date: item.created_at,
         category: item.category,
       }));
+
+      setSkeletonCount(res.data.items.length || 6);
 
       // nextCursor 없으면 새로 덮어쓰기, 있으면 이어붙이기
       setMyPosts((prev) => (nextCursor ? [...prev, ...posts] : posts));
@@ -93,11 +96,9 @@ export default function MyPostsSection() {
 
         {loading && myPosts.length === 0 ? (
           <ul className="flex flex-wrap gap-[2%] mt-[15px]">
-            {Array(6)
-              .fill(0)
-              .map((_, i) => (
-                <SkeletonCard key={`my-skeleton-${i}`} />
-              ))}
+            {Array.from({ length: skeletonCount }).map((_, i) => (
+              <SkeletonCard key={`my-skeleton-${i}`} />
+            ))}
           </ul>
         ) : myPosts.length > 0 ? (
           <>
