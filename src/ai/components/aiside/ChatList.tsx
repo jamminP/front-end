@@ -1,6 +1,6 @@
+import { useUnifiedAiFeed } from '@src/ai/hook/useUnifiedAiFeed';
+import { HttpError } from '../../api/http';
 import { useEffect, useMemo, useRef } from 'react';
-import { useUnifiedAiFeed } from '../hook/useUnifiedAiFeed';
-import { HttpError } from '../api/http';
 
 export default function ChatList({ collapsed }: { collapsed: boolean }) {
   if (collapsed) return null;
