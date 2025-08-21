@@ -14,7 +14,6 @@ import CreatePost from './community/form/CreatePost';
 import CommunityFree from './community/category/CommunityFree';
 import CommunityShare from './community/category/CommunityShare';
 import AiPage from './ai/AiPage';
-import EditPost from './community/form/EditPost';
 import CommunityStudy from './community/category/CommunityStudy';
 import PostDetail from './community/post/PostDetail';
 import { useCallback, useEffect, useState } from 'react';
