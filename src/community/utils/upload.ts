@@ -27,3 +27,35 @@ export function assertShareTypes(files: File[]) {
   const bad = files.find((f) => !ALLOW_SHARE.has(f.type));
   if (bad) throw new Error('share 카테고리는 PNG/JPG/PDF/DOCX만 업로드할 수 있어요.');
 }
+
+function extOf(name: string) {
+  const i = name.lastIndexOf('.');
+  return i >= 0 ? name.slice(i).toLowerCase() : '';
+}
+
+function sanitizeBase(base: string) {
+  const cleaned = base
+    .normalize('NFKD')
+    .replace(/[^a-zA-Z0-9\s\-_]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+  return cleaned || 'file';
+}
+
+export function sanitizeFilename(file: File): File {
+  const ext = file.name.split('.').pop() ?? '';
+  const base = file.name.replace(/\.[^/.]+$/, '');
+
+  const cleaned = base
+    .normalize('NFKD')
+    .replace(/[^a-zA-Z0-9\s\-_]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+
+  const safeBase = cleaned || 'file';
+  const safeName = `${safeBase}.${ext}`;
+
+  return new File([file], safeName, { type: file.type });
+}

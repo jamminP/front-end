@@ -76,31 +76,30 @@ function pathForCursor(category: Category) {
   }
 }
 
-async function getListCursor<T>(category: Category, cursor: number | null | undefined, q?: string) {
-  const url = `${pathForCursor(category)}${qs({ cursor, q })}`;
+async function getListCursor<T>(
+  category: Category,
+  cursor: number | null | undefined,
+  q?: string,
+  limit = 20,
+) {
+  const url = `${pathForCursor(category)}${qs({ cursor, q, limit })}`;
   const res = await http<any>(url);
   return normalizeCursorPage<T>(res);
 }
 
-export const getFreeListCursor = (cursor: number | null | undefined, q?: string) =>
-  getListCursor<FreePostResponse>('free', cursor, q);
+export const getFreeListCursor = (cursor: number | null | undefined, q?: string, limit?: number) =>
+  getListCursor<FreePostResponse>('free', cursor, q, limit);
 
-export const getShareListCursor = (cursor: number | null | undefined, q?: string) =>
-  getListCursor<SharePostResponse>('share', cursor, q);
+export const getShareListCursor = (cursor: number | null | undefined, q?: string, limit?: number) =>
+  getListCursor<SharePostResponse>('share', cursor, q, limit);
 
-export const getStudyListCursor = (cursor: number | null | undefined, q?: string) =>
-  getListCursor<StudyPostResponse>('study', cursor, q);
+export const getStudyListCursor = (cursor: number | null | undefined, q?: string, limit?: number) =>
+  getListCursor<StudyPostResponse>('study', cursor, q, limit);
 
-export const getAllListCursor = (cursor: number | null | undefined, q?: string) =>
-  getListCursor<any>('all', cursor, q);
+export const getAllListCursor = (cursor: number | null | undefined, q?: string, limit?: number) =>
+  getListCursor<any>('all', cursor, q, limit);
 
 export type AnyPostResponse = FreePostResponse | SharePostResponse | StudyPostResponse;
-
-export const createFreePost = (body: FreePostRequest) =>
-  http<FreePostResponse>('/api/v1/community/post/free', {
-    method: 'POST',
-    body: JSON.stringify(body),
-  });
 
 export const getFreePost = (postId: number) =>
   http<FreePostResponse>(`/api/v1/community/post/free/${postId}`);
@@ -108,13 +107,34 @@ export const getFreePost = (postId: number) =>
 export const patchFreePost = (postId: number, body: FreePostUpdateRequest, userId?: number) =>
   http<FreePostResponse>(`/api/v1/community/post/free/${postId}`, {
     method: 'PATCH',
-    headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(userId ? { x_user_id: String(userId) } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+
+/// createPost ///
+export const createFreePost = (body: FreePostRequest) =>
+  http<FreePostResponse>('/api/v1/community/post/free', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(body),
   });
 
 export const createSharePost = (body: SharePostRequest) =>
   http<SharePostResponse>('/api/v1/community/post/share', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(body),
+  });
+
+export const createStudyPost = (body: StudyPostRequest) =>
+  http<StudyPostResponse>('/api/v1/community/post/study', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
 
@@ -125,12 +145,6 @@ export const patchSharePost = (postId: number, body: SharePostUpdateRequest, use
   http<SharePostResponse>(`/api/v1/community/post/share/${postId}`, {
     method: 'PATCH',
     headers: { ...(userId ? { x_user_id: String(userId) } : {}) },
-    body: JSON.stringify(body),
-  });
-
-export const createStudyPost = (body: StudyPostRequest) =>
-  http<StudyPostResponse>('/api/v1/community/post/study', {
-    method: 'POST',
     body: JSON.stringify(body),
   });
 
@@ -149,6 +163,19 @@ export const joinStudyPost = (postId: number, userId: number) =>
     method: 'POST',
     body: JSON.stringify({ user_id: userId }),
   });
+
+function normalizeComments(raw: any): CommentResponse[] {
+  if (Array.isArray(raw)) return raw as CommentResponse[];
+  if (Array.isArray(raw?.items)) return raw.items as CommentResponse[];
+  if (Array.isArray(raw?.data)) return raw.data as CommentResponse[];
+  if (Array.isArray(raw?.item)) return raw.item as CommentResponse[];
+  return [];
+}
+
+export const getComments = async (postId: number): Promise<CommentResponse[]> => {
+  const raw = await http<any>(`/api/v1/community/post/${postId}/comments`); // ← comments 복수형 확인
+  return normalizeComments(raw);
+};
 
 export const createComment = (postId: number, content: string, userId: number, parentId?: number) =>
   http<CommentResponse>(`/api/v1/community/post/${postId}/comment`, {
@@ -209,7 +236,6 @@ export const toPost = (src: _All): _Post => ({
   title: src.title ?? '',
   content: src.content ?? '',
   author_id: src.author_id,
-  author: `user#${src.author_id}`,
   category: src.category,
   created_at: src.created_at,
   views: toNum((src as any).views ?? (src as any).view_count),
