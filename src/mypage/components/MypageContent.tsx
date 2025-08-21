@@ -89,7 +89,9 @@ export default function MypageContent() {
     try {
       const params: any = { limit: 6 };
       if (nextCursor) params.cursor = nextCursor;
-      if (selectedCategory && selectedCategory !== 'all') params.category = selectedCategory;
+      if (selectedCategory) {
+        params.category = selectedCategory; // 'all' 포함 모든 카테고리 전달
+      }
 
       const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo/posts', {
         params,
@@ -133,7 +135,7 @@ export default function MypageContent() {
   };
 
   useEffect(() => {
-    fetchPosts();
+    fetchPosts(null, 'all');
     fetchLikedPosts();
   }, []);
 
