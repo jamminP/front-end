@@ -16,7 +16,7 @@ export default function MyPostsSection() {
   const [loading, setLoading] = useState(true);
   const [cursor, setCursor] = useState<number | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  const [skeletonCount, setSkeletonCount] = useState(6);
+  const [skeletonCount, setSkeletonCount] = useState(0);
 
   const fetchPosts = async (
     nextCursor: number | null = null,
@@ -43,7 +43,7 @@ export default function MyPostsSection() {
         category: item.category,
       }));
 
-      setSkeletonCount(res.data.items.length || 6);
+      setSkeletonCount(res.data.items.length);
 
       // nextCursor 없으면 새로 덮어쓰기, 있으면 이어붙이기
       setMyPosts((prev) => (nextCursor ? [...prev, ...posts] : posts));

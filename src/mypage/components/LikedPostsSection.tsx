@@ -16,7 +16,7 @@ export default function LikedPostsSection() {
   const [loading, setLoading] = useState(true);
   const [cursor, setCursor] = useState<number | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  const [skeletonCount, setSkeletonCount] = useState(6);
+  const [skeletonCount, setSkeletonCount] = useState(0);
 
   // 작성한 글 불러오기
   const fetchLikedPosts = async (nextCursor: number | null = null, selectedCategory?: string) => {
@@ -40,7 +40,7 @@ export default function LikedPostsSection() {
         content: item.content,
         date: item.created_at,
       }));
-      setSkeletonCount(res.data.items.length || 6);
+      setSkeletonCount(res.data.items.length);
       setLikedPosts((prev) => [...prev, ...posts]);
       setCursor(res.data.next_cursor);
       setHasMore(res.data.next_cursor !== 0);
