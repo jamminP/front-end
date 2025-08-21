@@ -48,7 +48,7 @@ export default function Header() {
       <nav
         className={`${
           isOpen ? 'flex' : 'hidden'
-        } w-[50%] md:w-[auto] h-screen md:h-[auto] md:flex flex flex-col md:flex-row absolute md:relative md:items-center gap-[30px] text-[#333] bg-[#fff] top-[72px] md:top-0 right-0 text-right md:text-left p-[30px] md:p-0`}
+        } w-[50%] md:w-[auto] h-screen md:h-[auto] md:flex flex flex-col md:flex-row absolute md:relative md:items-center items-end gap-[30px] text-[#333] bg-[#fff] top-[72px] md:top-0 right-0 text-right md:text-left p-[30px] md:p-0`}
       >
         <Link to="/" onClick={() => setIsOpen(false)}>
           메인
@@ -66,22 +66,22 @@ export default function Header() {
         )}
         {isLoggedIn ? (
           <>
-            <div className="relative">
-              <img src={bellIcon} />
-              <span className="absolute w-[8px] h-[8px] bg-[#f00] rounded-full top-0 right-0"></span>
-            </div>
-            <Link to="/mypage" onClick={() => setIsOpen(false)}>
-              <div className="w-[40px] h-[40px] rounded-full overflow-hidden">
-                <img src={user?.profile_image} className="w-full h-full object-cover" />
-              </div>
-            </Link>
             <button
               onClick={handleLogout}
-              className="font-medium text-sm cursor-pointer"
+              className="font-medium text-sm cursor-pointer text-[1rem]"
               type="button"
             >
               로그아웃
             </button>
+            <Link to="/mypage" onClick={() => setIsOpen(false)}>
+              <div className="w-[35px] h-[35px] rounded-full overflow-hidden">
+                <img src={user?.profile_image} className="w-full h-full object-cover" />
+              </div>
+            </Link>
+            <div className="relative">
+              <img src={bellIcon} />
+              <span className="absolute w-[8px] h-[8px] bg-[#f00] rounded-full top-0 right-0"></span>
+            </div>
           </>
         ) : (
           <>
