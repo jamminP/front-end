@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import useAuthStore from '@src/store/authStore';
 
 interface WeeklyPlan {
   week: number;
@@ -33,8 +34,8 @@ interface StudyPlanFetcherProps {
 export default function StudyPlanFetcher({ onEventsGenerated }: StudyPlanFetcherProps) {
   const [studyPlans, setStudyPlans] = useState<StudyPlanData[]>([]);
   const [fetched, setFetched] = useState(false); // 이미 한 번 추가했는지 체크
+  const userId = useAuthStore((state) => state.user?.id);
 
-  const userId = 17; // 테스트용 user_id
   const pollInterval = 5000; // 5초마다 자동 폴링
 
   const fetchStudyPlans = async () => {
