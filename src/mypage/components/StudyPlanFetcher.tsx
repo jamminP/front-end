@@ -63,7 +63,7 @@ export default function StudyPlanFetcher({ onEventsGenerated }: StudyPlanFetcher
                 eventDate.setDate(eventDate.getDate() + (week.week - 1) * 7 + idx);
                 allEvents.push({
                   id: `${plan.id}-${week.week}-${idx}`,
-                  title: goal,
+                  title: goal.slice(5),
                   description: `Week ${week.week}: ${week.title}`,
                   date: eventDate.toISOString().slice(0, 10),
                 });
