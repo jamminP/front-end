@@ -51,7 +51,10 @@ export default function CommentsBlock({
       <div className="space-y-3">
         {tree.map((c) => (
           <div key={c.id} className="rounded-2xl bg-gray-200/70 p-4 shadow-sm">
-            <CommentHeader nickname={c.author_id ?? `User#${c.id}`} created_at={c.created_at} />
+            <CommentHeader
+              nickname={c.author_nickname ?? `User#${c.author_id}`}
+              created_at={c.created_at}
+            />
             <div className="rounded-xl bg-gray-100 p-4 text-sm shadow whitespace-pre-wrap">
               {c.content}
             </div>
@@ -79,7 +82,7 @@ export default function CommentsBlock({
                 {c.replies.map((r) => (
                   <div key={r.id} className="rounded-2xl bg-gray-200/70 p-4 shadow-sm">
                     <CommentHeader
-                      nickname={r.author_id ?? `User#${r.id}`}
+                      nickname={r.author_nickname ?? `User#${r.author_id}`}
                       created_at={r.created_at}
                     />
                     <div className="rounded-xl bg-gray-100 p-4 text-sm shadow whitespace-pre-wrap">

@@ -2,17 +2,25 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createComment } from '../../api/community';
 
-type Props = { postId: number; currentUserId: number; parentId?: number };
+type Props = { user: number; postId: number; parent_comment_id?: number };
 
-export default function CommentForm({ postId, currentUserId, parentId }: Props) {
+export default function CommentForm({ user, postId, parent_comment_id }: Props) {
   const qc = useQueryClient();
   const [value, setValue] = useState('');
 
   const mut = useMutation({
-    mutationFn: () => createComment(postId, value.trim(), currentUserId, parentId),
+    mutationFn: (content: string) =>
+      createComment(
+        user,
+        postId,
+        content.trim(),
+        typeof parent_comment_id === 'number' && parent_comment_id > 0
+          ? parent_comment_id
+          : undefined,
+      ),
     onSuccess: () => {
       setValue('');
-      qc.invalidateQueries({ queryKey: ['comments', postId] });
+      qc.invalidateQueries({ queryKey: ['community', 'post', postId, 'comments'] });
     },
   });
 
@@ -22,8 +30,8 @@ export default function CommentForm({ postId, currentUserId, parentId }: Props) 
     <div className="bg-gray-50 border rounded-xl p-3">
       <textarea
         className="w-full rounded-md border px-3 py-2 text-sm"
-        rows={parentId ? 2 : 3}
-        placeholder={parentId ? '답글을 입력하세요' : '댓글을 입력하세요'}
+        rows={parent_comment_id ? 2 : 3}
+        placeholder={parent_comment_id ? '답글을 입력하세요' : '댓글을 입력하세요'}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         disabled={mut.isPending}
@@ -31,7 +39,7 @@ export default function CommentForm({ postId, currentUserId, parentId }: Props) 
       <div className="flex justify-end mt-2">
         <button
           className="px-3 py-1 rounded-lg bg-black text-white text-sm disabled:opacity-60"
-          onClick={() => mut.mutate()}
+          onClick={() => mut.mutate(value)}
           disabled={disabled}
         >
           {mut.isPending ? '등록 중…' : '등록'}
