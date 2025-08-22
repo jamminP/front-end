@@ -20,75 +20,16 @@ const formatDate = (date: Date): string => {
 
 export default function MyCalendar() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [events, setEvents] = useState<Event[]>(() => {
-    const stored = localStorage.getItem('calendar-events');
-    return stored ? JSON.parse(stored) : [];
-  });
-
+  const [events, setEvents] = useState<Event[]>([]);
   const [modalEvent, setModalEvent] = useState<Event | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [formDate, setFormDate] = useState<string>('');
-  const [formTitle, setFormTitle] = useState('');
-  const [formDescription, setFormDescription] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-
   const [moreEvents, setMoreEvents] = useState<{ date: string; events: Event[] }>({
     date: '',
     events: [],
   });
 
-  useEffect(() => {
-    localStorage.setItem('calendar-events', JSON.stringify(events));
-  }, [events]);
-
-  const handleDayClick = (date: Date) => {
-    setSelectedDate(date);
-    setFormDate(formatDate(date));
-    setFormTitle('');
-    setFormDescription('');
-    setIsEditing(false);
-    setShowForm(true);
-  };
-
-  const handleSubmit = () => {
-    if (!formTitle.trim()) return alert('제목을 입력해주세요');
-
-    const newEvent: Event = {
-      id: isEditing && modalEvent ? modalEvent.id : Date.now().toString(),
-      title: formTitle,
-      description: formDescription,
-      date: formDate,
-    };
-
-    setEvents((prev) =>
-      isEditing ? prev.map((e) => (e.id === modalEvent?.id ? newEvent : e)) : [...prev, newEvent],
-    );
-
-    setShowForm(false);
-    setModalEvent(null);
-    if (isEditing) alert('수정되었습니다');
-    else alert('등록되었습니다');
-  };
-
-  const handleDelete = (id: string) => {
-    if (!confirm('삭제하시겠습니까?')) return;
-    setEvents((prev) => prev.filter((e) => e.id !== id));
-    setModalEvent(null);
-  };
-
   const eventsOnDate = (date: Date) => {
     const dateStr = formatDate(date);
     return events.filter((e) => e.date === dateStr);
-  };
-
-  const handleEventClick = (event: Event) => setModalEvent(event);
-  const handleEdit = () => {
-    if (!modalEvent) return;
-    setFormDate(modalEvent.date);
-    setFormTitle(modalEvent.title);
-    setFormDescription(modalEvent.description);
-    setIsEditing(true);
-    setShowForm(true);
   };
 
   return (
@@ -107,7 +48,6 @@ export default function MyCalendar() {
       />
 
       <Calendar
-        onClickDay={handleDayClick}
         value={selectedDate}
         tileContent={({ date }) => {
           const dayEvents = eventsOnDate(date);
@@ -119,7 +59,7 @@ export default function MyCalendar() {
                   className="text-xs bg-blue-100 text-blue-800 truncate cursor-pointer"
                   onClick={(ev) => {
                     ev.stopPropagation();
-                    handleEventClick(e);
+                    setModalEvent(e);
                   }}
                 >
                   {e.title}
@@ -152,47 +92,7 @@ export default function MyCalendar() {
                 <p key={idx}>{line}</p>
               ))}
             </div>
-            <div className="modal-button">
-              <button onClick={() => handleDelete(modalEvent.id)}>삭제</button>
-              <button onClick={handleEdit}>수정</button>
-            </div>
             <button className="modal-close" onClick={() => setModalEvent(null)}>
-              <span></span>
-              <span></span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 일정 추가/수정 폼 */}
-      {showForm && (
-        <div className="modal-overlay">
-          <div className="modal-container">
-            <h2 className="modal-title">{isEditing ? '일정 수정' : `${formDate} 일정 추가`}</h2>
-            <input
-              type="text"
-              maxLength={30}
-              placeholder="제목"
-              className="w-full border px-2 py-1"
-              value={formTitle}
-              onChange={(e) => setFormTitle(e.target.value)}
-            />
-            <textarea
-              placeholder="내용"
-              className="w-full border px-2 py-1"
-              value={formDescription}
-              onChange={(e) => setFormDescription(e.target.value)}
-            />
-            <div className="modal-button">
-              <button onClick={handleSubmit}>{isEditing ? '수정' : '추가'}</button>
-            </div>
-            <button
-              className="modal-close"
-              onClick={() => {
-                setShowForm(false);
-                setIsEditing(false);
-              }}
-            >
               <span></span>
               <span></span>
             </button>
