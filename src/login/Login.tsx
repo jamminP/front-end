@@ -16,7 +16,7 @@ export default function Login() {
       <div className="w-full flex flex-col items-center">
         <button
           type="button"
-          className="flex items-center justify-center relative md:w-[300px] w-[70%] bg-[#ececec] p-[12px_20px] rounded-full mb-[20px]"
+          className="flex items-center justify-center relative md:w-[300px] w-[70%] bg-[#ececec] p-[12px_20px] rounded-full mb-[20px] cursor-pointer"
           onClick={handleGoogleLogin}
         >
           <img src={googleIcon} className="absolute left-[15px]" />
@@ -24,7 +24,7 @@ export default function Login() {
         </button>
         <button
           type="button"
-          className="flex items-center justify-center relative md:w-[300px] w-[70%] bg-[#fae100] p-[12px_20px] rounded-full"
+          className="flex items-center justify-center relative md:w-[300px] w-[70%] bg-[#fae100] p-[12px_20px] rounded-full cursor-pointer"
           onClick={handleKakaoLogin}
         >
           <img src={kakaoIcon} className="absolute left-[17px]" />
