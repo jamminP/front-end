@@ -63,23 +63,25 @@ export default function Challenge() {
 
   return (
     <>
+      <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">챌린지</h2>
       {myChallenge.length === 0 ? (
         <>
-          <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">
-            챌린지
-          </h2>
           <p className="text-[1.2rem] text-[#999] font-light tracking-[-0.03rem] mt-5 pl-[5px]">
             등록된 챌린지가 없습니다.
           </p>
         </>
       ) : (
         <>
-          <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">
-            챌린지
-          </h2>
           <ul>
             {myChallenge.map((c) => {
               const status = calculateStatus(c);
+              const parsedOutput = (() => {
+                try {
+                  return JSON.parse(c.output_data);
+                } catch {
+                  return '데이터 오류';
+                }
+              })();
               return (
                 <li
                   key={c.id}
@@ -87,13 +89,13 @@ export default function Challenge() {
                 >
                   <div className="w-full md:w-[80%]">
                     <h4 className="text-[1.1rem] font-bold tracking-[-.03rem] leading-[1.3]">
-                      {c.input_data}
+                      {parsedOutput.title}
                     </h4>
                     <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
-                      {c.output_data}
+                      {parsedOutput.description}
                     </p>
                     <span className="text-[.8rem] text-[#c2c2c2]">
-                      {c.start_date}~{c.end_date}
+                      {c.start_date.slice(0, 10)}~{c.end_date.slice(0, 10)}
                     </span>
                   </div>
                   <div
