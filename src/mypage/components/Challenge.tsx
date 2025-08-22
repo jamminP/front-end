@@ -93,7 +93,6 @@ export default function Challenge() {
                           return '데이터 오류';
                         }
                       })()}
-                      {c.output_data}
                     </p>
                     <span className="text-[.8rem] text-[#c2c2c2]">
                       {c.start_date.slice(0, 10)}~{c.end_date.slice(0, 10)}
