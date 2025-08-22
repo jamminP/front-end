@@ -1,9 +1,9 @@
+import useAuthStore from '@src/store/authStore';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
 export default function Challenge() {
-  //const userId = useAuthStore((state) => state.user?.id);
-  const userId = 30;
+  const userId = useAuthStore((state) => state.user?.id);
   const [myChallenge, setMyChallenge] = useState<StudyPlanData[]>([]);
 
   type ChallengeStatus = '진행 전' | '진행 중' | '완료';
