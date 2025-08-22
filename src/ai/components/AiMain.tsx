@@ -10,6 +10,7 @@ import MessageList from './aimain/MessageList';
 import InputBar from './aimain/InputBar';
 import { createStudyPlanForMe } from '../api/studyPlan';
 import { HttpError } from '../api/http';
+import VirtualMessageList from './aimain/VitualMessageList';
 
 type Step = 'need_input' | 'need_dates' | 'need_challenge' | 'submitting' | 'done';
 
@@ -180,8 +181,8 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
           >
             <div className="grid grid-rows-[auto_1fr_auto] h-full bg-white rounded-2xl border divide-y overflow-hidden">
               <ChatHeader title={selectedAction?.title ?? '대화'} />
-              <div className="min-h-0">
-                <MessageList messages={messages} onCalendarConfirm={onCalendarConfirm} />
+              <div className="min-h-0 h-full">
+                <VirtualMessageList messages={messages} onCalendarConfirm={onCalendarConfirm} />
               </div>
               <InputBar inputRef={inputRef} onSend={send} />
             </div>
