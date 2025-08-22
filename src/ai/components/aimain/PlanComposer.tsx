@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react';
+// src/ai/components/aimain/PlanComposer.tsx
+import { useEffect, useMemo, useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { createStudyPlanForMe, CreateStudyPlanReq } from '../../api/studyPlan';
 import { HttpError } from '../../api/http';
+import type { PlanData } from '../../types/types';
 
 type Props = {
   onSubmitted?: (
@@ -10,6 +12,12 @@ type Props = {
     serverMessage?: string,
     outputDataPretty?: string,
   ) => void;
+  chat?: {
+    appendUser: (text: string) => void;
+    appendAssistant: (text: string) => void;
+    appendLoading: (text?: string) => string;
+    appendPlanPreview: (plan: PlanData) => void;
+  };
 };
 
 function toISOWithTimeOfNow(d: Date) {
@@ -40,58 +48,83 @@ function toPrettyJSON(raw: unknown) {
   return typeof parsed === 'string' ? parsed : JSON.stringify(parsed, null, 2);
 }
 
-export default function PlanComposer({ onSubmitted }: Props) {
+export default function PlanComposer({ onSubmitted, chat }: Props) {
+  const [text, setText] = useState('');
   const [inputData, setInputData] = useState('');
   const [start, setStart] = useState<Date | null>(null);
   const [end, setEnd] = useState<Date | null>(null);
-  const [selecting, setSelecting] = useState<'start' | 'end'>('start');
-  const [isChallenge, setIsChallenge] = useState<boolean>(false);
+  const [datesAcked, setDatesAcked] = useState(false);
+  const [isChallenge, setIsChallenge] = useState(false);
 
-  const step: 1 | 2 | 3 | 4 = useMemo(() => {
+  const step: 1 | 2 | 3 = useMemo(() => {
     if (!inputData.trim()) return 1;
     if (!start || !end) return 2;
     return 3;
-  }, [inputData, start, end]) as 1 | 2 | 3 | 4;
+  }, [inputData, start, end]) as 1 | 2 | 3;
 
-  const canSubmit = step === 3;
+  const onEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== 'Enter' || e.shiftKey) return;
+    e.preventDefault();
+    const v = text.trim();
+    if (!v) return;
+    setInputData(v);
+    setText('');
+    chat?.appendUser(v);
+    chat?.appendAssistant(
+      '좋아요! 기간을 선택해 주세요. 시작일과 종료일을 캘린더에서 지정해 주세요.',
+    );
+  };
 
-  async function handleSubmit() {
-    if (!canSubmit || !start || !end) return;
+  useEffect(() => {
+    if (step === 2 || datesAcked) return;
+    if (start && end) {
+      const s = toISOWithTimeOfNow(start).slice(0, 10);
+      const e = toISOWithTimeOfNow(end).slice(0, 10);
+      chat?.appendAssistant(
+        `기간을 확인했습니다: ${s} ~ ${e}\n챌린지에 참여하시나요? (체크박스를 선택해 주세요)`,
+      );
+      setDatesAcked(true);
+    }
+  }, [step, start, end, datesAcked, chat]);
+
+  async function autoSubmit(challenge: boolean) {
+    if (step !== 3 || !start || !end) return;
 
     const payload: CreateStudyPlanReq = {
       input_data: inputData.trim(),
       start_date: toISOWithTimeOfNow(start),
       end_date: toISOWithTimeOfNow(end),
-      is_challenge: isChallenge,
+      is_challenge: challenge,
     };
+
+    const loadingId = chat?.appendLoading('학습 계획 생성이 생성중입니다.');
 
     try {
       const res = await createStudyPlanForMe(payload);
       const body = res.data;
 
       const outputRaw = body?.data?.study_plan?.output_data;
-      const outputPretty = outputRaw ? toPrettyJSON(outputRaw) : undefined;
+      const pretty = outputRaw ? toPrettyJSON(outputRaw) : undefined;
 
-      onSubmitted?.(payload, body?.message, outputPretty);
+      chat?.appendAssistant(body?.message || '학습 계획 생성이 완료되었습니다.');
+      const parsed = outputRaw ? (parseMaybeNestedJSON(outputRaw) as any) : null;
+      if (parsed) chat?.appendPlanPreview(parsed);
 
-      alert('학습 계획 생성이 완료되었습니다.');
-      setInputData('');
-      setStart(null);
-      setEnd(null);
-      setIsChallenge(false);
-      setSelecting('start');
+      onSubmitted?.(payload, body?.message, pretty);
     } catch (e) {
       const msg =
         e instanceof HttpError
           ? e.message
           : ((e as Error)?.message ?? '요청 중 오류가 발생했습니다.');
-
       if (typeof msg === 'string' && msg.includes('요청 시간이 초과되었습니다.')) {
+        chat?.appendAssistant(
+          '응답이 지연되고 있어요. 잠시 후 사이드바에서 생성 여부를 확인해 주세요.',
+        );
         onSubmitted?.(payload, '요청 시간 초과(서버에서 처리 중일 수 있어요).');
         return;
       }
-
-      alert(msg);
+      chat?.appendAssistant(`생성 중 오류가 발생했습니다: ${msg}`);
+    } finally {
     }
   }
 
@@ -101,11 +134,13 @@ export default function PlanComposer({ onSubmitted }: Props) {
         <div className="p-4 border rounded-2xl">
           <div className="font-medium mb-2">1. 어떤 공부 계획을 원하시나요?</div>
           <textarea
-            value={inputData}
-            onChange={(e) => setInputData(e.target.value)}
-            placeholder="예) 파이썬을 4주 동안, 하루 3~4시간... (input_data)"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={onEnter}
+            placeholder="예) 파이썬을 4주 동안, 하루 3~4시간... (Enter로 전송)"
             className="w-full min-h-28 rounded-xl border px-3 py-2 outline-none focus:ring-1 focus:ring-[#2a4864]"
           />
+          {inputData && <div className="mt-2 text-xs text-gray-500">입력됨: “{inputData}”</div>}
         </div>
 
         <div
@@ -120,10 +155,7 @@ export default function PlanComposer({ onSubmitted }: Props) {
               <div className="text-xs font-semibold mb-1">시작일</div>
               <DatePicker
                 selected={start}
-                onChange={(d) => {
-                  setStart(d);
-                  setSelecting('end');
-                }}
+                onChange={(d) => setStart(d)}
                 selectsStart
                 startDate={start}
                 endDate={end}
@@ -145,52 +177,25 @@ export default function PlanComposer({ onSubmitted }: Props) {
               />
             </div>
           </div>
-          <div className="text-xs text-gray-500 mt-2">
-            현재 선택 중: <b>{selecting === 'start' ? '시작일' : '종료일'}</b>
-          </div>
         </div>
 
         <div
-          className={`p-4 border rounded-2xl ${!start || !end ? 'opacity-60 pointer-events-none' : ''}`}
+          className={`p-4 border rounded-2xl ${step !== 3 ? 'opacity-60 pointer-events-none' : ''}`}
         >
           <div className="font-medium mb-2">3. 챌린지에 참여하시나요?</div>
           <label className="inline-flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={isChallenge}
-              onChange={(e) => setIsChallenge(e.target.checked)}
+              onChange={async (e) => {
+                const next = e.target.checked;
+                setIsChallenge(next);
+                await autoSubmit(next);
+              }}
               className="h-4 w-4"
             />
             <span>참여합니다 (is_challenge: {String(isChallenge)})</span>
           </label>
-        </div>
-
-        <div className="p-4 border rounded-2xl">
-          <div className="font-medium mb-2">4. 전송할 JSON 미리보기</div>
-          <pre className="text-xs bg-slate-50 p-3 rounded-xl overflow-x-auto">
-            {JSON.stringify(
-              {
-                input_data: inputData.trim() || '<빈 값>',
-                start_date: start ? toISOWithTimeOfNow(start) : '<미선택>',
-                end_date: end ? toISOWithTimeOfNow(end) : '<미선택>',
-                is_challenge: isChallenge,
-              },
-              null,
-              2,
-            )}
-          </pre>
-
-          <div className="mt-3 flex justify-end">
-            <button
-              disabled={!canSubmit}
-              onClick={handleSubmit}
-              className={`h-11 px-5 rounded-xl text-white font-medium ${
-                canSubmit ? 'bg-[#1B3043] hover:opacity-95 active:opacity-90' : 'bg-gray-400'
-              }`}
-            >
-              서버로 전송하기
-            </button>
-          </div>
         </div>
       </div>
     </div>

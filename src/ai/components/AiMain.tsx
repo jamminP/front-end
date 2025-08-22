@@ -1,5 +1,5 @@
-// src/ai/components/AiMain.tsx
 import { AnimatePresence, motion } from 'framer-motion';
+import { useRef } from 'react';
 import { useChat } from '../hook/useChat';
 import { StartCommand } from '../types/types';
 import ActionGrid from './aimain/ActionGrid';
@@ -8,11 +8,147 @@ import ActionCard from './aiside/ActionCard';
 import ChatHeader from './aimain/ChatHeader';
 import MessageList from './aimain/MessageList';
 import InputBar from './aimain/InputBar';
-import PlanComposer from './aimain/PlanComposer';
+import { createStudyPlanForMe } from '../api/studyPlan';
+import { HttpError } from '../api/http';
+
+type Step = 'need_input' | 'need_dates' | 'need_challenge' | 'submitting' | 'done';
+
+function parseMaybeNestedJSON(raw?: string | null) {
+  if (!raw) return null;
+  try {
+    const v = JSON.parse(raw);
+    return typeof v === 'string' ? JSON.parse(v) : v;
+  } catch {
+    return null;
+  }
+}
+function toISOWithTimeOfNow(d: Date) {
+  const now = new Date();
+  const withNow = new Date(
+    d.getFullYear(),
+    d.getMonth(),
+    d.getDate(),
+    now.getHours(),
+    now.getMinutes(),
+    now.getSeconds(),
+    now.getMilliseconds(),
+  );
+  return withNow.toISOString();
+}
+const fmt = (d: Date) => toISOWithTimeOfNow(d).slice(0, 10);
+
+function yesNoToBool(text: string): boolean | null {
+  const t = text.trim().toLowerCase();
+  if (/^(y|yes|true|예|참|참여|참가|한다|해|응|그래)/.test(t)) return true;
+  if (/^(n|no|false|아니|미참|안해|안 해|x)/.test(t)) return false;
+  return null;
+}
 
 export default function AiMain({ externalCommand }: { externalCommand?: StartCommand | null }) {
-  const { view, selectedAction, messages, inputRef, startChat, backHome, send, appendAssistant } =
-    useChat(externalCommand);
+  const {
+    view,
+    selectedAction,
+    messages,
+    inputRef,
+    startChat,
+    send,
+    appendAssistant,
+    appendLoading,
+    appendPlanPreview,
+    appendCalendar,
+  } = useChat(externalCommand, planReply);
+
+  const state = useRef<{ step: Step; input_data: string; start?: Date; end?: Date }>({
+    step: 'need_input',
+    input_data: '',
+  });
+
+  async function planReply(userText: string, action: any) {
+    if (action !== 'plan') return `좋아요! “${userText}”에 대해 더 알려주시면 계획을 정교화할게요.`;
+
+    if (state.current.step === 'need_input') {
+      state.current.input_data = userText.trim();
+      state.current.step = 'need_dates';
+      setTimeout(() => appendCalendar(), 0);
+      return '기간을 알려주세요.';
+    }
+
+    if (state.current.step === 'need_dates') {
+      const parts = userText.match(/\d{4}-\d{2}-\d{2}/g);
+      if (!parts || parts.length < 2) {
+        return '날짜는 “YYYY-MM-DD ~ YYYY-MM-DD” 형식으로 입력하거나, 위 캘린더에서 선택해 주세요.';
+      }
+      const [a, b] = parts as [string, string];
+      const s = new Date(a);
+      const e = new Date(b);
+      const start = s <= e ? s : e;
+      const end = s <= e ? e : s;
+
+      state.current.start = start;
+      state.current.end = end;
+      state.current.step = 'need_challenge';
+
+      return `확인했습니다: ${fmt(start)} ~ ${fmt(end)}\n챌린지에 참여하시나요? (예/아니오)`;
+    }
+
+    if (state.current.step === 'need_challenge') {
+      const yn = yesNoToBool(userText);
+      if (yn === null) return '참여 여부를 예/아니오 로 알려주세요.';
+
+      if (!state.current.start || !state.current.end) {
+        state.current.step = 'need_dates';
+        return '기간 정보가 유실되었어요. 다시 기간을 알려주세요. 예) 2025-08-22 ~ 2025-09-22';
+      }
+
+      state.current.step = 'submitting';
+      const payload = {
+        input_data: state.current.input_data,
+        start_date: toISOWithTimeOfNow(state.current.start),
+        end_date: toISOWithTimeOfNow(state.current.end),
+        is_challenge: yn,
+      };
+
+      appendLoading('학습 계획 생성이 생성중입니다.');
+      try {
+        const res = await createStudyPlanForMe(payload);
+        const body = res.data;
+        appendAssistant(body?.message || '학습 계획 생성이 완료되었습니다.');
+        const parsed = parseMaybeNestedJSON(body?.data?.study_plan?.output_data);
+        if (parsed) appendPlanPreview(parsed as any);
+        state.current.step = 'done';
+      } catch (e) {
+        const msg =
+          e instanceof HttpError
+            ? e.message
+            : ((e as Error)?.message ?? '요청 중 오류가 발생했습니다.');
+        if (typeof msg === 'string' && msg.includes('요청 시간이 초과되었습니다.')) {
+          appendAssistant(
+            '응답이 지연되고 있어요. 잠시 후 사이드바에서 생성 여부를 확인해 주세요.',
+          );
+        } else {
+          appendAssistant(`생성 중 오류가 발생했습니다: ${msg}`);
+        }
+        state.current.step = 'done';
+      }
+      return null;
+    }
+
+    if (state.current.step === 'done') {
+      state.current = { step: 'need_input', input_data: '' };
+      return '새로운 학습 계획을 시작해요! 어떤 공부 계획을 원하시나요?';
+    }
+    return null;
+  }
+
+  const onCalendarConfirm = (start: Date, end: Date) => {
+    if (state.current.step !== 'need_dates') return;
+    state.current.start = start;
+    state.current.end = end;
+    state.current.step = 'need_challenge';
+    appendAssistant(
+      `확인했습니다: ${fmt(start)} ~ ${fmt(end)}\n챌린지에 참여하시나요? (예/아니오)`,
+    );
+  };
 
   return (
     <div className="h-full grid grid-rows-[1fr] overflow-y-auto [scrollbar-gutter:stable]">
@@ -45,27 +181,9 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
             <div className="grid grid-rows-[auto_1fr_auto] h-full bg-white rounded-2xl border divide-y overflow-hidden">
               <ChatHeader title={selectedAction?.title ?? '대화'} />
               <div className="min-h-0">
-                <MessageList messages={messages} />
+                <MessageList messages={messages} onCalendarConfirm={onCalendarConfirm} />
               </div>
-
-              {selectedAction?.id === 'plan' ? (
-                <PlanComposer
-                  onSubmitted={(req, msg, output) => {
-                    appendAssistant(
-                      `아래 내용으로 학습 계획 생성을 요청했어요:\n` +
-                        '```json\n' +
-                        JSON.stringify(req, null, 2) +
-                        '\n```\n' +
-                        (msg ? `서버 응답: ${msg}\n` : '') +
-                        (output
-                          ? `생성된 output_data:\n\`\`\`json\n${output}\n\`\`\``
-                          : '서버에서 output_data를 받지 못했습니다.'),
-                    );
-                  }}
-                />
-              ) : (
-                <InputBar inputRef={inputRef} onSend={send} />
-              )}
+              <InputBar inputRef={inputRef} onSend={send} />
             </div>
           </motion.section>
         )}

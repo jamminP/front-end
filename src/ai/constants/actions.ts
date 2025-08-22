@@ -14,7 +14,7 @@ export const ACTIONS: {
     title: '공부 계획',
     desc: '목표/일정/가용시간을 기반으로 학습 플랜을 생성합니다.',
     icon: FaCalendarCheck,
-    firstPrompt: '어떤 공부 계획을 원하시나요? 과목/기간/하루 가능 시간을 알려주세요.',
+    firstPrompt: '어떤 공부 계획을 원하시나요?',
   },
   {
     id: 'summary',

@@ -41,9 +41,22 @@ export type StartCommand = {
   token: number;
 };
 
-export type Msg = {
-  id: string;
-  role: 'assistant' | 'user';
-  text: string;
-  ts: number;
+export type PlanData = {
+  title?: string;
+  total_weeks?: number;
+  difficulty?: string;
+  estimated_total_hours?: number;
+  challenge_mode?: boolean;
+  description?: string;
+  weekly_plans?: any[];
+  milestones?: any[];
+  resources?: any[];
+  tips?: string[];
+  [key: string]: any;
 };
+
+export type Msg =
+  | { id: string; role: 'assistant' | 'user'; ts: number; kind?: 'text'; text: string }
+  | { id: string; role: 'assistant'; ts: number; kind: 'plan'; plan: PlanData }
+  | { id: string; role: 'assistant'; ts: number; kind: 'loading'; text?: string }
+  | { id: string; role: 'assistant'; ts: number; kind: 'calendar' };
