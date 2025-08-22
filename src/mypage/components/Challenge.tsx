@@ -85,10 +85,18 @@ export default function Challenge() {
                       {c.input_data}
                     </h4>
                     <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
+                      {(() => {
+                        try {
+                          const data = JSON.parse(c.output_data);
+                          return data.title;
+                        } catch {
+                          return '데이터 오류';
+                        }
+                      })()}
                       {c.output_data}
                     </p>
                     <span className="text-[.8rem] text-[#c2c2c2]">
-                      {c.start_date}~{c.end_date}
+                      {c.start_date.slice(0, 10)}~{c.end_date.slice(0, 10)}
                     </span>
                   </div>
                   <div
