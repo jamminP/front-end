@@ -5,7 +5,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 // axios 인스턴스
 export const http = axios.create({
   baseURL: BASE_URL,
-  timeout: 10_000,
+  timeout: 30_000,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

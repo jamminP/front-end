@@ -21,6 +21,7 @@ import useAuthStore from './store/authStore';
 import axios from 'axios';
 
 function AppContent() {
+
   const setAuthData = useAuthStore((state) => state.setAuthData);
   const logout = useAuthStore((state) => state.logout);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
@@ -45,11 +46,11 @@ function AppContent() {
     }
   }, [setAuthData, logout, isLoggedIn]);
 
-  useEffect(() => {
-    if (location.pathname !== '/login' && !isLoggedIn) {
-      checkLogin();
-    }
-  }, [location.pathname, checkLogin, isLoggedIn]);
+  // useEffect(() => {
+  //   if (location.pathname !== '/login' && !isLoggedIn) {
+  //     checkLogin();
+  //   }
+  // }, [location.pathname, checkLogin, isLoggedIn]);
 
   return (
     <>
