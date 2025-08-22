@@ -5,12 +5,12 @@ import CommentForm from './components/CommentForm';
 import recruiting from '../img/recruiting.png';
 import completed from '../img/completed.png';
 
-import type { FreePostResponse, SharePostResponse, StudyPostResponse } from '../api/types';
+import type { PostDetail, FreeDetail, ShareDetail, StudyDetail } from '../api/types';
 
 type Category = 'free' | 'share' | 'study';
 const isCategory = (v: string): v is Category => v === 'free' || v === 'share' || v === 'study';
 
-export default function PostDetail() {
+export default function PostDetailPage() {
   const { category: raw, id } = useParams();
   if (!raw || !id || !isCategory(raw)) return <div className="p-6">잘못된 경로입니다.</div>;
 
@@ -22,13 +22,13 @@ export default function PostDetail() {
   if (isError || !data)
     return <div className="p-6 text-center text-red-500">게시글을 불러오지 못했어요.</div>;
 
-  const current_user_id = 0;
+  const current_user_id = 18;
 
   if (data.category === 'study') {
-    return <StudyDetail post={data} current_user_id={current_user_id} />;
+    return <StudyDetailView post={data} current_user_id={current_user_id} />;
   }
   if (data.category === 'free' || data.category === 'share') {
-    return <BasicDetail post={data} category={data.category} current_user_id={current_user_id} />;
+    return <BasicDetailView post={data} current_user_id={current_user_id} />;
   }
 
   function HeaderBar(props: {
@@ -84,18 +84,18 @@ export default function PostDetail() {
     }
   }
 
-  function BasicDetail({
+  // free/share 공용
+  function BasicDetailView({
     post,
-    category,
     current_user_id,
   }: {
-    post: FreePostResponse | SharePostResponse;
-    category: 'free' | 'share';
+    post: FreeDetail | ShareDetail; // ✅ 이름/타입 통일
     current_user_id: number;
   }) {
     return (
       <section className="rounded-2xl bg-gray-100 p-5 shadow-md">
         <HeaderBar
+          nickname={post.author_nickname} // ✅ 닉네임 표시
           created_at={post.created_at}
           views={post.views}
           rightExtra={<div className="text-sm">❤️ 3</div>}
@@ -105,14 +105,11 @@ export default function PostDetail() {
           <h1 className="mb-3 text-2xl font-bold">{post.title}</h1>
           <p>{post.content}</p>
 
-          {category === 'share' &&
-            'files' in post &&
-            Array.isArray(post.files) &&
-            post.files.length > 0 && (
-              <div className="mt-4 rounded-xl border bg-white p-4 text-sm">
-                첨부 파일 {post.files.length}개
-              </div>
-            )}
+          {post.category === 'share' && Array.isArray(post.files) && post.files.length > 0 && (
+            <div className="mt-4 rounded-xl border bg-white p-4 text-sm">
+              첨부 파일 {post.files.length}개
+            </div>
+          )}
         </ContentBox>
 
         <Divider />
@@ -124,11 +121,11 @@ export default function PostDetail() {
     );
   }
 
-  function StudyDetail({
+  function StudyDetailView({
     post,
     current_user_id,
   }: {
-    post: StudyPostResponse;
+    post: StudyDetail; // ✅ 이름/타입 통일
     current_user_id: number;
   }) {
     const meta = post.study_recruitment;
@@ -138,6 +135,7 @@ export default function PostDetail() {
     return (
       <section className="rounded-xl bg-gray-100 px-2 py-4 shadow-md">
         <HeaderBar
+          nickname={post.author_nickname} // ✅ 닉네임 표시
           created_at={post.created_at}
           views={post.views}
           rightExtra={<div className="text-sm">❤️ 3</div>}
