@@ -6,7 +6,6 @@ import profileImage from '@src/login/img/profile.jpg';
 
 export default function MypageContent() {
   const user = useAuthStore((state) => state.user);
-
   return (
     <>
       <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem]">마이페이지</h2>
