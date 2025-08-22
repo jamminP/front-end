@@ -2,6 +2,7 @@ import useAuthStore from '@src/store/authStore';
 import MyPostsSection from './MyPostsSection';
 import LikedPostsSection from './LikedPostsSection';
 import NicknameSection from './NicknameSection';
+import profileImage from '@src/login/img/profile.jpg';
 
 export default function MypageContent() {
   const user = useAuthStore((state) => state.user);
@@ -14,7 +15,7 @@ export default function MypageContent() {
       <div className="flex items-center justify-between md:justify-items-start mt-[30px] bg-[#e4ecf3] w-full md:w-fit p-[15px] md:p-[20px_25px] rounded-[20px]">
         <div className="flex items-center">
           <div className="w-[40px] h-[40px] rounded-[50%] overflow-hidden">
-            <img src={user?.profile_image} className="w-full h-full object-cover" />
+            <img src={user?.profile_image || profileImage} className="w-full h-full object-cover" />
           </div>
           <div className="md:m-[0_20px] m-[0_12px] leading-[1.3]">
             <p className="font-bold text-[#1b3043] text-[1.1rem]">{user?.nickname}</p>
