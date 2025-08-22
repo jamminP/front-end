@@ -1,7 +1,9 @@
+import useAuthStore from '@src/store/authStore';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
 export default function Challenge() {
+  const userId = useAuthStore((state) => state.user?.id);
   const [myChallenge, setMyChallenge] = useState<StudyPlanData[]>([]);
 
   type ChallengeStatus = '진행 전' | '진행 중' | '완료';
@@ -27,8 +29,13 @@ export default function Challenge() {
 
   const fetchChallenge = async () => {
     try {
-      const res = await axios.get('https://backend.evida.site/api/v1/ai/study_plan/', {
+      const res = await axios.get(`https://backend.evida.site/api/v1/ai/study_plan/`, {
         withCredentials: true,
+        params: {
+          user_id: userId,
+          limit: 10,
+          offset: 0,
+        },
       });
       const challenges: StudyPlanData[] = res.data.data.study_plans
         .filter((plan: any) => plan.is_challenge)
