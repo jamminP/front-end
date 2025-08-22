@@ -147,19 +147,25 @@ export type StudyPostUpdateRequest = Partial<
 >;
 
 export interface CommentRequest {
-  post_id: number;
+  user?: number;
   content: string;
-  parent_id?: number | null;
-  user_id: number;
+  parent_comment_id: number;
 }
 export interface CommentResponse {
   id: number;
   post_id: number;
   content: string;
-  author_id: string;
+  author_nickname: string;
+  author_id: number;
   parent_id: number | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface GETCommentResponse {
+  total: string;
+  count: string;
+  items: CommentResponse[];
 }
 
 export type AllPostResponse = FreePostResponse | SharePostResponse | StudyPostResponse;

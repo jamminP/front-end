@@ -13,6 +13,7 @@ import {
   SearchIn,
   TopCategory,
   TopWeeklyResponse,
+  CommentRequest,
 } from './types';
 
 export type CommentTreeItem = {
@@ -174,14 +175,20 @@ export const getComments = async (postId: number): Promise<CommentResponse[]> =>
   return normalizeComments(raw);
 };
 
-export const createComment = (postId: number, content: string, userId: number, parentId?: number) =>
-  http<CommentResponse>(`/api/v1/community/post/${postId}/comment`, {
+export const createComment = (
+  user: number,
+  post_id: number,
+  content: string,
+  parent_comment_id?: number,
+) =>
+  http<CommentResponse>(`/api/v1/community/post/${post_id}/comment`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({
-      post_id: postId,
-      content,
-      user_id: userId,
-      parent_id: parentId ?? null,
+      user: user,
+      content: content.trim(),
+      parent_comment_id:
+        typeof parent_comment_id === 'number' && parent_comment_id > 0 ? parent_comment_id : null,
     }),
   });
 

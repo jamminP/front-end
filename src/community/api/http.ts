@@ -61,6 +61,15 @@ export async function http<T>(url: string, init: RequestInit = {}): Promise<T> {
     throw new HttpError(res.status, res.statusText, errorData);
   }
 
+  if (import.meta.env.DEV) {
+    console.debug('[HTTP]', init?.method ?? 'GET', url);
+    if (init?.body) {
+      try {
+        console.debug('[HTTP BODY]', JSON.parse(init.body as string));
+      } catch {}
+    }
+  }
+
   if (res.status === 204) return undefined as unknown as T;
   return (isJson ? await res.json() : await res.text()) as T;
 }
