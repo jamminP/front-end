@@ -12,7 +12,7 @@ export function MyPostCard({ id, title, content, date, category }: MyPost) {
   const navigate = useNavigate();
   return (
     <li
-      className="w-[48%] md:w-[32%] h-[130px] text-[#252525] bg-[#ffffff] rounded-2xl mb-[5%] md:mb-[2%] p-[20px] md:p-[25px] border-[1px] border-[#e9e9e9] transform transition-transform duration-300 hover:translate-y-[-5px]"
+      className="w-[48%] md:w-[32%] h-[130px] text-[#252525] bg-[#ffffff] rounded-2xl mb-[5%] md:mb-[2%] p-[20px] md:p-[25px] border-[1px] border-[#e9e9e9] transform transition-transform duration-300 hover:translate-y-[-5px] cursor-pointer"
       onClick={() => navigate(`/community/${category}/${id}`)}
     >
       <h4 className="text-[1.1rem] font-bold tracking-[-.03rem] truncate">{title}</h4>

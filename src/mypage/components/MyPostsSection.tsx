@@ -72,7 +72,7 @@ export default function MyPostsSection() {
           {['all', 'share', 'free', 'study'].map((cat) => (
             <button
               key={cat}
-              className={`md:px-4 md:py-2 px-3 py-2 rounded-full font-medium md:text-[1rem] text-[.9rem] ${
+              className={`md:px-4 md:py-2 px-3 py-2 rounded-full font-medium md:text-[1rem] text-[.9rem] cursor-pointer ${
                 category === cat ? 'bg-[#1b3043] text-white' : 'bg-gray-200 text-gray-700'
               }`}
               onClick={() => {

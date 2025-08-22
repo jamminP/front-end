@@ -66,7 +66,7 @@ export default function LikedPostsSection() {
           {['all', 'share', 'free', 'study'].map((cat) => (
             <button
               key={cat}
-              className={`md:px-4 md:py-2 px-3 py-2 rounded-full font-medium md:text-[1rem] text-[.9rem] ${
+              className={`md:px-4 md:py-2 px-3 py-2 rounded-full font-medium md:text-[1rem] text-[.9rem] cursor-pointer ${
                 category === cat ? 'bg-[#1b3043] text-white' : 'bg-gray-200 text-gray-700'
               }`}
               onClick={() => {
@@ -104,7 +104,7 @@ export default function LikedPostsSection() {
             {hasMore && (
               <div className="flex justify-center mt-5">
                 <button
-                  className="px-5 py-2 bg-[#1b3043] text-white rounded-full"
+                  className="md:px-4 md:py-2 px-3 py-2 bg-[#1b3043] text-white text-[.9rem] rounded-full"
                   onClick={() => fetchLikedPosts(cursor, category)}
                 >
                   더보기
@@ -114,7 +114,7 @@ export default function LikedPostsSection() {
           </>
         ) : (
           <p className="text-[1.2rem] text-[#999] font-light tracking-[-0.03rem] mt-5 pl-[5px]">
-            아직 작성한 글이 없습니다
+            아직 찜한 글이 없습니다
           </p>
         )}
       </div>
