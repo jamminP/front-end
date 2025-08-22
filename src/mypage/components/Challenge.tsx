@@ -64,9 +64,14 @@ export default function Challenge() {
   return (
     <>
       {myChallenge.length === 0 ? (
-        <p className="text-[1.2rem] text-[#999] font-light tracking-[-0.03rem] mt-5 pl-[5px]">
-          등록된 챌린지가 없습니다.
-        </p>
+        <>
+          <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">
+            챌린지
+          </h2>
+          <p className="text-[1.2rem] text-[#999] font-light tracking-[-0.03rem] mt-5 pl-[5px]">
+            등록된 챌린지가 없습니다.
+          </p>
+        </>
       ) : (
         <>
           <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">
