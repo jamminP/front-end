@@ -43,7 +43,7 @@ export default function CommentsBlock({
             }}
             aria-label="전송"
           >
-            <img src={squarePen} alt="commet button" className="w-4 h-4" />
+            <img src={squarePen} alt="comment button" className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -143,7 +143,7 @@ function ReplyEditor({
           }}
           aria-label="대댓글 전송"
         >
-          <img src={squarePen} alt="commet button" className="w-4 h-4" />
+          <img src={squarePen} alt="comment button" className="w-4 h-4" />
         </button>
       </div>
     </div>

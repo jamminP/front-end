@@ -48,11 +48,7 @@ const CommunityLayout = () => {
         <div className="flex justify-center gap-10 mt-6">
           {/* 좌측 인기글 */}
           <div className="w-[240px]">
-            <SidebarRanking
-              freeTop5={dummyfreePost}
-              studyTop5={dummyStudyPost}
-              shareTop5={dummySharePost}
-            />
+            <SidebarRanking />
           </div>
 
           {/* 본문 */}
