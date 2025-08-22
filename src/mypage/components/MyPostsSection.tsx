@@ -72,7 +72,7 @@ export default function MyPostsSection() {
           {['all', 'share', 'free', 'study'].map((cat) => (
             <button
               key={cat}
-              className={`md:px-4 md:py-2 px-3 py-2 rounded-full font-medium md:text-[1rem] text-[.9rem] cursor-pointer ${
+              className={`md:px-4 md:py-2 px-3 py-2 rounded-full font-medium md:text-[.9rem] text-[.8rem] cursor-pointer ${
                 category === cat ? 'bg-[#1b3043] text-white' : 'bg-gray-200 text-gray-700'
               }`}
               onClick={() => {
@@ -110,7 +110,7 @@ export default function MyPostsSection() {
             {hasMore && (
               <div className="flex justify-center mt-5">
                 <button
-                  className="px-5 py-2 bg-[#1b3043] text-white rounded-full"
+                  className="md:px-4 md:py-2 px-3 py-2 bg-[#1b3043] text-white md:text-[.9rem] text-[.8rem] rounded-full"
                   onClick={() => fetchPosts(cursor, category)}
                 >
                   더보기
