@@ -64,8 +64,10 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
     appendChallengePrompt,
     appendChoice,
     disableChoice,
+    lockCalendar,
   } = useChat(externalCommand, planReply);
 
+  const calendarIdRef = useRef<string | null>(null);
   const lastChoiceIdRef = useRef<string | null>(null);
 
   const afterDatesConfirmed = (start: Date, end: Date) => {
@@ -137,7 +139,9 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
       state.current.input_data = userText.trim();
       state.current.step = 'need_dates';
       appendAssistant('기간을 알려주세요.');
-      setTimeout(() => appendCalendar(), 0);
+      setTimeout(() => {
+        calendarIdRef.current = appendCalendar();
+      }, 0);
       return null;
     }
 
@@ -155,6 +159,8 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
       state.current.start = start;
       state.current.end = end;
       state.current.step = 'need_challenge';
+
+      if (calendarIdRef.current) lockCalendar(calendarIdRef.current);
 
       afterDatesConfirmed(start, end);
       return null;
@@ -216,6 +222,9 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
     state.current.start = start;
     state.current.end = end;
     state.current.step = 'need_challenge';
+
+    if (calendarIdRef.current) lockCalendar(calendarIdRef.current);
+
     afterDatesConfirmed(start, end);
   };
 

@@ -67,8 +67,17 @@ export function useChat(externalCommand?: StartCommand | null, getReply?: Genera
 
   const appendCalendar = useCallback(() => {
     const id = uid();
-    setMessages((prev) => [...prev, { id, role: 'assistant', ts: Date.now(), kind: 'calendar' }]);
+    setMessages((prev) => [
+      ...prev,
+      { id, role: 'assistant', ts: Date.now(), kind: 'calendar', locked: false },
+    ]);
     return id;
+  }, []);
+
+  const lockCalendar = useCallback((id: string) => {
+    setMessages((prev) =>
+      prev.map((m) => (m.id === id && m.kind === 'calendar' ? { ...m, locked: true } : m)),
+    );
   }, []);
 
   const send = useCallback(async () => {
@@ -146,5 +155,6 @@ export function useChat(externalCommand?: StartCommand | null, getReply?: Genera
     appendChallengePrompt,
     appendChoice,
     disableChoice,
+    lockCalendar,
   };
 }

@@ -66,6 +66,7 @@ export type TypingMsg = BaseMsg & {
 
 export type CalendarMsg = BaseMsg & {
   kind: 'calendar';
+  locked?: boolean;
 };
 
 export type ChoiceOption = { value: string; label: string };

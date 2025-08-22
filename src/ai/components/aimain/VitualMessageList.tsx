@@ -108,7 +108,7 @@ export default function VirtualMessageList({
             <RowAnim>
               <div className="flex justify-start">
                 <div className="w-full md:w-auto rounded-2xl px-4 py-3 bg-white shadow-sm">
-                  <CalendarBubble onConfirm={onCalendarConfirm} />
+                  <CalendarBubble locked={m.locked} onConfirm={onCalendarConfirm} />{' '}
                 </div>
               </div>
             </RowAnim>

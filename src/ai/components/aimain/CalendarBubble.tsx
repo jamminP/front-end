@@ -3,9 +3,9 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../../css/datepicker-chat.css';
 
-type Props = { onConfirm?: (start: Date, end: Date) => void };
+type Props = { onConfirm?: (start: Date, end: Date) => void; locked?: boolean };
 
-export default function CalendarBubble({ onConfirm }: Props) {
+export default function CalendarBubble({ onConfirm, locked = false }: Props) {
   const [isMd, setIsMd] = useState<boolean>(() =>
     typeof window !== 'undefined' ? window.matchMedia('(min-width: 768px)').matches : true,
   );
@@ -18,8 +18,10 @@ export default function CalendarBubble({ onConfirm }: Props) {
   }, []);
 
   const [range, setRange] = useState<[Date | null, Date | null]>([null, null]);
-  const [locked, setLocked] = useState(false);
+  const [internalLocked, setInternalLocked] = useState(false); // 🆕
   const [start, end] = range;
+
+  const isLocked = locked || internalLocked;
 
   const ymd = (d?: Date | null) =>
     d ? new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10) : '';
@@ -27,19 +29,19 @@ export default function CalendarBubble({ onConfirm }: Props) {
   const monthsShown = useMemo(() => (isMd ? 2 : 1), [isMd]);
 
   const handleChange = (update: [Date | null, Date | null]) => {
-    if (locked) return;
+    if (isLocked) return;
     setRange(update);
   };
 
   useEffect(() => {
-    if (!locked && start && end) {
+    if (!isLocked && start && end) {
       const t = setTimeout(() => {
-        setLocked(true);
+        setInternalLocked(true); // onConfirm 반영되기 전까지 즉시 잠금
         onConfirm?.(start, end);
       }, 250);
       return () => clearTimeout(t);
     }
-  }, [start, end, locked, onConfirm]);
+  }, [start, end, isLocked, onConfirm]);
 
   return (
     <div className="space-y-2">
@@ -47,7 +49,10 @@ export default function CalendarBubble({ onConfirm }: Props) {
         캘린더에서 <b>시작일과 종료일</b>을 선택하세요. 둘 다 선택하면 자동으로 확인합니다.
       </div>
 
-      <div className={`relative rounded-xl ${locked ? 'opacity-70' : ''}`}>
+      <div
+        className={`relative rounded-xl ${isLocked ? 'opacity-70' : ''}`}
+        aria-disabled={isLocked}
+      >
         <DatePicker
           inline
           selectsRange
@@ -62,15 +67,23 @@ export default function CalendarBubble({ onConfirm }: Props) {
           fixedHeight
           showPopperArrow={false}
           calendarStartDay={0}
+          disabledKeyboardNavigation={isLocked} // 🆕
         />
-        {locked && <div className="absolute inset-0 rounded-xl pointer-events-auto" />}
+
+        {isLocked && (
+          <div
+            className="absolute inset-0 z-10 rounded-xl bg-transparent pointer-events-auto cursor-not-allowed"
+            aria-hidden="true"
+            title="기간이 확정되었습니다."
+          />
+        )}
       </div>
 
-      <div className="text-[12px] text-gray-500">
+      <div className="text-[12px] text-gray-500 text-end pr-3">
         {start || end ? (
           <>
             선택한 기간: <b>{ymd(start) || '—'}</b> ~ <b>{ymd(end) || '—'}</b>
-            {locked && (
+            {isLocked && (
               <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-[11px]">
                 선택 완료
               </span>
