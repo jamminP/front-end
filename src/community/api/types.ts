@@ -108,3 +108,20 @@ export type DetailByCategory<C extends ItemCategory> = C extends 'free'
 
 // 검색
 export type SearchIn = 'title' | 'title_content' | 'content' | 'author';
+
+export type TopCategory = 'study' | 'free' | 'share';
+
+export interface TopWeeklyItem {
+  post_id: number;
+  title: string;
+  category: TopCategory;
+  author_id: number;
+  total_views_7d: number;
+  created_at: string;
+}
+
+export interface TopWeeklyResponse {
+  category: TopCategory;
+  count: number;
+  items: TopWeeklyItem[];
+}
