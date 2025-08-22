@@ -48,7 +48,9 @@ export default function MypageContent() {
       {/* 유저 정보 */}
       <div className="flex items-center justify-between md:justify-items-start mt-[30px] bg-[#e4ecf3] w-full md:w-fit p-[15px_20px] md:p-[20px_25px] rounded-[20px]">
         <div className="flex items-center">
-          <div className="w-[50px] h-[50px] bg-[#ffffff] rounded-[50%]"></div>
+          <div className="w-[40px] h-[40px] rounded-[50%] overflow-hidden">
+            <img src={user?.profile_image} className="w-full h-full object-cover" />
+          </div>
           <div className="m-[0_15px] leading-[1.3]">
             <p className="font-bold text-[#1b3043] text-[1.1rem]">{user?.nickname}</p>
             <p className="text-[#5b6b7a] text-[.9rem]">{user?.email}</p>
