@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import CommunityLayout from './community/CommunityLayout';
@@ -14,18 +14,19 @@ import CreatePost from './community/form/CreatePost';
 import CommunityFree from './community/category/CommunityFree';
 import CommunityShare from './community/category/CommunityShare';
 import AiPage from './ai/AiPage';
-import EditPost from './community/form/EditPost';
 import CommunityStudy from './community/category/CommunityStudy';
-import PostDetailMock from './community/post/PostDetail';
+import PostDetail from './community/post/PostDetail';
 import { useCallback, useEffect, useState } from 'react';
 import useAuthStore from './store/authStore';
 import axios from 'axios';
 
 function AppContent() {
+
   const setAuthData = useAuthStore((state) => state.setAuthData);
   const logout = useAuthStore((state) => state.logout);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const checkLogin = useCallback(async () => {
     try {
@@ -37,6 +38,7 @@ function AppContent() {
       // 401이면 조용히 로그아웃 처리
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         logout();
+        navigate('/');
       } else {
         // 다른 에러는 콘솔에 출력
         console.error(err);
@@ -44,11 +46,11 @@ function AppContent() {
     }
   }, [setAuthData, logout, isLoggedIn]);
 
-  useEffect(() => {
-    if (location.pathname !== '/login' && !isLoggedIn) {
-      checkLogin();
-    }
-  }, [location.pathname, checkLogin, isLoggedIn]);
+  // useEffect(() => {
+  //   if (location.pathname !== '/login' && !isLoggedIn) {
+  //     checkLogin();
+  //   }
+  // }, [location.pathname, checkLogin, isLoggedIn]);
 
   return (
     <>
@@ -62,8 +64,7 @@ function AppContent() {
             <Route path="free" element={<CommunityFree />} />
             <Route path="share" element={<CommunityShare />} />
             <Route path="study" element={<CommunityStudy />} />
-            <Route path="/community/:category/:id" element={<PostDetailMock />} />
-            <Route path="/community/:category/:id/edit" element={<EditPost />} />
+            <Route path=":category/:id" element={<PostDetail />} />
           </Route>
 
           <Route path="/login" element={<Login />} />

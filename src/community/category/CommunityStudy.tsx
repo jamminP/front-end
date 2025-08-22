@@ -1,76 +1,63 @@
-import { useInfiniteQuery, QueryFunctionContext } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
+import { useInfiniteCursor } from '../hook/useInfiniteCursor';
+import { useIntersection } from '../hook/useIntersection';
+import PostCard from '../components/Postcard';
 import { useNavigate } from 'react-router-dom';
-import { mockStudyListCursor } from '../__mock__/dummyPost';
-import type { StudyPostResponse } from '../api/types';
-import PostCard, { Post } from '../components/Postcard';
 
-type CursorPage<T> = { items: T[]; nextCursor: number | null };
-type QK = readonly ['mock', 'study', 'cursor'];
+type StudyPostResponse = {
+  id: number;
+  title: string;
+  content: string;
+  author_id: string;
+  category: 'study';
+  created_at: string;
+  views: number;
+  badge?: string;
+  remaining?: number;
+  max_member?: number;
+};
 
 export default function CommunityStudy() {
+  const [q] = useState('');
   const navigate = useNavigate();
-  const currentUserId = 1001;
+  const currentUserId = 0;
 
-  const q = useInfiniteQuery<
-    CursorPage<StudyPostResponse>,
-    Error,
-    StudyPostResponse[],
-    QK,
-    number | null
-  >({
-    queryKey: ['mock', 'study', 'cursor'] as const,
-    initialPageParam: null,
-    queryFn: ({ pageParam }: QueryFunctionContext<QK, number | null>) =>
-      mockStudyListCursor(pageParam),
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
-    select: (data) => data.pages.flatMap((p) => p.items),
+  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteCursor<StudyPostResponse>('study', q);
+
+  const items = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data]);
+
+  const sentinelRef = useIntersection(() => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   });
 
-  const items = q.data ?? [];
-
-  if (q.status === 'pending') return <div className="p-6">로딩중…</div>;
-  if (q.status === 'error') return <div className="p-6 text-red-600">불러오기 실패</div>;
-
   return (
-    <div className="space-y-3">
-      {items.map((std) => {
-        const post: Post = {
-          postId: std.id,
-          title: std.title,
-          author: `user#${std.author_id}`,
-          authorId: std.author_id,
-          category: 'study',
-          content: std.content,
-          createdAt: std.created_at,
-          views: std.views,
-          likes: 0,
-          comments: 0,
+    <>
+      <ul className="space-y-3">
+        {items.map((post) => (
+          <li key={post.id}>
+            <PostCard
+              post={post}
+              currentUserId={currentUserId}
+              onClick={() => navigate(`/community/study/${post.id}`)}
+            />
+            {(post.badge || post.remaining !== undefined) && (
+              <div className="mt-1 text-sm text-gray-600">
+                {post.badge ? `상태: ${post.badge}` : null}
+                {post.remaining !== undefined && post.max_member !== undefined
+                  ? ` · ${post.remaining}/${post.max_member} 남음`
+                  : null}
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
 
-          recruitStart: std.study_recruitment.recruit_start,
-          recruitEnd: std.study_recruitment.recruit_end,
-          studyStart: std.study_recruitment.study_start,
-          studyEnd: std.study_recruitment.study_end,
-          maxMembers: std.study_recruitment.max_member,
-        };
-        return (
-          <PostCard
-            key={post.postId}
-            post={post}
-            currentUserId={currentUserId}
-            onClick={(id) => navigate(`/community/study/${id}`)}
-          />
-        );
-      })}
-
-      {q.hasNextPage && (
-        <button
-          onClick={() => q.fetchNextPage()}
-          disabled={q.isFetchingNextPage}
-          className="block mx-auto mt-2 px-4 py-2 rounded-xl shadow hover:shadow-md"
-        >
-          {q.isFetchingNextPage ? '불러오는 중…' : '더 불러오기'}
-        </button>
+      <div ref={sentinelRef} className="h-12" />
+      {isFetchingNextPage && <div className="py-4 text-center">더 불러오는 중…</div>}
+      {!hasNextPage && !isLoading && items.length > 0 && (
+        <div className="py-6 text-center text-gray-500">더 이상 불러올 게시물이 없습니다.</div>
       )}
-    </div>
+    </>
   );
 }

@@ -5,8 +5,9 @@ export interface FreePostItem {
   title: string;
   content: string;
   category: 'free';
-  authorId: number;
-  createdAt: string;
+  author_id: string;
+  views: number;
+  created_at: string;
   imageUrl?: string | null;
 }
 
@@ -15,10 +16,11 @@ export interface SharePostItem {
   title: string;
   content: string;
   category: 'share';
-  authorId: number;
-  createdAt: string;
-  fileUrl?: string | null;
-  imgUrl?: string | null;
+  author_id: string;
+  views: number;
+  created_at: string;
+  updated_at: string;
+  data_share?: { file_url?: string | null; img_url?: string | null; description?: string | null };
 }
 
 export interface StudyPostItem {
@@ -26,30 +28,38 @@ export interface StudyPostItem {
   title: string;
   content: string;
   category: 'study';
-  authorId: number;
-  createdAt: string;
-  recruitStart?: string;
-  recruitEnd?: string;
-  studyStart?: string;
-  studyEnd?: string;
-  maxMembers?: number;
-  badge?: string;
+  author_id: string;
+  views: number;
+  created_at: string;
+  updated_at: string;
+  study_recruitment: {
+    badge?: string;
+    max_member?: number;
+    recruit_start?: string;
+    recruit_end?: string;
+    study_start?: string;
+    study_end?: string;
+  };
 }
 
-export interface AllPostItem {
+export type AllPostItem = {
   id: number;
+  contents: string;
+  category: 'free' | 'share' | 'study';
   title: string;
-  content: string;
-  category: Category;
-  authorId: number;
-  createdAt: string;
-}
+  author_id: string;
+  views: number;
+  created_at: string;
+  badge?: string;
+  remaining?: number;
+  max_member?: number;
+};
 
 export interface FreePostRequest {
   title: string;
   content: string;
   user_id: number;
-  category?: 'free';
+  category: 'free';
 }
 export interface FreeBoardResponse {
   image_url: string | null;
@@ -59,11 +69,11 @@ export interface FreePostResponse {
   title: string;
   content: string;
   category: 'free';
-  author_id: number;
+  author_id: string;
   views: number;
-  free_board: FreeBoardResponse;
   created_at: string;
   updated_at: string;
+  free_board?: FreeBoardResponse;
 }
 
 export interface SharePostRequest {
@@ -74,7 +84,7 @@ export interface SharePostRequest {
   img_url?: string | null;
   category?: 'share';
 }
-export interface DataShareResponse {
+export interface d_ataShareResponse {
   file_url: string | null;
 }
 export interface SharePostResponse {
@@ -82,9 +92,9 @@ export interface SharePostResponse {
   title: string;
   content: string;
   category: 'share';
-  author_id: number;
+  author_id: string;
   views: number;
-  data_share: DataShareResponse;
+  data_share: d_ataShareResponse;
   created_at: string;
   updated_at: string;
 }
@@ -92,8 +102,8 @@ export interface SharePostResponse {
 export interface StudyPostRequest {
   title: string;
   content: string;
-  user_id: number;
   category?: 'study';
+  user_id: number;
   recruit_start: string;
   recruit_end: string;
   study_start: string;
@@ -112,7 +122,7 @@ export interface StudyPostResponse {
   title: string;
   content: string;
   category: 'study';
-  author_id: number;
+  author_id: string;
   views: number;
   study_recruitment: StudyRecruitmentResponse;
   created_at: string;
@@ -146,7 +156,7 @@ export interface CommentResponse {
   id: number;
   post_id: number;
   content: string;
-  author_id: number;
+  author_id: string;
   parent_id: number | null;
   created_at: string;
   updated_at: string;
@@ -158,8 +168,7 @@ export interface Post {
   post_id: number;
   title: string;
   content: string;
-  author_id: number;
-  author: string;
+  author_id: string;
   category: Category;
   created_at: string;
   views: number;
@@ -167,15 +176,17 @@ export interface Post {
   comments?: number;
 }
 
-export type SearchIn = 'title' | 'content' | 'title_content' | 'author_id';
+export type SearchIn = 'title' | 'content' | 'title_content' | 'author';
 
 export interface ListCursorParams {
   limit?: number;
+  author_id?: number;
   cursor?: string | null;
   search_in?: SearchIn;
   keyword?: string;
   date_from?: string;
   date_to?: string;
+  badge?: string;
 }
 
 export interface ListCursorResult<T> {
@@ -191,4 +202,21 @@ export interface SearchPostItem {
   category: Category;
   created_at: string;
   badge?: '모집중' | '모집완료';
+}
+
+export type TopCategory = 'study' | 'free' | 'share';
+
+export interface TopWeeklyItem {
+  post_id: number;
+  title: string;
+  category: TopCategory;
+  author_id: number; // author_id 타입 재정립 필요가 있음 일단 int로 받기.
+  total_views_7d: number;
+  created_at: string;
+}
+
+export interface TopWeeklyResponse {
+  category: TopCategory;
+  count: number;
+  items: TopWeeklyItem[];
 }
