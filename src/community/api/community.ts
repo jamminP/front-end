@@ -10,9 +10,9 @@ import {
   SharePostResponse,
   StudyPostResponse,
   CommentResponse,
-  Post,
-  AllPostResponse,
   SearchIn,
+  TopCategory,
+  TopWeeklyResponse,
 } from './types';
 
 export type CommentTreeItem = {
@@ -38,7 +38,7 @@ type Category = 'all' | 'free' | 'share' | 'study';
 
 export type CursorPage<T> = {
   items: T[];
-  nextCursor: number | null;
+  next_cursor: number | null;
 };
 
 function normalizeCursorPage<T>(raw: any): CursorPage<T> {
@@ -50,7 +50,7 @@ function normalizeCursorPage<T>(raw: any): CursorPage<T> {
         ? raw.item
         : [];
   const nc = raw?.next_cursor ?? raw?.nextCursor ?? raw?.cursor ?? null;
-  return { items, nextCursor: (nc ?? null) as number | null };
+  return { items, next_cursor: (nc ?? null) as number | null };
 }
 
 function qs(params: Record<string, unknown>) {
@@ -95,9 +95,6 @@ export const getShareListCursor = (cursor: number | null | undefined, q?: string
 
 export const getStudyListCursor = (cursor: number | null | undefined, q?: string, limit?: number) =>
   getListCursor<StudyPostResponse>('study', cursor, q, limit);
-
-export const getAllListCursor = (cursor: number | null | undefined, q?: string, limit?: number) =>
-  getListCursor<any>('all', cursor, q, limit);
 
 export type AnyPostResponse = FreePostResponse | SharePostResponse | StudyPostResponse;
 
@@ -211,52 +208,88 @@ export const deletePost = (postId: number, userId?: number) =>
 //search
 const SEARCH_ENDPOINT = '/api/v1/community/post/search';
 
-export interface SearchCursorParams {
-  q: string;
-  scope: SearchIn;
-  category?: Category;
-  cursor?: number | null;
-  size?: number;
+export interface AllListCursorParams {
+  q?: string;
+  search_in?: SearchIn;
+  cursor?: string | number;
+  limit?: number;
+  author_id?: string | number;
+  date_from?: string;
+  date_to?: string;
+  badge?: string;
 }
 
-export async function searchPostsCursor(params: SearchCursorParams) {
-  const { q, scope, category = 'all', cursor, size } = params;
-  const url = `${SEARCH_ENDPOINT}${qs({ q, scope, category, cursor, size })}`;
-  const raw = await http<any>(url);
-  return normalizeCursorPage<AllPostResponse>(raw);
+export type ListCursorItem = {
+  id?: number;
+  post_id?: number;
+  title: string;
+  content?: string;
+  category: Exclude<Category, 'all'>;
+  author_id: number;
+  created_at: string;
+  views?: number;
+  badge?: string;
+};
+
+export interface AllListCursorResponse {
+  count: number;
+  next_cursor: string | number | null;
+  items: ListCursorItem[];
 }
 
-type _All = AllPostResponse;
-type _Post = Post;
+const BASE_PATH = '/api/v1/community/post/all/list-cursor' as const;
 
-const toNum = (v: unknown): number => (v == null ? 0 : typeof v === 'number' ? v : Number(v) || 0);
-
-export const toPost = (src: _All): _Post => ({
-  post_id: src.id,
-  title: src.title ?? '',
-  content: src.content ?? '',
-  author_id: src.author_id,
-  category: src.category,
-  created_at: src.created_at,
-  views: toNum((src as any).views ?? (src as any).view_count),
-  likes: toNum((src as any).like_count),
-  comments: toNum((src as any).comment_count),
-});
-
-export async function searchPostsAllPages(
-  params: Omit<SearchCursorParams, 'cursor'>,
-): Promise<Post[]> {
-  const acc: _All[] = [];
-  let cursor: number | null | undefined = undefined;
-
-  while (true) {
-    const page = await searchPostsCursor({ ...params, cursor });
-    acc.push(...page.items);
-    if (page.nextCursor == null) break;
-    cursor = page.nextCursor;
+function buildQuery(params: Record<string, unknown>): string {
+  const usp = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v === undefined || v === null || v === '') continue;
+    usp.append(k, String(v));
   }
-
-  const mapped = acc.map(toPost);
-  mapped.sort((a, b) => new Date(b.created_at).valueOf() - new Date(a.created_at).valueOf());
-  return mapped;
+  const s = usp.toString();
+  return s ? `?${s}` : '';
 }
+
+export function getAllListCursor(
+  cursor: string | number | null | undefined,
+  q?: string,
+  limit?: number,
+): Promise<AllListCursorResponse>; // 시그니처 1
+export function getAllListCursor(params: AllListCursorParams): Promise<AllListCursorResponse>; // 시그니처 2
+export function getAllListCursor(
+  a: string | number | null | undefined | AllListCursorParams,
+  q?: string,
+  limit?: number,
+): Promise<AllListCursorResponse> {
+  const params: AllListCursorParams =
+    typeof a === 'object' && a !== null ? a : { cursor: a ?? undefined, q, limit };
+
+  const query = buildQuery({
+    q: params.q,
+    search_in: params.search_in,
+    cursor: params.cursor,
+    limit: params.limit ?? 20,
+    author_id: params.author_id,
+    date_from: params.date_from,
+    date_to: params.date_to,
+    badge: params.badge,
+  });
+
+  return http<AllListCursorResponse>(`${BASE_PATH}${query}`);
+}
+
+// 위클리 탑5
+const TOP_WEEKLY_PATH: Record<TopCategory, string> = {
+  study: '/api/v1/community/post/study/top-weekly',
+  free: '/api/v1/community/post/free/top-weekly',
+  share: '/api/v1/community/post/share/top-weekly',
+};
+
+export async function getTopWeekly(category: TopCategory, limit = 5): Promise<TopWeeklyResponse> {
+  const path = TOP_WEEKLY_PATH[category];
+  const url = `${path}?limit=${encodeURIComponent(limit)}`;
+  return http<TopWeeklyResponse>(url);
+}
+
+export const getTopWeeklyStudy = (limit = 5) => getTopWeekly('study', limit);
+export const getTopWeeklyFree = (limit = 5) => getTopWeekly('free', limit);
+export const getTopWeeklyShare = (limit = 5) => getTopWeekly('share', limit);

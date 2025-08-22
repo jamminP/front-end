@@ -12,6 +12,11 @@ interface Props {
   category?: Category;
 }
 
+const getPid = (it: any) =>
+  typeof it?.post_id === 'number' ? it.post_id : typeof it?.id === 'number' ? it.id : undefined;
+
+const getCat = (it: any) => it?.category ?? 'unknown';
+
 const dateToTail =
   'text-xs w-36 h-6 mx-1 mt-1 outline-none focus:ring-0 focus:border-transparent border-[0.5px] border-gray-300 rounded-lg pl-0.5';
 
@@ -111,18 +116,27 @@ export function SearchPopover({ onClose, defaultScope = 'title', category = 'all
       </div>
 
       <ul className="mt-2 max-h-72 overflow-auto divide-y">
-        {items.map((it) => (
-          <li key={`${it.category}-${it.post_id}`} className="py-2">
-            <Link
-              to={`/community/${it.category}/${it.post_id}`}
-              className="block"
-              onClick={onClose}
-            >
-              <div className="text-sm font-medium line-clamp-1">{it.title}</div>
-              <div className="text-xs text-gray-500 line-clamp-1">{it.content}</div>
-            </Link>
-          </li>
-        ))}
+        {items.map((it, i) => {
+          const pid = getPid(it);
+          const cat = getCat(it);
+          const key = `${cat}-${pid ?? `u-${i}`}`;
+
+          return (
+            <li key={key} className="py-2">
+              {pid != null ? (
+                <Link to={`/community/${cat}/${pid}`} className="block" onClick={onClose}>
+                  <div className="text-sm font-medium line-clamp-1">{it.title}</div>
+                  <div className="text-xs text-gray-500 line-clamp-1">{it.content}</div>
+                </Link>
+              ) : (
+                <div className="block opacity-60 cursor-not-allowed">
+                  <div className="text-sm font-medium line-clamp-1">{it.title}</div>
+                  <div className="text-xs text-gray-500 line-clamp-1">{it.content}</div>
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ul>
 
       {hasNextPage && (

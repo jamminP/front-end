@@ -176,15 +176,17 @@ export interface Post {
   comments?: number;
 }
 
-export type SearchIn = 'title' | 'content' | 'title_content' | 'author_id';
+export type SearchIn = 'title' | 'content' | 'title_content' | 'author';
 
 export interface ListCursorParams {
   limit?: number;
+  author_id?: number;
   cursor?: string | null;
   search_in?: SearchIn;
   keyword?: string;
   date_from?: string;
   date_to?: string;
+  badge?: string;
 }
 
 export interface ListCursorResult<T> {
@@ -200,4 +202,21 @@ export interface SearchPostItem {
   category: Category;
   created_at: string;
   badge?: '모집중' | '모집완료';
+}
+
+export type TopCategory = 'study' | 'free' | 'share';
+
+export interface TopWeeklyItem {
+  post_id: number;
+  title: string;
+  category: TopCategory;
+  author_id: number; // author_id 타입 재정립 필요가 있음 일단 int로 받기.
+  total_views_7d: number;
+  created_at: string;
+}
+
+export interface TopWeeklyResponse {
+  category: TopCategory;
+  count: number;
+  items: TopWeeklyItem[];
 }
