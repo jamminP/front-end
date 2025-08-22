@@ -6,11 +6,12 @@ import ActionGrid from './aimain/ActionGrid';
 import { ACTIONS } from '../constants/actions';
 import ActionCard from './aiside/ActionCard';
 import ChatHeader from './aimain/ChatHeader';
-import MessageList from './aimain/MessageList';
 import InputBar from './aimain/InputBar';
 import { createStudyPlanForMe } from '../api/studyPlan';
 import { HttpError } from '../api/http';
 import VirtualMessageList from './aimain/VitualMessageList';
+import { useQueryClient } from '@tanstack/react-query';
+import { UNIFIED_AI_FEED_QK } from '../hook/useUnifiedAiFeed';
 
 type Step = 'need_input' | 'need_dates' | 'need_challenge' | 'submitting' | 'done';
 
@@ -37,15 +38,16 @@ function toISOWithTimeOfNow(d: Date) {
   return withNow.toISOString();
 }
 const fmt = (d: Date) => toISOWithTimeOfNow(d).slice(0, 10);
-
 function yesNoToBool(text: string): boolean | null {
   const t = text.trim().toLowerCase();
-  if (/^(y|yes|true|네|예|참|참여|참가|한다|해|응|그래)/.test(t)) return true;
-  if (/^(n|no|false|아니|미참|안해|안 해|x)/.test(t)) return false;
+  if (/^(y|yes|true|예|참|참여|참가|한다|해|응|그래|네|o|예스)/.test(t)) return true;
+  if (/^(n|no|false|아니|미참|안해|안 해|x|안해|노)/.test(t)) return false;
   return null;
 }
 
 export default function AiMain({ externalCommand }: { externalCommand?: StartCommand | null }) {
+  const queryClient = useQueryClient();
+
   const {
     view,
     selectedAction,
@@ -55,6 +57,7 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
     send,
     appendAssistant,
     appendLoading,
+    removeMessage,
     appendPlanPreview,
     appendCalendar,
   } = useChat(externalCommand, planReply);
@@ -88,14 +91,12 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
       state.current.start = start;
       state.current.end = end;
       state.current.step = 'need_challenge';
-
       return `확인했습니다: ${fmt(start)} ~ ${fmt(end)}\n챌린지에 참여하시나요? (예/아니오)`;
     }
 
     if (state.current.step === 'need_challenge') {
       const yn = yesNoToBool(userText);
       if (yn === null) return '참여 여부를 예/아니오 로 알려주세요.';
-
       if (!state.current.start || !state.current.end) {
         state.current.step = 'need_dates';
         return '기간 정보가 유실되었어요. 다시 기간을 알려주세요. 예) 2025-08-22 ~ 2025-09-22';
@@ -109,14 +110,17 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
         is_challenge: yn,
       };
 
-      appendLoading('학습 계획이 생성중입니다.');
+      const loadingId = appendLoading('학습 계획 생성이 생성중입니다.');
       try {
         const res = await createStudyPlanForMe(payload);
         const body = res.data;
+
         appendAssistant(body?.message || '학습 계획 생성이 완료되었습니다.');
+
         const parsed = parseMaybeNestedJSON(body?.data?.study_plan?.output_data);
         if (parsed) appendPlanPreview(parsed as any);
-        state.current.step = 'done';
+
+        queryClient.invalidateQueries({ queryKey: UNIFIED_AI_FEED_QK });
       } catch (e) {
         const msg =
           e instanceof HttpError
@@ -129,6 +133,8 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
         } else {
           appendAssistant(`생성 중 오류가 발생했습니다: ${msg}`);
         }
+      } finally {
+        removeMessage(loadingId); // ✅ 로딩 버블 제거
         state.current.step = 'done';
       }
       return null;

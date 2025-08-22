@@ -21,33 +21,33 @@ import useAuthStore from './store/authStore';
 import axios from 'axios';
 
 function AppContent() {
-  const setAuthData = useAuthStore((state) => state.setAuthData);
-  const logout = useAuthStore((state) => state.logout);
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-  const location = useLocation();
+  // const setAuthData = useAuthStore((state) => state.setAuthData);
+  // const logout = useAuthStore((state) => state.logout);
+  // const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  // const location = useLocation();
 
-  const checkLogin = useCallback(async () => {
-    try {
-      const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
-        withCredentials: true,
-      });
-      if (!isLoggedIn) setAuthData(res.data);
-    } catch (err: any) {
-      // 401이면 조용히 로그아웃 처리
-      if (axios.isAxiosError(err) && err.response?.status === 401) {
-        logout();
-      } else {
-        // 다른 에러는 콘솔에 출력
-        console.error(err);
-      }
-    }
-  }, [setAuthData, logout, isLoggedIn]);
+  // const checkLogin = useCallback(async () => {
+  //   try {
+  //     const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
+  //       withCredentials: true,
+  //     });
+  //     if (!isLoggedIn) setAuthData(res.data);
+  //   } catch (err: any) {
+  //     // 401이면 조용히 로그아웃 처리
+  //     if (axios.isAxiosError(err) && err.response?.status === 401) {
+  //       logout();
+  //     } else {
+  //       // 다른 에러는 콘솔에 출력
+  //       console.error(err);
+  //     }
+  //   }
+  // }, [setAuthData, logout, isLoggedIn]);
 
-  useEffect(() => {
-    if (location.pathname !== '/login' && !isLoggedIn) {
-      checkLogin();
-    }
-  }, [location.pathname, checkLogin, isLoggedIn]);
+  // useEffect(() => {
+  //   if (location.pathname !== '/login' && !isLoggedIn) {
+  //     checkLogin();
+  //   }
+  // }, [location.pathname, checkLogin, isLoggedIn]);
 
   return (
     <>

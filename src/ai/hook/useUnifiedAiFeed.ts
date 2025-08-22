@@ -9,6 +9,8 @@ import { HttpError } from '../api/http';
 const PAGE = 20;
 type Cursor = { plan: number; summary: number };
 
+export const UNIFIED_AI_FEED_QK = ['ai-unified-feed'] as const;
+
 export function useUnifiedAiFeed() {
   const userId = useResolvedUserId();
 
@@ -16,7 +18,7 @@ export function useUnifiedAiFeed() {
     items: UnifiedItem[];
     next: Cursor | null;
   }>({
-    queryKey: ['ai-unified-feed', userId],
+    queryKey: [...UNIFIED_AI_FEED_QK, userId],
     initialPageParam: { plan: 0, summary: 0 } as Cursor,
     enabled: !!userId,
     queryFn: async ({ pageParam }) => {

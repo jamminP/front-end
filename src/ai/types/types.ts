@@ -55,7 +55,41 @@ export type PlanData = {
   [key: string]: any;
 };
 
+export type PlanMsg = BaseMsg & {
+  kind: 'plan';
+  plan: PlanData;
+};
+
+export type BaseMsg = {
+  id: string;
+  role: 'assistant' | 'user';
+  ts: number;
+};
+
+export type TextMsg = BaseMsg & {
+  kind?: 'text';
+  text: string;
+};
+
+export type LoadingMsg = BaseMsg & {
+  kind: 'loading';
+  text?: string;
+};
+
+export type TypingMsg = BaseMsg & {
+  kind: 'typing';
+};
+
+export type CalendarMsg = BaseMsg & {
+  kind: 'calendar';
+};
+
 export type Msg =
+  | TextMsg
+  | LoadingMsg
+  | TypingMsg
+  | CalendarMsg
+  | PlanMsg
   | { id: string; role: 'assistant' | 'user'; ts: number; kind?: 'text'; text: string }
   | { id: string; role: 'assistant'; ts: number; kind: 'plan'; plan: PlanData }
   | { id: string; role: 'assistant'; ts: number; kind: 'loading'; text?: string }
