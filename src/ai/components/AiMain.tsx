@@ -40,7 +40,7 @@ const fmt = (d: Date) => toISOWithTimeOfNow(d).slice(0, 10);
 
 function yesNoToBool(text: string): boolean | null {
   const t = text.trim().toLowerCase();
-  if (/^(y|yes|true|예|참|참여|참가|한다|해|응|그래)/.test(t)) return true;
+  if (/^(y|yes|true|네|예|참|참여|참가|한다|해|응|그래)/.test(t)) return true;
   if (/^(n|no|false|아니|미참|안해|안 해|x)/.test(t)) return false;
   return null;
 }
@@ -109,7 +109,7 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
         is_challenge: yn,
       };
 
-      appendLoading('학습 계획 생성이 생성중입니다.');
+      appendLoading('학습 계획이 생성중입니다.');
       try {
         const res = await createStudyPlanForMe(payload);
         const body = res.data;
@@ -152,7 +152,7 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
   };
 
   return (
-    <div className="h-full grid grid-rows-[1fr] overflow-y-auto [scrollbar-gutter:stable]">
+    <div className="h-full grid grid-rows-[1fr]">
       <AnimatePresence mode="wait">
         {view === 'home' ? (
           <motion.section
@@ -179,9 +179,9 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
             exit={{ opacity: 0 }}
             className="h-full"
           >
-            <div className="grid grid-rows-[auto_1fr_auto] h-full bg-white rounded-2xl border divide-y overflow-hidden">
+            <div className="grid grid-rows-[auto_1fr_auto] h-full bg-white rounded-2xl overflow-hidden">
               <ChatHeader title={selectedAction?.title ?? '대화'} />
-              <div className="min-h-0 h-full">
+              <div className="min-h-0 h-full p-2">
                 <VirtualMessageList messages={messages} onCalendarConfirm={onCalendarConfirm} />
               </div>
               <InputBar inputRef={inputRef} onSend={send} />

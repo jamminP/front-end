@@ -1,15 +1,9 @@
-import { FaChevronLeft } from 'react-icons/fa';
-
 export default function ChatHeader({ title }: { title: string }) {
   return (
-    <div className="h-12 flex items-center gap-2 px-4 bg-[#1B3043]">
-      {/* <button
-        onClick={onBack}
-        className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-[#2a4864]"
-      >
-        <FaChevronLeft color="white" />
-      </button> */}
-      <div className="font-semibold text-white pl-3">{title || '대화'}</div>
+    <div className="h-14 sticky top-0 z-10 bg-gradient-to-r from-[#172b3a] to-[#0f2030] border-b border-black/10">
+      <div className="h-full mx-auto px-4 flex items-center">
+        <div className="text-white text-xl font-semibold tracking-tight pl-3">Evi. Thinking</div>
+      </div>
     </div>
   );
 }
