@@ -67,7 +67,7 @@ export default function NicknameSection() {
       </button>
       <button
         type="button"
-        className="p-[6px_12px] md:p-[10px_15px] bg-gray-200 text-gray-700 text-[.9rem] rounded-[100px] font-semibold cursor-pointer"
+        className="p-[6px_12px] md:p-[10px_15px] bg-white text-gray-700 ml-[10px] text-[.9rem] rounded-[100px] font-semibold cursor-pointer"
         onClick={handleWithdrawal}
       >
         회원 탈퇴

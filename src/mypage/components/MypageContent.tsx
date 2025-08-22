@@ -11,8 +11,8 @@ export default function MypageContent() {
       <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem]">마이페이지</h2>
 
       {/* 유저 정보 */}
-      <div className="flex items-center justify-between md:justify-items-start mt-[30px] bg-[#e4ecf3] w-full md:w-fit p-[15px] md:p-[20px_25px] rounded-[20px]">
-        <div className="flex items-center">
+      <div className="flex items-center justify-between md:justify-items-start flex-wrap mt-[30px] bg-[#e4ecf3] w-full md:w-fit p-[15px] md:p-[20px_25px] rounded-[20px]">
+        <div className="flex items-center md:w-[auto] w-full md:mb-0 mb-[15px]">
           <div className="w-[40px] h-[40px] rounded-[50%] overflow-hidden">
             <img src={user?.profile_image || profileImage} className="w-full h-full object-cover" />
           </div>
