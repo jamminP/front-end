@@ -1,9 +1,9 @@
-import useAuthStore from '@src/store/authStore';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
 export default function Challenge() {
-  const userId = useAuthStore((state) => state.user?.id);
+  //const userId = useAuthStore((state) => state.user?.id);
+  const userId = 30;
   const [myChallenge, setMyChallenge] = useState<StudyPlanData[]>([]);
 
   type ChallengeStatus = '진행 전' | '진행 중' | '완료';
@@ -63,20 +63,15 @@ export default function Challenge() {
 
   return (
     <>
+      <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">챌린지</h2>
       {myChallenge.length === 0 ? (
         <>
-          <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">
-            챌린지
-          </h2>
           <p className="text-[1.2rem] text-[#999] font-light tracking-[-0.03rem] mt-5 pl-[5px]">
             등록된 챌린지가 없습니다.
           </p>
         </>
       ) : (
         <>
-          <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">
-            챌린지
-          </h2>
           <ul>
             {myChallenge.map((c) => {
               const status = calculateStatus(c);
