@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActionId, StartCommand, Msg, PlanData } from '../types/types';
+import { ActionId, StartCommand, Msg, PlanData, ChoiceUI } from '../types/types';
 import { ACTIONS } from '../constants/actions';
 
 export type GenerateReply = (input: string, action: ActionId | null) => Promise<string | null>;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
 const REPLY_DELAY_MS = 400;
 
 export function useChat(externalCommand?: StartCommand | null, getReply?: GenerateReply) {
@@ -16,6 +15,18 @@ export function useChat(externalCommand?: StartCommand | null, getReply?: Genera
   const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   const selectedAction = useMemo(() => ACTIONS.find((a) => a.id === selected) ?? null, [selected]);
+
+  const appendChallengePrompt = useCallback(
+    (info: { start: string; end: string; days: number }) => {
+      const id = uid();
+      setMessages((prev) => [
+        ...prev,
+        { id, role: 'assistant', ts: Date.now(), kind: 'challenge_prompt', info },
+      ]);
+      return id;
+    },
+    [],
+  );
 
   const startChat = useCallback((id: ActionId) => {
     const a = ACTIONS.find((x) => x.id === id)!;
@@ -102,6 +113,22 @@ export function useChat(externalCommand?: StartCommand | null, getReply?: Genera
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [view]);
 
+  // 버튼 선택 버블 추가/잠금
+  const appendChoice = useCallback((options: { value: string; label: string }[], ui?: ChoiceUI) => {
+    const id = uid();
+    setMessages((prev) => [
+      ...prev,
+      { id, role: 'assistant', ts: Date.now(), kind: 'choice', options, disabled: false, ui },
+    ]);
+    return id;
+  }, []);
+
+  const disableChoice = useCallback((id: string) => {
+    setMessages((prev) =>
+      prev.map((m) => (m.id === id && m.kind === 'choice' ? { ...m, disabled: true } : m)),
+    );
+  }, []);
+
   return {
     view,
     selected,
@@ -116,5 +143,8 @@ export function useChat(externalCommand?: StartCommand | null, getReply?: Genera
     removeMessage,
     appendPlanPreview,
     appendCalendar,
+    appendChallengePrompt,
+    appendChoice,
+    disableChoice,
   };
 }

@@ -10,8 +10,6 @@ import InputBar from './aimain/InputBar';
 import { createStudyPlanForMe } from '../api/studyPlan';
 import { HttpError } from '../api/http';
 import VirtualMessageList from './aimain/VitualMessageList';
-import { useQueryClient } from '@tanstack/react-query';
-import { UNIFIED_AI_FEED_QK } from '../hook/useUnifiedAiFeed';
 
 type Step = 'need_input' | 'need_dates' | 'need_challenge' | 'submitting' | 'done';
 
@@ -38,16 +36,19 @@ function toISOWithTimeOfNow(d: Date) {
   return withNow.toISOString();
 }
 const fmt = (d: Date) => toISOWithTimeOfNow(d).slice(0, 10);
+const daysInclusive = (a: Date, b: Date) => {
+  const A = new Date(a.getFullYear(), a.getMonth(), a.getDate()).getTime();
+  const B = new Date(b.getFullYear(), b.getMonth(), b.getDate()).getTime();
+  return Math.abs(Math.round((B - A) / 86400000)) + 1;
+};
 function yesNoToBool(text: string): boolean | null {
   const t = text.trim().toLowerCase();
-  if (/^(y|yes|true|예|참|참여|참가|한다|해|응|그래|네|o|예스)/.test(t)) return true;
-  if (/^(n|no|false|아니|미참|안해|안 해|x|안해|노)/.test(t)) return false;
+  if (/^(y|yes|true|예|참|참여|참가|한다|해|응|그래)/.test(t)) return true;
+  if (/^(n|no|false|아니|미참|안해|안 해|x)/.test(t)) return false;
   return null;
 }
 
 export default function AiMain({ externalCommand }: { externalCommand?: StartCommand | null }) {
-  const queryClient = useQueryClient();
-
   const {
     view,
     selectedAction,
@@ -60,7 +61,69 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
     removeMessage,
     appendPlanPreview,
     appendCalendar,
+    appendChallengePrompt,
+    appendChoice,
+    disableChoice,
   } = useChat(externalCommand, planReply);
+
+  const lastChoiceIdRef = useRef<string | null>(null);
+
+  const afterDatesConfirmed = (start: Date, end: Date) => {
+    appendChallengePrompt({
+      start: fmt(start),
+      end: fmt(end),
+      days: daysInclusive(start, end),
+    });
+
+    appendAssistant('이 기간 동안 챌린지를 진행하시겠어요?');
+
+    lastChoiceIdRef.current = appendChoice(
+      [
+        { value: 'yes', label: '예' },
+        { value: 'no', label: '아니요' },
+      ],
+      { variant: 'pill', align: 'left' },
+    );
+  };
+
+  const onChoice = async (value: string, msgId: string) => {
+    if (state.current.step !== 'need_challenge') return;
+
+    disableChoice(msgId);
+
+    const yn = value === 'yes';
+    if (!state.current.start || !state.current.end) return;
+
+    state.current.step = 'submitting';
+    const payload = {
+      input_data: state.current.input_data,
+      start_date: toISOWithTimeOfNow(state.current.start),
+      end_date: toISOWithTimeOfNow(state.current.end),
+      is_challenge: yn,
+    };
+
+    const loadingId = appendLoading('학습 계획 생성이 생성중입니다.');
+    try {
+      const res = await createStudyPlanForMe(payload);
+      const body = res.data;
+      appendAssistant(body?.message || '학습 계획 생성이 완료되었습니다.');
+      const parsed = parseMaybeNestedJSON(body?.data?.study_plan?.output_data);
+      if (parsed) appendPlanPreview(parsed as any);
+    } catch (e) {
+      const msg =
+        e instanceof HttpError
+          ? e.message
+          : ((e as Error)?.message ?? '요청 중 오류가 발생했습니다.');
+      appendAssistant(
+        msg.includes('요청 시간이 초과')
+          ? '응답이 지연되고 있어요. 잠시 후 사이드바에서 생성 여부를 확인해 주세요.'
+          : `생성 중 오류가 발생했습니다: ${msg}`,
+      );
+    } finally {
+      removeMessage(loadingId);
+      state.current.step = 'done';
+    }
+  };
 
   const state = useRef<{ step: Step; input_data: string; start?: Date; end?: Date }>({
     step: 'need_input',
@@ -73,8 +136,9 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
     if (state.current.step === 'need_input') {
       state.current.input_data = userText.trim();
       state.current.step = 'need_dates';
+      appendAssistant('기간을 알려주세요.');
       setTimeout(() => appendCalendar(), 0);
-      return '기간을 알려주세요.';
+      return null;
     }
 
     if (state.current.step === 'need_dates') {
@@ -91,7 +155,9 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
       state.current.start = start;
       state.current.end = end;
       state.current.step = 'need_challenge';
-      return `확인했습니다: ${fmt(start)} ~ ${fmt(end)}\n챌린지에 참여하시나요? (예/아니오)`;
+
+      afterDatesConfirmed(start, end);
+      return null;
     }
 
     if (state.current.step === 'need_challenge') {
@@ -99,7 +165,9 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
       if (yn === null) return '참여 여부를 예/아니오 로 알려주세요.';
       if (!state.current.start || !state.current.end) {
         state.current.step = 'need_dates';
-        return '기간 정보가 유실되었어요. 다시 기간을 알려주세요. 예) 2025-08-22 ~ 2025-09-22';
+        appendAssistant('기간을 알려주세요.');
+        setTimeout(() => appendCalendar(), 0);
+        return null;
       }
 
       state.current.step = 'submitting';
@@ -114,13 +182,9 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
       try {
         const res = await createStudyPlanForMe(payload);
         const body = res.data;
-
         appendAssistant(body?.message || '학습 계획 생성이 완료되었습니다.');
-
         const parsed = parseMaybeNestedJSON(body?.data?.study_plan?.output_data);
         if (parsed) appendPlanPreview(parsed as any);
-
-        queryClient.invalidateQueries({ queryKey: UNIFIED_AI_FEED_QK });
       } catch (e) {
         const msg =
           e instanceof HttpError
@@ -134,7 +198,7 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
           appendAssistant(`생성 중 오류가 발생했습니다: ${msg}`);
         }
       } finally {
-        removeMessage(loadingId); // ✅ 로딩 버블 제거
+        removeMessage(loadingId);
         state.current.step = 'done';
       }
       return null;
@@ -152,9 +216,7 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
     state.current.start = start;
     state.current.end = end;
     state.current.step = 'need_challenge';
-    appendAssistant(
-      `확인했습니다: ${fmt(start)} ~ ${fmt(end)}\n챌린지에 참여하시나요? (예/아니오)`,
-    );
+    afterDatesConfirmed(start, end);
   };
 
   return (
@@ -188,7 +250,11 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
             <div className="grid grid-rows-[auto_1fr_auto] h-full bg-white rounded-2xl overflow-hidden">
               <ChatHeader title={selectedAction?.title ?? '대화'} />
               <div className="min-h-0 h-full p-2">
-                <VirtualMessageList messages={messages} onCalendarConfirm={onCalendarConfirm} />
+                <VirtualMessageList
+                  messages={messages}
+                  onCalendarConfirm={onCalendarConfirm}
+                  onChoice={onChoice}
+                />
               </div>
               <InputBar inputRef={inputRef} onSend={send} />
             </div>

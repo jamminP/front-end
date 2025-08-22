@@ -182,7 +182,7 @@ export default function PlanComposer({ onSubmitted, chat }: Props) {
         <div
           className={`p-4 border rounded-2xl ${step !== 3 ? 'opacity-60 pointer-events-none' : ''}`}
         >
-          <div className="font-medium mb-2">3. 챌린지에 참여하시나요?</div>
+          <div className="font-medium mb-2">이 기간 동안 챌린지를 진행하시겠어요?</div>
           <label className="inline-flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"

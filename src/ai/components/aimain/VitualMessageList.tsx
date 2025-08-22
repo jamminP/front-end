@@ -1,7 +1,7 @@
 import { Virtuoso } from 'react-virtuoso';
 import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
-import { Msg } from '@src/ai/types/types';
+import type { Msg, PlanMsg, LoadingMsg, ChallengePromptMsg, TextMsg } from '@src/ai/types/types';
 import Bubble from './Bubble';
 import PlanPreview from './PlanPreview';
 import CalendarBubble from './CalendarBubble';
@@ -11,6 +11,7 @@ type Props = {
   onCalendarConfirm?: (start: Date, end: Date) => void;
   onStartReached?: () => void;
   gapY?: '0' | '0.5' | '1' | '1.5' | '2';
+  onChoice?: (value: string, msgId: string) => void;
 };
 
 const gapToClass = {
@@ -33,12 +34,14 @@ const Scroller = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>
     }
   />
 ));
+Scroller.displayName = 'Scroller';
 
 export default function VirtualMessageList({
   messages,
   onCalendarConfirm,
   onStartReached,
   gapY = '0.5',
+  onChoice,
 }: Props) {
   const wrapClass = gapToClass[gapY];
 
@@ -58,35 +61,36 @@ export default function VirtualMessageList({
   );
 
   return (
-    <Virtuoso
+    <Virtuoso<Msg>
       className="h-full w-full"
       style={{ height: '100%' }}
       components={{ Scroller }}
       data={messages}
+      computeItemKey={(_i, m) => m.id}
       followOutput="smooth"
       startReached={onStartReached}
-      itemContent={(_, m) => {
-        const kind = (m as any).kind;
-
-        if (kind === 'plan' && (m as any).plan) {
+      itemContent={(_i, m) => {
+        if (m.kind === 'plan') {
+          const pm = m as PlanMsg;
           return (
             <RowAnim>
               <div className="flex justify-start">
                 <div className="w-full md:w-auto max-w-full md:max-w-none rounded-2xl px-4 py-3 bg-white shadow-sm">
-                  <PlanPreview plan={(m as any).plan} />
+                  <PlanPreview plan={pm.plan} />
                 </div>
               </div>
             </RowAnim>
           );
         }
 
-        if (kind === 'loading') {
+        if (m.kind === 'loading') {
+          const lm = m as LoadingMsg;
           return (
             <RowAnim>
               <div className="flex justify-start">
                 <div className="w-full md:w-auto rounded-2xl px-4 py-3 bg-white shadow-sm">
                   <div className="text-sm text-gray-700">
-                    {(m as any).text || '학습 계획 생성이 생성중입니다.'}
+                    {lm.text ?? '학습 계획 생성이 생성중입니다.'}
                   </div>
                   <div className="mt-2 space-y-2 animate-pulse">
                     <div className="h-3 bg-slate-200 rounded" />
@@ -99,28 +103,7 @@ export default function VirtualMessageList({
           );
         }
 
-        if (kind === 'typing') {
-          return (
-            <RowAnim>
-              <div className="flex justify-start">
-                <div className="rounded-2xl px-4 py-3 bg-white shadow-sm inline-flex items-center gap-1">
-                  <span className="sr-only">타이핑 중…</span>
-                  <span className="h-2 w-2 rounded-full bg-gray-400 animate-bounce" />
-                  <span
-                    className="h-2 w-2 rounded-full bg-gray-400 animate-bounce"
-                    style={{ animationDelay: '0.12s' }}
-                  />
-                  <span
-                    className="h-2 w-2 rounded-full bg-gray-400 animate-bounce"
-                    style={{ animationDelay: '0.24s' }}
-                  />
-                </div>
-              </div>
-            </RowAnim>
-          );
-        }
-
-        if (kind === 'calendar') {
+        if (m.kind === 'calendar') {
           return (
             <RowAnim>
               <div className="flex justify-start">
@@ -132,9 +115,79 @@ export default function VirtualMessageList({
           );
         }
 
+        if (m.kind === 'challenge_prompt') {
+          const { info } = m as ChallengePromptMsg;
+          return (
+            <RowAnim>
+              <div className="flex justify-start">
+                <div className="w-full md:w-auto rounded-2xl px-4 py-3 bg-white shadow-sm text-sm text-slate-800">
+                  <div className="font-medium mb-1">기간을 확인했습니다.</div>
+                  <div className="space-y-0.5">
+                    <div>
+                      <span className="text-slate-500">기간:</span> {info.start} ~ {info.end}
+                    </div>
+                    <div>
+                      <span className="text-slate-500">총 일수:</span> {info.days}일
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </RowAnim>
+          );
+        }
+
+        if (m.kind === 'choice') {
+          const variant = m.ui?.variant ?? 'pill';
+          const disabled = !!m.disabled;
+
+          const baseBtn =
+            'transition-all duration-150 active:scale-[0.98] focus:outline-none ' +
+            (disabled ? 'opacity-50 cursor-not-allowed ' : '');
+
+          return (
+            <RowAnim>
+              <div className="flex justify-start mt-1">
+                <div className={'flex gap-2 ' + (m.ui?.align === 'center' ? 'justify-center' : '')}>
+                  {m.options.map((opt) =>
+                    variant === 'ox' ? (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        aria-label={opt.label}
+                        disabled={disabled}
+                        onClick={() => onChoice?.(opt.value, m.id)}
+                        className={
+                          baseBtn +
+                          'h-10 w-10 rounded-full border border-slate-200 hover:bg-slate-50 text-lg'
+                        }
+                      >
+                        {opt.label}
+                      </button>
+                    ) : (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => onChoice?.(opt.value, m.id)}
+                        className={
+                          baseBtn +
+                          'px-4 py-2 rounded-full border border-slate-200 text-slate-700 hover:bg-slate-50'
+                        }
+                      >
+                        {opt.label}
+                      </button>
+                    ),
+                  )}
+                </div>
+              </div>
+            </RowAnim>
+          );
+        }
+
+        const tmText = ('text' in m ? (m as TextMsg).text : '') ?? '';
         return (
           <RowAnim>
-            <Bubble role={(m as any).role} text={(m as any).text || ''} />
+            <Bubble role={m.role} text={tmText} />
           </RowAnim>
         );
       }}
