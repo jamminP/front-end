@@ -1,3 +1,4 @@
+// src/ai/components/AiMain.tsx
 import { AnimatePresence, motion } from 'framer-motion';
 import { useChat } from '../hook/useChat';
 import { StartCommand } from '../types/types';
@@ -7,9 +8,10 @@ import ActionCard from './aiside/ActionCard';
 import ChatHeader from './aimain/ChatHeader';
 import MessageList from './aimain/MessageList';
 import InputBar from './aimain/InputBar';
+import PlanComposer from './aimain/PlanComposer';
 
 export default function AiMain({ externalCommand }: { externalCommand?: StartCommand | null }) {
-  const { view, selectedAction, messages, inputRef, startChat, backHome, send } =
+  const { view, selectedAction, messages, inputRef, startChat, backHome, send, appendAssistant } =
     useChat(externalCommand);
 
   return (
@@ -41,12 +43,29 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
             className="h-full"
           >
             <div className="grid grid-rows-[auto_1fr_auto] h-full bg-white rounded-2xl border divide-y overflow-hidden">
-              <ChatHeader title={selectedAction?.title ?? '대화'} onBack={backHome} />
+              <ChatHeader title={selectedAction?.title ?? '대화'} />
               <div className="min-h-0">
-                {' '}
                 <MessageList messages={messages} />
               </div>
-              <InputBar inputRef={inputRef} onSend={send} />
+
+              {selectedAction?.id === 'plan' ? (
+                <PlanComposer
+                  onSubmitted={(req, msg, output) => {
+                    appendAssistant(
+                      `아래 내용으로 학습 계획 생성을 요청했어요:\n` +
+                        '```json\n' +
+                        JSON.stringify(req, null, 2) +
+                        '\n```\n' +
+                        (msg ? `서버 응답: ${msg}\n` : '') +
+                        (output
+                          ? `생성된 output_data:\n\`\`\`json\n${output}\n\`\`\``
+                          : '서버에서 output_data를 받지 못했습니다.'),
+                    );
+                  }}
+                />
+              ) : (
+                <InputBar inputRef={inputRef} onSend={send} />
+              )}
             </div>
           </motion.section>
         )}
