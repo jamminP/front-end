@@ -75,6 +75,13 @@ export default function Challenge() {
           <ul>
             {myChallenge.map((c) => {
               const status = calculateStatus(c);
+              const parsedOutput = (() => {
+                try {
+                  return JSON.parse(c.output_data);
+                } catch {
+                  return '데이터 오류';
+                }
+              })();
               return (
                 <li
                   key={c.id}
@@ -82,17 +89,10 @@ export default function Challenge() {
                 >
                   <div className="w-full md:w-[80%]">
                     <h4 className="text-[1.1rem] font-bold tracking-[-.03rem] leading-[1.3]">
-                      {c.input_data}
+                      {parsedOutput.title}
                     </h4>
                     <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
-                      {(() => {
-                        try {
-                          const data = JSON.parse(c.output_data);
-                          return data.title;
-                        } catch {
-                          return '데이터 오류';
-                        }
-                      })()}
+                      {parsedOutput.description}
                     </p>
                     <span className="text-[.8rem] text-[#c2c2c2]">
                       {c.start_date.slice(0, 10)}~{c.end_date.slice(0, 10)}
