@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import useAuthStore from '@src/store/authStore';
 
 interface WeeklyPlan {
   week: number;
@@ -34,9 +33,8 @@ interface StudyPlanFetcherProps {
 export default function StudyPlanFetcher({ onEventsGenerated }: StudyPlanFetcherProps) {
   const [studyPlans, setStudyPlans] = useState<StudyPlanData[]>([]);
   const [fetched, setFetched] = useState(false); // 이미 한 번 추가했는지 체크
-  const userId = useAuthStore((state) => state.user?.id);
-
-  const pollInterval = 5000; // 5초마다 자동 폴링
+  //const userId = useAuthStore((state) => state.user?.id);
+  const userId = 30;
 
   const fetchStudyPlans = async () => {
     try {
@@ -57,7 +55,6 @@ export default function StudyPlanFetcher({ onEventsGenerated }: StudyPlanFetcher
           response.data.data.study_plans.forEach((plan: StudyPlanData) => {
             const output = JSON.parse(plan.output_data);
             const startDate = new Date(plan.start_date);
-            const totalWeeks = output.total_weeks || 0;
             const weeklyPlans: WeeklyPlan[] = output.weekly_plans || [];
 
             weeklyPlans.forEach((week) => {
@@ -85,8 +82,6 @@ export default function StudyPlanFetcher({ onEventsGenerated }: StudyPlanFetcher
 
   useEffect(() => {
     fetchStudyPlans();
-    const intervalId = setInterval(fetchStudyPlans, pollInterval);
-    return () => clearInterval(intervalId);
   }, []);
 
   // UI는 캘린더가 담당하므로 null 반환
