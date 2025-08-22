@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import CommunityLayout from './community/CommunityLayout';
@@ -25,6 +25,7 @@ function AppContent() {
   const logout = useAuthStore((state) => state.logout);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const checkLogin = useCallback(async () => {
     try {
@@ -36,6 +37,7 @@ function AppContent() {
       // 401이면 조용히 로그아웃 처리
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         logout();
+        navigate('/');
       } else {
         // 다른 에러는 콘솔에 출력
         console.error(err);
