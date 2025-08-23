@@ -9,7 +9,9 @@ export default function ChatHeader({ title }: { title: string }) {
           <span className="px-2 py-[2px] rounded-full text-xs font-medium bg-slate-100 text-slate-700">
             v0
           </span>
-          <span className="text-sm font-medium text-slate-500">Thinking</span>
+          <span className="text-sm font-medium text-slate-500">
+            <button>Thinking</button>
+          </span>
           <FaChevronDown className="ml-0.5 h-4 w-4 text-slate-400" />
         </div>
 

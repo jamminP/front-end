@@ -111,6 +111,18 @@ export type ChallengePromptMsg = BaseMsg & {
   info: ChallengePromptInfo;
 };
 
+export type KeywordsMsg = BaseMsg & {
+  kind: 'keywords';
+  keywords: string[];
+  title?: string;
+};
+
+export type PointsMsg = BaseMsg & {
+  kind: 'points';
+  title?: string;
+  points: string[];
+};
+
 // 최종 유니온
 export type Msg =
   | TextMsg
@@ -119,4 +131,6 @@ export type Msg =
   | CalendarMsg
   | PlanMsg
   | ChallengePromptMsg
-  | ChoiceMsg;
+  | ChoiceMsg
+  | KeywordsMsg
+  | PointsMsg;

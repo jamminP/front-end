@@ -48,3 +48,21 @@ export async function createStudyPlanForMe(
     timeout: 30_000,
   });
 }
+
+// 학습플랜 단일 조회
+export function getStudyPlanById(planId: number) {
+  const uid = getResolvedUserId();
+  if (!uid) throw new Error('사용자 ID를 확인할 수 없습니다.');
+  return http.get(`/api/v1/ai/study_plan/${planId}`, {
+    params: { user_id: uid },
+  });
+}
+
+// 학습플랜 삭제
+export function deleteStudyPlan(planId: number) {
+  const uid = getResolvedUserId();
+  if (!uid) throw new Error('사용자 ID를 확인할 수 없습니다.');
+  return http.delete(`/api/v1/ai/study_plan/${planId}`, {
+    params: { user_id: uid },
+  });
+}

@@ -138,6 +138,24 @@ export function useChat(externalCommand?: StartCommand | null, getReply?: Genera
     );
   }, []);
 
+  const appendKeywords = useCallback((keywords: string[], title?: string) => {
+    const id = uid();
+    setMessages((prev) => [
+      ...prev,
+      { id, role: 'assistant', ts: Date.now(), kind: 'keywords', keywords, title },
+    ]);
+    return id;
+  }, []);
+
+  const appendPoints = useCallback((points: string[], title?: string) => {
+    const id = uid();
+    setMessages((prev) => [
+      ...prev,
+      { id, role: 'assistant', ts: Date.now(), kind: 'points', points, title },
+    ]);
+    return id;
+  }, []);
+
   return {
     view,
     selected,
@@ -156,5 +174,7 @@ export function useChat(externalCommand?: StartCommand | null, getReply?: Genera
     appendChoice,
     disableChoice,
     lockCalendar,
+    appendKeywords,
+    appendPoints,
   };
 }
