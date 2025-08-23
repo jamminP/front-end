@@ -45,7 +45,7 @@ export function useComments(post_id: number, current_user_id: number) {
       createComment(post_id, {
         user: current_user_id,
         content: payload.content,
-        parent_comment_id: payload.parent_id ?? 0,
+        parent_comment_id: payload.parent_id ?? null,
       }),
     onSuccess: () => {
       setReplyTo(null);

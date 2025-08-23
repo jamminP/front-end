@@ -168,7 +168,6 @@ export function getComments(
 }
 
 export interface CreateCommentBody {
-  post_id: number;
   user: number;
   content: string;
   parent_comment_id: number | null;
