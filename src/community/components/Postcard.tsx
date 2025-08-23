@@ -3,7 +3,7 @@ import React, { FC } from 'react';
 export interface Post {
   id: number;
   title: string;
-  author_id: string;
+  author_id: number;
   category: 'free' | 'share' | 'study';
   content: string;
   created_at: string;
