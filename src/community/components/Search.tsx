@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import useDebounce from '../hook/useDebounce';
 import { useCategoryListCursor } from '../hook/useCategoryListCursor';
-import type { SearchIn, Category } from '../api/types';
+import type { SearchIn, PostCategory } from '../api/types';
 import { format } from 'date-fns';
 import DatePicker from 'react-datepicker';
 
 interface Props {
   onClose?: () => void;
   defaultScope?: SearchIn;
-  category?: Category;
+  category?: PostCategory;
 }
 
 const getPid = (it: any) =>
