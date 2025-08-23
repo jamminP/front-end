@@ -10,6 +10,8 @@ import InputBar from './aimain/InputBar';
 import { createStudyPlanForMe } from '../api/studyPlan';
 import { HttpError } from '../api/http';
 import VirtualMessageList from './aimain/VitualMessageList';
+import { UNIFIED_AI_FEED_QK } from '../hook/useUnifiedAiFeed';
+import { useQueryClient } from '@tanstack/react-query';
 
 type Step = 'need_input' | 'need_dates' | 'need_challenge' | 'submitting' | 'done';
 
@@ -69,6 +71,7 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
 
   const calendarIdRef = useRef<string | null>(null);
   const lastChoiceIdRef = useRef<string | null>(null);
+  const queryClient = useQueryClient();
 
   const afterDatesConfirmed = (start: Date, end: Date) => {
     appendChallengePrompt({
@@ -111,6 +114,11 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
       appendAssistant(body?.message || '학습 계획 생성이 완료되었습니다.');
       const parsed = parseMaybeNestedJSON(body?.data?.study_plan?.output_data);
       if (parsed) appendPlanPreview(parsed as any);
+
+      queryClient.invalidateQueries({
+        queryKey: UNIFIED_AI_FEED_QK,
+        exact: false,
+      });
     } catch (e) {
       const msg =
         e instanceof HttpError
