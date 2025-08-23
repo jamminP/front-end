@@ -245,16 +245,18 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="overflow-y-auto"
+            className="overflow-y-auto bg-white rounded-2xl"
           >
-            <ActionGrid
-              title="무엇을 도와드릴까요?"
-              subtitle="학습 플랜 수립부터 요약까지 한 곳에서 시작하세요."
-            >
-              {ACTIONS.map((a) => (
-                <ActionCard key={a.id} {...a} onClick={() => startChat(a.id)} />
-              ))}
-            </ActionGrid>
+            <div className="max-w-screen-xl mx-auto p-4">
+              <ActionGrid
+                title="무엇을 도와드릴까요?"
+                subtitle="학습 플랜 수립부터 요약까지 한 곳에서 시작하세요."
+              >
+                {ACTIONS.map((a) => (
+                  <ActionCard key={a.id} {...a} onClick={() => startChat(a.id)} />
+                ))}
+              </ActionGrid>
+            </div>
           </motion.section>
         ) : (
           <motion.section
