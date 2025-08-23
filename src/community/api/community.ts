@@ -7,6 +7,7 @@ import type {
   TopCategory,
   TopWeeklyResponse,
   CommentResponse,
+  CommentTreeItem,
 } from './types';
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
@@ -168,3 +169,12 @@ export const createComment = (
         typeof parent_comment_id === 'number' && parent_comment_id > 0 ? parent_comment_id : null,
     }),
   });
+
+export async function listComments(postId: number): Promise<CommentTreeItem[]> {
+  try {
+    return await http<CommentTreeItem[]>(`/api/v1/community/post/${postId}/comments`);
+  } catch (e: any) {
+    if (String(e?.message || '').startsWith('404')) return [];
+    throw e;
+  }
+}

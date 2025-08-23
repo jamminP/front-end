@@ -170,3 +170,13 @@ export interface GETCommentResponse {
   count: string;
   items: CommentResponse[];
 }
+
+export type CommentTreeItem = {
+  id: number;
+  post_id: number;
+  content: string;
+  author_id: number;
+  parent_id: number | null;
+  created_at: string;
+  updated_at: string;
+};
