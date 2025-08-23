@@ -45,7 +45,7 @@ export function useComments(post_id: number, current_user_id: number) {
 
   const mutation = useMutation({
     mutationFn: (payload: { content: string; parent_id: number | null }) =>
-      createComment(post_id, payload.content, current_user_id ?? undefined),
+      createComment(post_id, current_user_id ?? undefined, payload.content),
     onSuccess: () => {
       setReplyTo(null);
       qc.invalidateQueries({ queryKey: ['community', 'comments', post_id] });

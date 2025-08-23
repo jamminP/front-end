@@ -107,7 +107,7 @@ export type DetailByCategory<C extends ItemCategory> = C extends 'free'
 export interface CreatePostBase {
   title: string;
   content: string;
-  category: PostCategory;
+  category: ItemCategory;
   user_id: number;
 }
 

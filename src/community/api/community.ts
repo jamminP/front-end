@@ -14,6 +14,8 @@ const LIST_ENDPOINT = '/api/v1/community/post/list';
 const DETAIL_ENDPOINT = (postId: number) => `/api/v1/community/post/${postId}`;
 const CREATE_POST = `${BASE}/api/v1/community/post`;
 
+export type CreatePostCategory = 'free' | 'share' | 'study';
+
 export function getPostId(item: ListItem): number {
   if (item.category === 'free') return item.free_post_id;
   if (item.category === 'share') return item.share_post_id;
@@ -57,20 +59,84 @@ export const getTopWeeklyShare = (limit = 5) => getTopWeekly('share', limit);
 
 export type ApiId = { id?: number; post_id?: number };
 
-const CREATE_FREE = '/api/v1/community/post/free';
-const CREATE_SHARE = '/api/v1/community/post/share';
-const CREATE_STUDY = '/api/v1/community/post/study';
-
-export function createFreePost(body: any): Promise<ApiId> {
-  return http<ApiId>(CREATE_FREE, body);
+export interface CreatePostBase {
+  title: string;
+  content: string;
+  category: CreatePostCategory;
+  user_id: number;
 }
 
-export function createSharePost(body: any): Promise<ApiId> {
-  return http<ApiId>(CREATE_SHARE, body);
+export type FreePostRequest = Omit<CreatePostBase, 'category'>;
+export type SharePostRequest = Omit<CreatePostBase, 'category'>;
+export type StudyPostRequest = Omit<CreatePostBase, 'category'> & {
+  recruit_start: string;
+  recruit_end: string;
+  study_start: string;
+  study_end: string;
+  max_member: number;
+};
+
+export interface CreatePostResult {
+  post_id: number;
 }
 
-export function createStudyPost(body: any): Promise<ApiId> {
-  return http<ApiId>(CREATE_STUDY, body);
+async function postCreate(user: number, body: Record<string, any>): Promise<CreatePostResult> {
+  const qs = new URLSearchParams({ user: String(user) }).toString();
+  const res = await http<any>(`${CREATE_POST}?${qs}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include', // 세션/쿠키 사용하는 경우 유지
+    body: JSON.stringify({ ...body, user_id: user }),
+  });
+
+  const data = res as any;
+  const pid: unknown = data?.post_id ?? data?.id ?? data?.postId;
+  if (typeof pid !== 'number' || !Number.isFinite(pid)) {
+    throw new Error('Create post: invalid post_id in response');
+  }
+  return { post_id: pid };
+}
+
+// create Free
+export function createFreePost(user: number, body: FreePostRequest): Promise<CreatePostResult>;
+export function createFreePost(
+  body: FreePostRequest & { user_id: number },
+): Promise<CreatePostResult>;
+export function createFreePost(
+  a: number | (FreePostRequest & { user_id: number }),
+  b?: FreePostRequest,
+): Promise<CreatePostResult> {
+  const user = typeof a === 'number' ? a : a.user_id;
+  const payload = (typeof a === 'number' ? b! : a) as FreePostRequest;
+  return postCreate(user, { ...payload, category: 'free' as const });
+}
+
+// create Share
+export function createSharePost(user: number, body: SharePostRequest): Promise<CreatePostResult>;
+export function createSharePost(
+  body: SharePostRequest & { user_id: number },
+): Promise<CreatePostResult>;
+export function createSharePost(
+  a: number | (SharePostRequest & { user_id: number }),
+  b?: SharePostRequest,
+): Promise<CreatePostResult> {
+  const user = typeof a === 'number' ? a : a.user_id;
+  const payload = (typeof a === 'number' ? b! : a) as SharePostRequest;
+  return postCreate(user, { ...payload, category: 'share' as const });
+}
+
+// create Study
+export function createStudyPost(user: number, body: StudyPostRequest): Promise<CreatePostResult>;
+export function createStudyPost(
+  body: StudyPostRequest & { user_id: number },
+): Promise<CreatePostResult>;
+export function createStudyPost(
+  a: number | (StudyPostRequest & { user_id: number }),
+  b?: StudyPostRequest,
+): Promise<CreatePostResult> {
+  const user = typeof a === 'number' ? a : a.user_id;
+  const payload = (typeof a === 'number' ? b! : a) as StudyPostRequest;
+  return postCreate(user, { ...payload, category: 'study' as const });
 }
 
 function normalizeComments(raw: any): CommentResponse[] {
