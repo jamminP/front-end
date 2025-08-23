@@ -1,4 +1,9 @@
-import axios, { AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
+import axios, {
+  AxiosError,
+  AxiosHeaders,
+  AxiosRequestConfig,
+  InternalAxiosRequestConfig,
+} from 'axios';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
@@ -10,7 +15,7 @@ export const http = axios.create({
     'Content-Type': 'application/json',
     Accept: 'application/json',
   },
-  withCredentials: false,
+  withCredentials: true,
 });
 
 // 토큰 기반 세팅시 사용 예정.
@@ -56,15 +61,27 @@ export class HttpError extends Error {
 }
 
 // 요청 인터셉터
-http.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    if (typeof window !== 'undefined' && !navigator.onLine) {
-      return Promise.reject(new HttpError('오프라인 상태입니다.', { isNetwork: true }));
+http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  if (import.meta.env.DEV) {
+    const envToken = (import.meta.env as any).VITE_DEV_ACCESS_TOKEN?.trim?.();
+    const lsToken = localStorage.getItem('dev_access_token')?.trim?.();
+    const token = envToken || lsToken;
+
+    if (token) {
+      // headers가 AxiosHeaders일 수도/아닐 수도 있으므로 안전하게 래핑
+      const headers =
+        config.headers instanceof AxiosHeaders ? config.headers : new AxiosHeaders(config.headers);
+
+      headers.set('Authorization', `Bearer ${token}`);
+      config.headers = headers; // 타입 OK
     }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+  }
+
+  if (typeof window !== 'undefined' && !navigator.onLine) {
+    return Promise.reject(new HttpError('오프라인 상태입니다.', { isNetwork: true }));
+  }
+  return config;
+});
 
 // 응답/에러 인터셉터
 http.interceptors.response.use(

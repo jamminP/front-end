@@ -110,7 +110,7 @@ function DetailModal({
         const res = await getStudyPlanById(target.rid);
         return { kind: 'plan' as const, row: pickStudyPlanOne(res) };
       }
-      const res = await getSummaryById(target.rid, false);
+      const res = await getSummaryById(target.rid, true);
       return { kind: 'summary' as const, row: pickSummaryOne(res) };
     },
   });
@@ -215,23 +215,8 @@ function DetailModal({
                   </div>
                   <div className="text-sm text-slate-600">
                     <div>
-                      <span className="text-slate-500">형식:</span> {q.data.row.summary_type}
-                    </div>
-                    <div>
                       <span className="text-slate-500">생성일:</span> {ymd(q.data.row.created_at)}
                     </div>
-                    {q.data.row.file_url && (
-                      <div className="mt-1">
-                        <a
-                          href={q.data.row.file_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-blue-600 underline"
-                        >
-                          첨부 파일 열기
-                        </a>
-                      </div>
-                    )}
                   </div>
 
                   {(() => {
