@@ -3,8 +3,7 @@ import { usePostDetail } from '../hook/usePostDetail';
 import CommentsBlock from '../post/components/CommentsBlock';
 import recruiting from '../img/recruiting.png';
 import completed from '../img/completed.png';
-
-import type { PostDetail, FreeDetail, ShareDetail, StudyDetail } from '../api/types';
+import type { FreeDetail, ShareDetail, StudyDetail } from '../api/types';
 
 type Category = 'free' | 'share' | 'study';
 const isCategory = (v: string): v is Category => v === 'free' || v === 'share' || v === 'study';
@@ -17,19 +16,26 @@ export default function PostDetailPage() {
   const postId = Number(id);
   const { data, isLoading, isError } = usePostDetail(category, postId);
 
+  const current_user_id = 18;
+  const isAdmin = false;
+
   if (isLoading) return <div className="p-6 text-center">불러오는 중…</div>;
   if (isError || !data)
     return <div className="p-6 text-center text-red-500">게시글을 불러오지 못했어요.</div>;
 
-  const current_user_id = 18;
-
   if (data.category === 'study') {
-    return <StudyDetailView post={data} current_user_id={current_user_id} />;
-  }
-  if (data.category === 'free' || data.category === 'share') {
-    return <BasicDetailView post={data} current_user_id={current_user_id} />;
+    return <StudyDetailView post={data} current_user_id={current_user_id} isAdmin={isAdmin} />;
   }
 
+  return (
+    <BasicDetailView
+      post={data as FreeDetail | ShareDetail}
+      current_user_id={current_user_id}
+      isAdmin={isAdmin}
+    />
+  );
+
+  // ───────────────── helpers ─────────────────
   function HeaderBar(props: {
     nickname?: string;
     created_at: string;
@@ -60,14 +66,16 @@ export default function PostDetailPage() {
 
   function ContentBox({ children }: { children: React.ReactNode }) {
     return (
-      <div className="mt-4 mx-3 border-t border-gray-400/50 bg-none p-5 whitespace-pre-wrap">
+      <div className="mt-4 mx-2 border-t border-gray-400/50 bg-none p-5 whitespace-pre-wrap">
         {children}
       </div>
     );
   }
+
   function Divider() {
-    return <div className="my-5 border-t border-gray-400/50" />;
+    return <div className="my-5 border-t mx-2 border-gray-400/50" />;
   }
+
   function formatDate(iso: string) {
     try {
       const d = new Date(iso);
@@ -75,30 +83,45 @@ export default function PostDetailPage() {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
       }).format(d);
     } catch {
       return iso;
     }
   }
 
-  // free/share 공용
   function BasicDetailView({
     post,
     current_user_id,
+    isAdmin,
   }: {
-    post: FreeDetail | ShareDetail; // ✅ 이름/타입 통일
+    post: FreeDetail | ShareDetail;
     current_user_id: number;
+    isAdmin: boolean;
   }) {
+    const canEdit = isAdmin || post.author_id === current_user_id;
+
+    const handleEditClick = (e: React.MouseEvent) => e.stopPropagation();
+    const handleDeleteClick = (e: React.MouseEvent) => e.stopPropagation();
+
     return (
       <section className="rounded-2xl bg-gray-100 p-5 shadow-md">
         <HeaderBar
-          nickname={post.author_nickname} // ✅ 닉네임 표시
+          nickname={post.author_nickname}
           created_at={post.created_at}
           views={post.views}
-          rightExtra={<div className="text-sm">❤️ 3</div>}
+          rightExtra={<div className="text-sm">❤️ {post.like_count ?? 0}</div>}
         />
+
+        {canEdit && (
+          <div className="flex gap-2 justify-end">
+            <button className="text-xs text-black hover:text-[#0180F5]" onClick={handleEditClick}>
+              수정
+            </button>
+            <button className="text-xs text-black hover:text-[#0180F5]" onClick={handleDeleteClick}>
+              삭제
+            </button>
+          </div>
+        )}
 
         <ContentBox>
           <h1 className="mb-3 text-2xl font-bold">{post.title}</h1>
@@ -112,7 +135,6 @@ export default function PostDetailPage() {
         </ContentBox>
 
         <Divider />
-
         <CommentsBlock post_id={post.id} current_user_id={current_user_id} />
       </section>
     );
@@ -121,10 +143,17 @@ export default function PostDetailPage() {
   function StudyDetailView({
     post,
     current_user_id,
+    isAdmin,
   }: {
-    post: StudyDetail; // ✅ 이름/타입 통일
+    post: StudyDetail;
     current_user_id: number;
+    isAdmin: boolean;
   }) {
+    const canEdit = isAdmin || post.author_id === current_user_id;
+
+    const handleEditClick = (e: React.MouseEvent) => e.stopPropagation();
+    const handleDeleteClick = (e: React.MouseEvent) => e.stopPropagation();
+
     const meta = post.study_recruitment;
     const badgeIcon =
       post.badge === '모집중' ? recruiting : post.badge === '모집완료' ? completed : null;
@@ -132,11 +161,22 @@ export default function PostDetailPage() {
     return (
       <section className="rounded-xl bg-gray-100 px-2 py-4 shadow-md">
         <HeaderBar
-          nickname={post.author_nickname} // ✅ 닉네임 표시
+          nickname={post.author_nickname}
           created_at={post.created_at}
           views={post.views}
-          rightExtra={<div className="text-sm">❤️ 3</div>}
+          rightExtra={<div className="text-sm">❤️ {post.like_count ?? 0}</div>}
         />
+
+        {canEdit && (
+          <div className="flex gap-2 justify-end px-2">
+            <button className="text-xs text-black hover:text-[#0180F5]" onClick={handleEditClick}>
+              수정
+            </button>
+            <button className="text-xs text-black hover:text-[#0180F5]" onClick={handleDeleteClick}>
+              삭제
+            </button>
+          </div>
+        )}
 
         <ContentBox>
           <h1 className="mb-3 text-2xl font-bold">{post.title}</h1>
@@ -160,7 +200,6 @@ export default function PostDetailPage() {
         </ContentBox>
 
         <Divider />
-
         <CommentsBlock post_id={post.id} current_user_id={current_user_id} />
       </section>
     );
