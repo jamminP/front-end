@@ -275,6 +275,13 @@ export default function ChatList({ collapsed }: { collapsed: boolean }) {
   const openDetail = (it: UnifiedItem) => setDetail(it);
   const closeDetail = () => setDetail(null);
 
+  const stripWeekPrefix = (title: string) => {
+    let t = (title || '').trim();
+    t = t.replace(/^(\d+\s*주(?:\s*차)?\s*[:\-–·]?\s*)+/, '');
+    t = t.replace(/^\d+\s*주과정\s*/, '');
+    return t.trim();
+  };
+
   const doDelete = async () => {
     if (!target) return;
     setDeleting(true);
@@ -339,10 +346,10 @@ export default function ChatList({ collapsed }: { collapsed: boolean }) {
             <li key={it.id} className="group px-2 py-1 rounded flex items-center hover:bg-slate-50">
               <button
                 className="flex-1 text-left truncate text-sm text-slate-700"
-                title={it.title}
+                title={stripWeekPrefix(it.title)}
                 onClick={() => openDetail(it)}
               >
-                {it.title}
+                {stripWeekPrefix(it.title)}
               </button>
               <button
                 aria-label="삭제"
