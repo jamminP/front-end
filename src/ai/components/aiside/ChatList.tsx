@@ -1,11 +1,198 @@
-import { UNIFIED_AI_FEED_QK, useUnifiedAiFeed } from '@src/ai/hook/useUnifiedAiFeed';
+import { useUnifiedAiFeed } from '@src/ai/hook/useUnifiedAiFeed';
 import { HttpError } from '../../api/http';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { UnifiedItem } from '@src/ai/api/sidebarTitle';
-import { deleteStudyPlan } from '@src/ai/api/studyPlan';
-import { deleteSummary } from '@src/ai/api/summary';
+import { deleteStudyPlan, getStudyPlanById } from '@src/ai/api/studyPlan';
+import { deleteSummary, getSummaryById } from '@src/ai/api/summary';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { UNIFIED_AI_FEED_QK } from '@src/ai/hook/useUnifiedAiFeed';
+import type { UnifiedItem } from '@src/ai/api/sidebarTitle';
 import { FaTrashAlt } from 'react-icons/fa';
+import { pickStudyPlanOne, pickSummaryOne } from '@src/ai/api/normalize';
+import PlanPreview from './../aimain/PlanPreview';
+import Portal from './../Portal';
+
+function ConfirmModal({
+  open,
+  title,
+  description,
+  confirmText = '삭제',
+  cancelText = '취소',
+  onConfirm,
+  onCancel,
+  busy,
+}: {
+  open: boolean;
+  title: string;
+  description?: string;
+  confirmText?: string;
+  cancelText?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  busy?: boolean;
+}) {
+  if (!open) return null;
+
+  return (
+    <Portal>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
+        <div className="relative z-10 w-[min(720px,92vw)] rounded-2xl bg-white p-4 shadow-xl">
+          <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+          {description && <p className="mt-1 text-sm text-slate-600">{description}</p>}
+          <div className="mt-4 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700"
+              disabled={busy}
+            >
+              {cancelText}
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              disabled={busy}
+              className="px-3 py-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-60"
+            >
+              {busy ? '삭제 중…' : confirmText}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Portal>
+  );
+}
+
+function DetailModal({
+  target,
+  onClose,
+  onDeleteClick,
+}: {
+  target: UnifiedItem | null;
+  onClose: () => void;
+  onDeleteClick: (it: UnifiedItem) => void;
+}) {
+  const enabled = !!target;
+  const q = useQuery({
+    enabled,
+    queryKey: ['ai-detail', target?.kind, target?.rid],
+    queryFn: async () => {
+      if (!target) return null;
+      if (target.kind === 'plan') {
+        const res = await getStudyPlanById(target.rid);
+        return { kind: 'plan' as const, row: pickStudyPlanOne(res) };
+      }
+      const res = await getSummaryById(target.rid, false);
+      return { kind: 'summary' as const, row: pickSummaryOne(res) };
+    },
+  });
+
+  if (!target) return null;
+
+  return (
+    <Portal>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+        <div className="relative z-10 w-[min(900px,96vw)] max-h-[88vh] overflow-auto rounded-2xl bg-white p-5 shadow-2xl">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-slate-900">
+              {target.kind === 'plan' ? '학습 계획' : '자료 요약'} 상세
+            </h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onDeleteClick(target)}
+                className="px-3 py-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700"
+              >
+                삭제
+              </button>
+              <button
+                onClick={onClose}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+
+          {q.isLoading && <div className="mt-4 text-sm text-slate-500">불러오는 중…</div>}
+          {q.isError && (
+            <div className="mt-4 text-sm text-rose-600">
+              {(q.error as any)?.message ?? '상세 정보를 불러오지 못했습니다.'}
+            </div>
+          )}
+
+          {q.data && q.data.kind === 'plan' && q.data.row && (
+            <div className="mt-4 space-y-4">
+              <div className="text-sm text-slate-600">
+                <div>
+                  <span className="text-slate-500">기간:</span> {q.data.row.start_date} ~{' '}
+                  {q.data.row.end_date}
+                </div>
+                <div>
+                  <span className="text-slate-500">챌린지:</span>{' '}
+                  {q.data.row.is_challenge ? '예' : '아니요'}
+                </div>
+                <div>
+                  <span className="text-slate-500">생성일:</span> {q.data.row.created_at}
+                </div>
+              </div>
+
+              {(() => {
+                try {
+                  const first = JSON.parse(q.data.row.output_data);
+                  const parsed = typeof first === 'string' ? JSON.parse(first) : first;
+                  if (parsed && typeof parsed === 'object') {
+                    return (
+                      <div className="rounded-2xl ring-1 ring-slate-200 bg-white shadow-sm p-4">
+                        <PlanPreview plan={parsed as any} />
+                      </div>
+                    );
+                  }
+                } catch {}
+                return (
+                  <pre className="rounded-xl bg-slate-50 p-3 text-xs overflow-auto">
+                    {q.data.row.output_data}
+                  </pre>
+                );
+              })()}
+            </div>
+          )}
+
+          {q.data && q.data.kind === 'summary' && q.data.row && (
+            <div className="mt-4 space-y-3">
+              <div className="text-sm text-slate-900 font-medium">
+                {q.data.row.title || '제목 없음'}
+              </div>
+              <div className="text-sm text-slate-600">
+                <div>
+                  <span className="text-slate-500">형식:</span> {q.data.row.summary_type}
+                </div>
+                <div>
+                  <span className="text-slate-500">생성일:</span> {q.data.row.created_at}
+                </div>
+                {q.data.row.file_url && (
+                  <div className="mt-1">
+                    <a
+                      href={q.data.row.file_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      첨부 파일 열기
+                    </a>
+                  </div>
+                )}
+              </div>
+              <pre className="rounded-xl bg-slate-50 p-3 text-xs overflow-auto">
+                {q.data.row.output_data}
+              </pre>
+            </div>
+          )}
+        </div>
+      </div>
+    </Portal>
+  );
+}
 
 export default function ChatList({ collapsed }: { collapsed: boolean }) {
   if (collapsed) return null;
@@ -27,11 +214,15 @@ export default function ChatList({ collapsed }: { collapsed: boolean }) {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const queryClient = useQueryClient();
 
-  // 삭제 모달 상태
   const [target, setTarget] = useState<UnifiedItem | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const [detail, setDetail] = useState<UnifiedItem | null>(null);
+
   const openDelete = (it: UnifiedItem) => setTarget(it);
   const closeDelete = () => (!deleting ? setTarget(null) : null);
+  const openDetail = (it: UnifiedItem) => setDetail(it);
+  const closeDetail = () => setDetail(null);
 
   const doDelete = async () => {
     if (!target) return;
@@ -40,9 +231,9 @@ export default function ChatList({ collapsed }: { collapsed: boolean }) {
       if (target.kind === 'plan') await deleteStudyPlan(target.rid);
       else await deleteSummary(target.rid);
 
-      // 목록 무효화하여 새로고침
       await queryClient.invalidateQueries({ queryKey: UNIFIED_AI_FEED_QK, exact: false });
       setTarget(null);
+      if (detail && detail.id === target.id) setDetail(null);
     } catch (e) {
       const msg =
         e instanceof HttpError
@@ -86,7 +277,11 @@ export default function ChatList({ collapsed }: { collapsed: boolean }) {
         <ul className="space-y-1">
           {items.map((it) => (
             <li key={it.id} className="group px-2 py-1 rounded hover:bg-gray-50 flex items-center">
-              <button className="flex-1 text-left truncate text-sm text-gray-700" title={it.title}>
+              <button
+                className="flex-1 text-left truncate text-sm text-gray-700"
+                title={it.title}
+                onClick={() => openDetail(it)}
+              >
                 {it.title}
               </button>
 
@@ -124,57 +319,15 @@ export default function ChatList({ collapsed }: { collapsed: boolean }) {
         confirmText="삭제"
         cancelText="취소"
       />
-    </>
-  );
-}
 
-function ConfirmModal({
-  open,
-  title,
-  description,
-  confirmText = '삭제',
-  cancelText = '취소',
-  onConfirm,
-  onCancel,
-  busy,
-}: {
-  open: boolean;
-  title: string;
-  description?: string;
-  confirmText?: string;
-  cancelText?: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-  busy?: boolean;
-}) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
-      <div className="relative z-10 w-[min(420px,92vw)] rounded-2xl bg-white p-4 shadow-xl">
-        <h3 className="text-base font-semibold text-slate-900">{title}</h3>
-        {description && <p className="mt-1 text-sm text-slate-600">{description}</p>}
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700"
-            disabled={busy}
-          >
-            {cancelText}
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={busy}
-            className={
-              'px-3 py-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-60'
-            }
-          >
-            {busy ? '삭제 중…' : confirmText}
-          </button>
-        </div>
-      </div>
-    </div>
+      <DetailModal
+        target={detail}
+        onClose={closeDetail}
+        onDeleteClick={(it) => {
+          setDetail(null);
+          setTarget(it);
+        }}
+      />
+    </>
   );
 }
