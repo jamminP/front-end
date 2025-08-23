@@ -19,8 +19,8 @@ export default function AppContent() {
 
   //새창
   useEffect(() => {
+    if (!window.opener) return;
     const fetchUser = async () => {
-      if (!window.opener) return;
       try {
         const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
           withCredentials: true,
@@ -50,26 +50,37 @@ export default function AppContent() {
 
   // 부모창: axios 인터셉터에서 만료 감지
   useEffect(() => {
+    let isRefreshing = false;
+
     const interceptor = axios.interceptors.response.use(
       (res) => res,
       async (err) => {
-        if (axios.isAxiosError(err) && err.response?.status === 401) {
+        if (axios.isAxiosError(err) && err.response?.status === 401 && !isRefreshing) {
+          isRefreshing = true;
           try {
             await axios.post(
               'https://backend.evida.site/api/v1/users/auth/refresh',
               {},
               { withCredentials: true },
             );
-            return err.config ? axios(err.config) : Promise.reject(err); // 원래 요청 재시도
-          } catch {
+            // 원래 요청이 있는 경우 재시도
+            if (err.config) {
+              return axios.request(err.config);
+            }
+            return Promise.resolve();
+          } catch (refreshError) {
             logout();
             localStorage.removeItem('user'); // 새로고침 대비
             navigate('/login');
+            return Promise.reject(refreshError);
+          } finally {
+            isRefreshing = false;
           }
         }
         return Promise.reject(err);
       },
     );
+
     return () => axios.interceptors.response.eject(interceptor);
   }, [logout, navigate]);
 
