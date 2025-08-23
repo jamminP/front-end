@@ -3,8 +3,8 @@ import kakaoIcon from '../login/img/kakao-icon.png';
 
 export default function Login() {
   const isMobile = window.innerWidth <= 768;
-  const width = isMobile ? window.innerWidth * 0.8 : window.innerWidth * 0.3;
-  const height = isMobile ? window.innerHeight * 0.8 : window.innerHeight * 0.7;
+  const width = isMobile ? window.innerWidth : window.innerWidth * 0.35;
+  const height = isMobile ? window.innerHeight : window.innerHeight * 0.7;
   const left = window.screenX + (window.outerWidth - width) / 2;
   const top = window.screenY + (window.outerHeight - height) / 2;
 
