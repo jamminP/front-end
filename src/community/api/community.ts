@@ -12,6 +12,12 @@ import type {
 const LIST_ENDPOINT = '/api/v1/community/post/list';
 const DETAIL_ENDPOINT = (postId: number) => `/api/v1/community/post/${postId}`;
 
+export function getPostId(item: ListItem): number {
+  if (item.category === 'free') return item.free_post_id;
+  if (item.category === 'share') return item.share_post_id;
+  return item.study_post_id;
+}
+
 export interface GetPostListParams {
   category: PostCategory;
   cursor?: number | null;
