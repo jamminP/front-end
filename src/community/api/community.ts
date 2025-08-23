@@ -45,3 +45,21 @@ export async function getTopWeekly(category: TopCategory, limit = 5): Promise<To
 export const getTopWeeklyStudy = (limit = 5) => getTopWeekly('study', limit);
 export const getTopWeeklyFree = (limit = 5) => getTopWeekly('free', limit);
 export const getTopWeeklyShare = (limit = 5) => getTopWeekly('share', limit);
+
+export type ApiId = { id?: number; post_id?: number };
+
+const CREATE_FREE = '/api/v1/community/post/free';
+const CREATE_SHARE = '/api/v1/community/post/share';
+const CREATE_STUDY = '/api/v1/community/post/study';
+
+export function createFreePost(body: any): Promise<ApiId> {
+  return http<ApiId>(CREATE_FREE, body);
+}
+
+export function createSharePost(body: any): Promise<ApiId> {
+  return http<ApiId>(CREATE_SHARE, body);
+}
+
+export function createStudyPost(body: any): Promise<ApiId> {
+  return http<ApiId>(CREATE_STUDY, body);
+}
