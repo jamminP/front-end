@@ -87,6 +87,9 @@ function DetailModal({
     },
   });
 
+  const ymd = (v?: string | null) =>
+    v ? (v.match(/\d{4}-\d{2}-\d{2}/)?.[0] ?? v.slice(0, 10)) : '';
+
   if (!target) return null;
 
   return (
@@ -128,15 +131,15 @@ function DetailModal({
             <div className="mt-4 space-y-4">
               <div className="text-sm text-slate-600">
                 <div>
-                  <span className="text-slate-500">기간:</span> {q.data.row.start_date} ~{' '}
-                  {q.data.row.end_date}
+                  <span className="text-slate-500">기간:</span> {ymd(q.data.row.start_date)} ~{' '}
+                  {ymd(q.data.row.end_date)}
                 </div>
                 <div>
                   <span className="text-slate-500">챌린지:</span>{' '}
                   {q.data.row.is_challenge ? '예' : '아니요'}
                 </div>
                 <div>
-                  <span className="text-slate-500">생성일:</span> {q.data.row.created_at}
+                  <span className="text-slate-500">생성일:</span> {ymd(q.data.row.created_at)}
                 </div>
               </div>
 
