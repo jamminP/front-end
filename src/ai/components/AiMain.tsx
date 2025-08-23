@@ -12,6 +12,9 @@ import VirtualMessageList from './aimain/VitualMessageList';
 import { UNIFIED_AI_FEED_QK } from '../hook/useUnifiedAiFeed';
 import { useQueryClient } from '@tanstack/react-query';
 import HomeCard from './aimain/HomeCard';
+import { createSummaryForMe } from '../api/summary';
+import { buildTextSummaryPayload } from '../utils/summaryPayload';
+import { parseSummaryOutput, splitSummaryForChat } from '../utils/summaryOutput';
 
 type Step = 'need_input' | 'need_dates' | 'need_challenge' | 'submitting' | 'done';
 
@@ -67,11 +70,18 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
     appendChoice,
     disableChoice,
     lockCalendar,
+    appendKeywords,
+    appendPoints,
   } = useChat(externalCommand, planReply);
 
   const calendarIdRef = useRef<string | null>(null);
   const lastChoiceIdRef = useRef<string | null>(null);
   const queryClient = useQueryClient();
+
+  const state = useRef<{ step: Step; input_data: string; start?: Date; end?: Date }>({
+    step: 'need_input',
+    input_data: '',
+  });
 
   const afterDatesConfirmed = (start: Date, end: Date) => {
     appendChallengePrompt({
@@ -79,9 +89,7 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
       end: fmt(end),
       days: daysInclusive(start, end),
     });
-
     appendAssistant('이 기간 동안 챌린지를 진행하시겠어요?');
-
     lastChoiceIdRef.current = appendChoice(
       [
         { value: 'yes', label: '예' },
@@ -132,14 +140,65 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
     }
   };
 
-  const state = useRef<{ step: Step; input_data: string; start?: Date; end?: Date }>({
-    step: 'need_input',
-    input_data: '',
-  });
+  const summaryFlow = async (userText: string) => {
+    const text = userText.trim();
+    if (!text) return '요약할 텍스트를 붙여넣어 주세요.';
+
+    const payload = buildTextSummaryPayload(text);
+    const loadingId = appendLoading('요약을 생성 중입니다.');
+
+    try {
+      const res = await createSummaryForMe(payload);
+      const body: any = res.data;
+
+      const status = body?.status;
+      const out =
+        body?.data?.summary?.output_data ?? body?.data?.output_data ?? body?.data?.result ?? '';
+
+      if (status === 'completed') {
+        const parsed = parseSummaryOutput(out);
+        const { mainText, points, keywords } = splitSummaryForChat(parsed);
+
+        if (mainText) appendAssistant(mainText);
+
+        if (points?.length) {
+          appendPoints(points, '핵심 포인트');
+        }
+
+        if (keywords?.length) {
+          appendKeywords(keywords);
+        }
+      } else {
+        appendAssistant(body?.message || '요약 생성 요청이 접수되었습니다.');
+      }
+
+      queryClient.invalidateQueries({ queryKey: UNIFIED_AI_FEED_QK, exact: false });
+    } catch (e) {
+      const msg =
+        e instanceof HttpError
+          ? e.message
+          : ((e as Error)?.message ?? '요약 생성 중 오류가 발생했습니다.');
+      appendAssistant(
+        typeof msg === 'string' && msg.includes('요청 시간이 초과')
+          ? '응답이 지연되고 있어요. 잠시 후 사이드바에서 생성 여부를 확인해 주세요.'
+          : `요약 생성 중 오류가 발생했습니다: ${msg}`,
+      );
+    } finally {
+      removeMessage(loadingId);
+    }
+    return null;
+  };
 
   async function planReply(userText: string, action: any) {
-    if (action !== 'plan') return `좋아요! “${userText}”에 대해 더 알려주시면 계획을 정교화할게요.`;
+    if (action === 'summary') {
+      return summaryFlow(userText);
+    }
 
+    if (action !== 'plan') {
+      return `좋아요! “${userText}”에 대해 더 알려주시면 계획을 정교화할게요.`;
+    }
+
+    // ==== 학습 계획 플로우 ====
     if (state.current.step === 'need_input') {
       state.current.input_data = userText.trim();
       state.current.step = 'need_dates';
@@ -275,6 +334,13 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
                   messages={messages}
                   onCalendarConfirm={onCalendarConfirm}
                   onChoice={onChoice}
+                  onKeywordClick={(kw) => {
+                    if (inputRef.current) {
+                      inputRef.current.value = kw;
+                      inputRef.current.focus();
+                    }
+                    // summaryFlow(kw);
+                  }}
                 />
               </div>
               <InputBar inputRef={inputRef} onSend={send} />

@@ -12,6 +12,7 @@ import PlanPreview from './../aimain/PlanPreview';
 import Portal from './../Portal';
 import { AnimatePresence, useReducedMotion, motion } from 'framer-motion';
 import { overlayVar, dialogVar } from '../../utils/modalMotion';
+import { parseSummaryOutput } from '../../utils/summaryOutput';
 
 function ConfirmModal({
   open,
@@ -232,9 +233,45 @@ function DetailModal({
                       </div>
                     )}
                   </div>
-                  <pre className="rounded-xl bg-slate-50 p-3 text-xs overflow-auto">
-                    {q.data.row.output_data}
-                  </pre>
+
+                  {(() => {
+                    const parsed = parseSummaryOutput(q.data.row.output_data);
+                    if (!parsed) {
+                      return (
+                        <pre className="rounded-xl bg-slate-50 p-3 text-xs overflow-auto">
+                          {q.data.row.output_data}
+                        </pre>
+                      );
+                    }
+
+                    return (
+                      <div className="rounded-2xl ring-1 ring-slate-200 bg-white shadow-sm p-4 space-y-3">
+                        {parsed.summary && (
+                          <p className="text-sm leading-6 text-slate-800">{parsed.summary}</p>
+                        )}
+
+                        {parsed.keyPoints && parsed.keyPoints.length > 0 && (
+                          <ul className="list-disc pl-5 text-sm text-slate-700 space-y-1">
+                            {parsed.keyPoints.map((li: string, i: number) => (
+                              <li key={i}>{li}</li>
+                            ))}
+                          </ul>
+                        )}
+                        {parsed.keywords && parsed.keywords.length > 0 && (
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            {parsed.keywords.map((kw: string, i: number) => (
+                              <span
+                                key={i}
+                                className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs"
+                              >
+                                {kw}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
             </motion.div>
