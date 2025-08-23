@@ -1,7 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from './store/authStore';
 import { useEffect } from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+
+// 🔹 컴포넌트 외부 전역 변수
+let isRefreshing = false;
 
 export default function AppContent() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
@@ -9,7 +12,7 @@ export default function AppContent() {
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
 
-  //로컬에서 로그인 상태 복구
+  // 🔹 로컬에서 로그인 상태 복구
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
@@ -17,7 +20,7 @@ export default function AppContent() {
     }
   }, [setAuthData]);
 
-  //새창
+  // 🔹 새창: OAuth 등에서 부모창에 데이터 전달
   useEffect(() => {
     if (!window.opener) return;
     const fetchUser = async () => {
@@ -25,8 +28,8 @@ export default function AppContent() {
         const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
           withCredentials: true,
         });
-        //부모창에 전달
-        window.opener.postMessage({ user: res.data }, 'https://eunbin.evida.site'); //배포시 도메인변경
+        // 부모창에 전달
+        window.opener.postMessage({ user: res.data }, 'https://eunbin.evida.site');
         window.close();
       } catch (err) {
         console.error('사용자 정보 불러오기 실패', err);
@@ -35,7 +38,7 @@ export default function AppContent() {
     fetchUser();
   }, []);
 
-  //부모창
+  // 🔹 부모창: 새창 메시지 수신
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== 'https://eunbin.evida.site') return;
@@ -48,35 +51,42 @@ export default function AppContent() {
     return () => window.removeEventListener('message', handleMessage);
   }, [setAuthData, navigate]);
 
-  // 부모창: axios 인터셉터에서 만료 감지
+  // 🔹 부모창: axios 인터셉터로 토큰 만료 감지
   useEffect(() => {
-    let isRefreshing = false;
-
     const interceptor = axios.interceptors.response.use(
       (res) => res,
       async (err) => {
-        if (axios.isAxiosError(err) && err.response?.status === 401 && !isRefreshing) {
-          isRefreshing = true;
-          try {
-            await axios.post(
-              'https://backend.evida.site/api/v1/users/auth/refresh',
-              {},
-              { withCredentials: true },
-            );
-            // 원래 요청이 있는 경우 재시도
-            if (err.config) {
-              return axios.request(err.config);
+        const originalRequest = err.config;
+
+        if (
+          axios.isAxiosError(err) &&
+          err.response?.status === 401 &&
+          originalRequest &&
+          !originalRequest._retry
+        ) {
+          originalRequest._retry = true;
+
+          if (!isRefreshing) {
+            isRefreshing = true;
+            try {
+              await axios.post(
+                'https://backend.evida.site/api/v1/users/auth/refresh',
+                {},
+                { withCredentials: true },
+              );
+              // 🔹 큐 재시도 제거: refresh만 처리, 실패한 요청 재시도하지 않음
+              return Promise.resolve();
+            } catch (refreshError) {
+              logout();
+              localStorage.removeItem('user');
+              navigate('/login');
+              return Promise.reject(refreshError);
+            } finally {
+              isRefreshing = false;
             }
-            return Promise.resolve();
-          } catch (refreshError) {
-            logout();
-            localStorage.removeItem('user'); // 새로고침 대비
-            navigate('/login');
-            return Promise.reject(refreshError);
-          } finally {
-            isRefreshing = false;
           }
         }
+
         return Promise.reject(err);
       },
     );
@@ -84,7 +94,7 @@ export default function AppContent() {
     return () => axios.interceptors.response.eject(interceptor);
   }, [logout, navigate]);
 
-  //상태변경시 로컬 업데이트
+  // 🔹 Zustand 상태 변경 시 로컬 업데이트
   useEffect(() => {
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
