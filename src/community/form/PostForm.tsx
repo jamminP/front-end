@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
+const currentUserId = 18;
+
 export type PostFormValues = {
+  id: number;
   title: string;
   content: string;
   category: 'free' | 'share' | 'study';
@@ -22,6 +25,7 @@ interface PostFormProps {
 }
 
 const defaults: PostFormValues = {
+  id: currentUserId,
   title: '',
   content: '',
   category: 'free',

@@ -2,14 +2,12 @@ import { useQueries, useQuery } from '@tanstack/react-query';
 import { TopCategory, TopWeeklyResponse } from '../api/types';
 import { getTopWeekly } from '../api/community';
 
-//쿼리키 규칙 표준화
 export const topWeeklyKeys = {
   all: ['community', 'topWeekly'] as const,
   list: (category: TopCategory, limit: number) =>
     [...topWeeklyKeys.all, { category, limit }] as const,
 };
 
-//단일
 export function useTopWeekly(category: TopCategory, limit = 5) {
   return useQuery<TopWeeklyResponse>({
     queryKey: topWeeklyKeys.list(category, limit),
@@ -18,7 +16,6 @@ export function useTopWeekly(category: TopCategory, limit = 5) {
   });
 }
 
-//각 카테고리 동시
 export function useTopWeeklyAll(limit = 5) {
   const categories: TopCategory[] = ['study', 'free', 'share'];
   const results = useQueries({

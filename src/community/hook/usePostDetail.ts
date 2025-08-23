@@ -1,30 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
-import { getFreePost, getSharePost, getStudyPost } from '../api/community';
-import { FreePostResponse, SharePostResponse, StudyPostResponse } from '../api/types';
+import { getPostDetail } from '../api/community';
+import type { ItemCategory, FreeDetail, ShareDetail, StudyDetail } from '../api/types';
 
-type Category = 'free' | 'share' | 'study';
+type Category = ItemCategory;
 
 interface DetailMap {
-  free: FreePostResponse;
-  share: SharePostResponse;
-  study: StudyPostResponse;
-}
-
-function getDetailFetcher<C extends Category>(category: C, postId: number) {
-  switch (category) {
-    case 'free':
-      return () => getFreePost(postId) as Promise<DetailMap[C]>;
-    case 'share':
-      return () => getSharePost(postId) as Promise<DetailMap[C]>;
-    case 'study':
-      return () => getStudyPost(postId) as Promise<DetailMap[C]>;
-  }
+  free: FreeDetail;
+  share: ShareDetail;
+  study: StudyDetail;
 }
 
 export function usePostDetail<C extends Category>(category: C, postId: number) {
   return useQuery<DetailMap[C]>({
     queryKey: ['community', 'post', category, postId],
-    queryFn: getDetailFetcher(category, postId),
+    queryFn: async () => {
+      const data = await getPostDetail(postId);
+      const normalized = { ...data, category: String(data.category).toLowerCase() as ItemCategory };
+      return data as DetailMap[C];
+    },
     enabled: Number.isFinite(postId),
     staleTime: 30_000,
   });

@@ -1,13 +1,11 @@
 const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
 
-// --- auth token helpers (http.ts 맨 위 근처에) ---
 let accessToken: string | null = null;
 
 export const setAccessToken = (t: string | null) => {
   accessToken = t;
 };
 export const getAccessToken = () => accessToken;
-// -----------------------------------------------
 
 export class HttpError extends Error {
   constructor(
@@ -25,11 +23,9 @@ export async function http<T>(url: string, init: RequestInit = {}): Promise<T> {
 
   const h = new Headers(init.headers || {});
   if (!h.has('Accept')) h.set('Accept', 'application/json');
-
-  // Authorization 자동 주입 (이미 넘겨온 헤더에 없을 때만)
   if (!h.has('Authorization')) {
     const token = getAccessToken();
-    if (token) h.set('Authorization', `Bearer ${token}`); // Bearer 접두어 필수
+    if (token) h.set('Authorization', `Bearer ${token}`);
   }
 
   const body = init.body;
@@ -59,6 +55,15 @@ export async function http<T>(url: string, init: RequestInit = {}): Promise<T> {
       : await res.text().catch(() => '');
     console.error('[HTTP ERROR]', res.status, res.statusText, errorData);
     throw new HttpError(res.status, res.statusText, errorData);
+  }
+
+  if (import.meta.env.DEV) {
+    console.debug('[HTTP]', init?.method ?? 'GET', url);
+    if (init?.body) {
+      try {
+        console.debug('[HTTP BODY]', JSON.parse(init.body as string));
+      } catch {}
+    }
   }
 
   if (res.status === 204) return undefined as unknown as T;
