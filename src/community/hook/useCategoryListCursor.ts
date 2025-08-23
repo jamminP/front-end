@@ -61,7 +61,7 @@ export function useCategoryListCursor(category: Category, params: CategoryListCu
       limit,
       cursor,
     }),
-    initialPageParam: cursor as PageParam, // 첫 페이지 커서 (기본 null)
+    initialPageParam: cursor as PageParam,
     queryFn: ({ pageParam }) =>
       getPostList({
         category,
