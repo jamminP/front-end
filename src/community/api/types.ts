@@ -1,7 +1,6 @@
 export type PostCategory = 'all' | 'free' | 'share' | 'study';
 export type ItemCategory = 'free' | 'share' | 'study';
 
-// ===== List  =====
 export type Badge = '모집중' | '모집완료';
 
 export interface BaseListItem {
@@ -15,14 +14,12 @@ export interface BaseListItem {
   comment_count: number;
 }
 
-// 카테고리별 post_id 키 매핑
 export type IdKeyOf<C extends ItemCategory> = C extends 'free'
   ? 'free_post_id'
   : C extends 'share'
     ? 'share_post_id'
     : 'study_post_id';
 
-// category에 맞는 id 키 강제 + 카테고리 전용 리스트 필드
 export type ListItemOf<C extends ItemCategory> = BaseListItem & { category: C } & Record<
     IdKeyOf<C>,
     number
@@ -49,7 +46,7 @@ export type ListItem = FreeListItem | ShareListItem | StudyListItem;
 
 export interface CursorPage<T> {
   items: T[];
-  next_cursor?: number | null; // ← 스펙에 맞춰 통일
+  next_cursor?: number | null;
 }
 
 // ===== Detail =====
@@ -105,6 +102,32 @@ export type DetailByCategory<C extends ItemCategory> = C extends 'free'
   : C extends 'share'
     ? ShareDetail
     : StudyDetail;
+
+// CREATE POST
+export interface CreatePostBase {
+  title: string;
+  content: string;
+  category: PostCategory;
+  user_id: number;
+}
+
+export type CreateFreePostBody = CreatePostBase & { category: 'free' };
+export type CreateSharePostBody = CreatePostBase & { category: 'share' };
+export type CreateStudyPostBody = CreatePostBase & {
+  category: 'study';
+  recruit_start: string;
+  recruit_end: string;
+  study_start: string;
+  study_end: string;
+  max_member: number;
+};
+
+export type CreatePostBody = CreateFreePostBody | CreateSharePostBody | CreateStudyPostBody;
+
+export type CreatePostApiId = { post_id: number } | { id: number } | { postId: number };
+export interface CreatePostResult {
+  post_id: number;
+}
 
 // 검색
 export type SearchIn = 'title' | 'title_content' | 'content' | 'author';

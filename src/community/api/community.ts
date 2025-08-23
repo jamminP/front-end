@@ -9,8 +9,10 @@ import type {
   CommentResponse,
 } from './types';
 
+export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
 const LIST_ENDPOINT = '/api/v1/community/post/list';
 const DETAIL_ENDPOINT = (postId: number) => `/api/v1/community/post/${postId}`;
+const CREATE_POST = `${BASE}/api/v1/community/post`;
 
 export function getPostId(item: ListItem): number {
   if (item.category === 'free') return item.free_post_id;
