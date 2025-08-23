@@ -21,36 +21,40 @@ import useAuthStore from './store/authStore';
 import axios from 'axios';
 
 function AppContent() {
-
   const setAuthData = useAuthStore((state) => state.setAuthData);
   const logout = useAuthStore((state) => state.logout);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const location = useLocation();
   const navigate = useNavigate();
 
-  const checkLogin = useCallback(async () => {
-    try {
-      const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
-        withCredentials: true,
-      });
-      if (!isLoggedIn) setAuthData(res.data);
-    } catch (err: any) {
-      // 401이면 조용히 로그아웃 처리
-      if (axios.isAxiosError(err) && err.response?.status === 401) {
-        logout();
-        navigate('/');
-      } else {
-        // 다른 에러는 콘솔에 출력
-        console.error(err);
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!window.opener) return;
+      try {
+        const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
+          withCredentials: true,
+        });
+        //부모창에 전달
+        window.opener.postMessage({ user: res.data }, 'https://eunbin.evida.site');
+        window.close();
+      } catch (err) {
+        console.error('사용자 정보 불러오기 실패', err);
       }
-    }
-  }, [setAuthData, logout, isLoggedIn]);
+    };
+    fetchUser();
+  }, []);
 
-  // useEffect(() => {
-  //   if (location.pathname !== '/login' && !isLoggedIn) {
-  //     checkLogin();
-  //   }
-  // }, [location.pathname, checkLogin, isLoggedIn]);
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== 'https://eunbin.evida.site') return;
+      if (event.data.user) {
+        setAuthData(event.data.user);
+        navigate('/');
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [setAuthData, navigate]);
 
   return (
     <>

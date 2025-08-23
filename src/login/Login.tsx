@@ -3,10 +3,18 @@ import kakaoIcon from '../login/img/kakao-icon.png';
 
 export default function Login() {
   const handleGoogleLogin = () => {
-    window.location.href = 'https://backend.evida.site/api/v1/users/auth/google/login';
+    window.open(
+      'https://backend.evida.site/api/v1/users/auth/google/login',
+      'googleLogin',
+      'width=500, height=600',
+    );
   };
   const handleKakaoLogin = () => {
-    window.location.href = 'https://backend.evida.site/api/v1/users/auth/kakao/login';
+    window.open(
+      'https://backend.evida.site/api/v1/users/auth/kakao/login',
+      'kakaoLogin',
+      'width=500, height=600',
+    );
   };
   return (
     <section className="w-full h-screen max-w-[1400px] m-auto flex flex-col justify-center items-center">
