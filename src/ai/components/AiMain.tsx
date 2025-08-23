@@ -4,7 +4,6 @@ import { useChat } from '../hook/useChat';
 import { StartCommand } from '../types/types';
 import ActionGrid from './aimain/ActionGrid';
 import { ACTIONS } from '../constants/actions';
-import ActionCard from './aiside/ActionCard';
 import ChatHeader from './aimain/ChatHeader';
 import InputBar from './aimain/InputBar';
 import { createStudyPlanForMe } from '../api/studyPlan';
@@ -12,6 +11,7 @@ import { HttpError } from '../api/http';
 import VirtualMessageList from './aimain/VitualMessageList';
 import { UNIFIED_AI_FEED_QK } from '../hook/useUnifiedAiFeed';
 import { useQueryClient } from '@tanstack/react-query';
+import HomeCard from './aimain/HomeCard';
 
 type Step = 'need_input' | 'need_dates' | 'need_challenge' | 'submitting' | 'done';
 
@@ -102,8 +102,8 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
     state.current.step = 'submitting';
     const payload = {
       input_data: state.current.input_data,
-      start_date: toISOWithTimeOfNow(state.current.start),
-      end_date: toISOWithTimeOfNow(state.current.end),
+      start_date: toISOWithTimeOfNow(state.current.start!),
+      end_date: toISOWithTimeOfNow(state.current.end!),
       is_challenge: yn,
     };
 
@@ -115,10 +115,7 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
       const parsed = parseMaybeNestedJSON(body?.data?.study_plan?.output_data);
       if (parsed) appendPlanPreview(parsed as any);
 
-      queryClient.invalidateQueries({
-        queryKey: UNIFIED_AI_FEED_QK,
-        exact: false,
-      });
+      queryClient.invalidateQueries({ queryKey: UNIFIED_AI_FEED_QK, exact: false });
     } catch (e) {
       const msg =
         e instanceof HttpError
@@ -169,7 +166,6 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
       state.current.step = 'need_challenge';
 
       if (calendarIdRef.current) lockCalendar(calendarIdRef.current);
-
       afterDatesConfirmed(start, end);
       return null;
     }
@@ -187,8 +183,8 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
       state.current.step = 'submitting';
       const payload = {
         input_data: state.current.input_data,
-        start_date: toISOWithTimeOfNow(state.current.start),
-        end_date: toISOWithTimeOfNow(state.current.end),
+        start_date: toISOWithTimeOfNow(state.current.start!),
+        end_date: toISOWithTimeOfNow(state.current.end!),
         is_challenge: yn,
       };
 
@@ -204,13 +200,11 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
           e instanceof HttpError
             ? e.message
             : ((e as Error)?.message ?? '요청 중 오류가 발생했습니다.');
-        if (typeof msg === 'string' && msg.includes('요청 시간이 초과되었습니다.')) {
-          appendAssistant(
-            '응답이 지연되고 있어요. 잠시 후 사이드바에서 생성 여부를 확인해 주세요.',
-          );
-        } else {
-          appendAssistant(`생성 중 오류가 발생했습니다: ${msg}`);
-        }
+        appendAssistant(
+          typeof msg === 'string' && msg.includes('요청 시간이 초과되었습니다.')
+            ? '응답이 지연되고 있어요. 잠시 후 사이드바에서 생성 여부를 확인해 주세요.'
+            : `생성 중 오류가 발생했습니다: ${msg}`,
+        );
       } finally {
         removeMessage(loadingId);
         state.current.step = 'done';
@@ -232,7 +226,6 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
     state.current.step = 'need_challenge';
 
     if (calendarIdRef.current) lockCalendar(calendarIdRef.current);
-
     afterDatesConfirmed(start, end);
   };
 
@@ -247,14 +240,23 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
             exit={{ opacity: 0 }}
             className="overflow-y-auto bg-white rounded-2xl"
           >
-            <div className="max-w-screen-xl mx-auto p-4">
+            <div className="max-w-screen-xl mx-auto px-4 py-6 md:py-8">
               <ActionGrid
                 title="무엇을 도와드릴까요?"
                 subtitle="학습 플랜 수립부터 요약까지 한 곳에서 시작하세요."
               >
-                {ACTIONS.map((a) => (
-                  <ActionCard key={a.id} {...a} onClick={() => startChat(a.id)} />
-                ))}
+                {ACTIONS.map((a) => {
+                  const Icon = a.icon;
+                  return (
+                    <HomeCard
+                      key={a.id}
+                      title={a.title}
+                      description={a.desc}
+                      icon={Icon}
+                      onClick={() => startChat(a.id)}
+                    />
+                  );
+                })}
               </ActionGrid>
             </div>
           </motion.section>
