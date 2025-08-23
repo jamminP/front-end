@@ -6,6 +6,7 @@ import type {
   PostDetail,
   TopCategory,
   TopWeeklyResponse,
+  CommentResponse,
 } from './types';
 
 const LIST_ENDPOINT = '/api/v1/community/post/list';
@@ -63,3 +64,33 @@ export function createSharePost(body: any): Promise<ApiId> {
 export function createStudyPost(body: any): Promise<ApiId> {
   return http<ApiId>(CREATE_STUDY, body);
 }
+
+function normalizeComments(raw: any): CommentResponse[] {
+  if (Array.isArray(raw)) return raw as CommentResponse[];
+  if (Array.isArray(raw?.items)) return raw.items as CommentResponse[];
+  if (Array.isArray(raw?.data)) return raw.data as CommentResponse[];
+  if (Array.isArray(raw?.item)) return raw.item as CommentResponse[];
+  return [];
+}
+
+export const getComments = async (postId: number): Promise<CommentResponse[]> => {
+  const raw = await http<any>(`/api/v1/community/post/${postId}/comments`); // ← comments 복수형 확인
+  return normalizeComments(raw);
+};
+
+export const createComment = (
+  user: number,
+  post_id: number,
+  content: string,
+  parent_comment_id?: number,
+) =>
+  http<CommentResponse>(`/api/v1/community/post/${post_id}/comment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      user: user,
+      content: content.trim(),
+      parent_comment_id:
+        typeof parent_comment_id === 'number' && parent_comment_id > 0 ? parent_comment_id : null,
+    }),
+  });

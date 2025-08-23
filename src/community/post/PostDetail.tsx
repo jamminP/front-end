@@ -1,7 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { usePostDetail } from '../hook/usePostDetail';
 import CommentsBlock from '../post/components/CommentsBlock';
-import CommentForm from './components/CommentForm';
 import recruiting from '../img/recruiting.png';
 import completed from '../img/completed.png';
 
@@ -114,8 +113,6 @@ export default function PostDetailPage() {
 
         <Divider />
 
-        <CommentForm user={post.author_id} postId={post.id} />
-
         <CommentsBlock post_id={post.id} current_user_id={current_user_id} />
       </section>
     );
@@ -163,8 +160,6 @@ export default function PostDetailPage() {
         </ContentBox>
 
         <Divider />
-
-        <CommentForm postId={post.id} user={post.author_id} />
 
         <CommentsBlock post_id={post.id} current_user_id={current_user_id} />
       </section>
