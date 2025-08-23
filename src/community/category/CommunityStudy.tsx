@@ -11,7 +11,7 @@ export default function CommunityShare() {
   const currentUserId = 18;
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteCursor('share', q);
+    useInfiniteCursor('study', q);
 
   const items: ListItem[] = useMemo(() => data?.pages.flatMap((p) => p.items ?? []) ?? [], [data]);
 
@@ -34,13 +34,13 @@ export default function CommunityShare() {
     <>
       <ul className="space-y-3">
         {items.map((post, idx) => {
-          if (post.category !== 'share') return null;
+          if (post.category !== 'study') return null;
 
           const detailId = detailIdOf(post);
           const key =
             detailId != null
-              ? `share-${detailId}`
-              : `share-${(post as any).created_at ?? 'no-date'}-${idx}`;
+              ? `study-${detailId}`
+              : `study-${(post as any).created_at ?? 'no-date'}-${idx}`;
 
           return (
             <li key={key}>
@@ -58,7 +58,7 @@ export default function CommunityShare() {
                 currentUserId={currentUserId}
                 onClick={(clickedId) => {
                   if (!Number.isFinite(clickedId) || clickedId <= 0) return;
-                  navigate(`/community/share/${clickedId}`);
+                  navigate(`/community/study/${clickedId}`);
                 }}
               />
             </li>
