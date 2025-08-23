@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useComments } from '../../hook/useComments';
+import { useComments, type CommentNode } from '../../hook/useComments';
+import type { CommentResponse } from '../../api/types';
 import squarePen from '../../img/square-pen.png';
 
 export default function CommentsBlock({
@@ -10,6 +11,7 @@ export default function CommentsBlock({
   current_user_id: number;
 }) {
   const [rootContent, setRootContent] = useState('');
+
   const { tree, isLoading, isError, createRoot, createReply, reply_to, setReplyTo, creating } =
     useComments(post_id, current_user_id);
 
@@ -19,6 +21,7 @@ export default function CommentsBlock({
 
   return (
     <section className="space-y-4">
+      {/* 최상위 댓글 입력 */}
       <div className="rounded-l bg-gray-200/50 p-2">
         <div className="flex items-center gap-3 border-y-1 border-gray-400/50 bg-none px-2 py-1">
           <input
@@ -49,12 +52,13 @@ export default function CommentsBlock({
       </div>
 
       <div className="space-y-3">
-        {tree.map((c) => (
+        {tree.map((c: CommentNode) => (
           <div key={c.id} className="rounded-2xl bg-gray-200/70 p-4 shadow-sm">
             <CommentHeader
               nickname={c.author_nickname ?? `User#${c.author_id}`}
               created_at={c.created_at}
             />
+
             <div className="rounded-xl bg-gray-100 p-4 text-sm shadow whitespace-pre-wrap">
               {c.content}
             </div>
@@ -69,7 +73,7 @@ export default function CommentsBlock({
             </div>
 
             {reply_to === c.id && (
-              <ReplyEditor
+              <InlineReplyEditor
                 onSubmit={(text) => {
                   if (!text.trim()) return;
                   createReply(c.id, text.trim());
@@ -77,9 +81,10 @@ export default function CommentsBlock({
                 submitting={creating}
               />
             )}
+
             {c.replies.length > 0 && (
               <div className="mt-3 space-y-3 pl-6">
-                {c.replies.map((r) => (
+                {c.replies.map((r: CommentResponse) => (
                   <div key={r.id} className="rounded-2xl bg-gray-200/70 p-4 shadow-sm">
                     <CommentHeader
                       nickname={r.author_nickname ?? `User#${r.author_id}`}
@@ -113,7 +118,7 @@ function CommentHeader({ nickname, created_at }: { nickname: string; created_at:
   );
 }
 
-function ReplyEditor({
+function InlineReplyEditor({
   onSubmit,
   submitting,
 }: {
@@ -125,7 +130,7 @@ function ReplyEditor({
     <div className="mt-3 rounded-2xl bg-gray-200/70 p-3">
       <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3">
         <input
-          className="flex-1 outline-none"
+          className="flex-1 outline-none text-sm"
           placeholder="대댓글을 입력하세요."
           value={v}
           onChange={(e) => setV(e.target.value)}
@@ -137,7 +142,7 @@ function ReplyEditor({
           }}
         />
         <button
-          className="p-2 shadow bg-[#1B3043] disabled:opacity-50 "
+          className="p-2 shadow bg-[#1B3043] text-white rounded disabled:opacity-50"
           disabled={!v.trim() || submitting}
           onClick={() => {
             if (!v.trim()) return;
