@@ -324,18 +324,26 @@ export default function ChatList({ collapsed }: { collapsed: boolean }) {
 
   return (
     <>
-      <div ref={scrollRef} className="h-[56vh] overflow-y-auto">
+      <div
+        ref={scrollRef}
+        className="
+        h-[56vh] overflow-y-auto pr-1
+        [scrollbar-width:thin]
+        [&::-webkit-scrollbar]:w-2
+        [&::-webkit-scrollbar-thumb]:bg-slate-200
+        [&::-webkit-scrollbar-thumb]:rounded-full
+      "
+      >
         <ul className="space-y-1">
           {items.map((it) => (
-            <li key={it.id} className="group px-2 py-1 rounded hover:bg-gray-50 flex items-center">
+            <li key={it.id} className="group px-2 py-1 rounded flex items-center hover:bg-slate-50">
               <button
-                className="flex-1 text-left truncate text-sm text-gray-700"
+                className="flex-1 text-left truncate text-sm text-slate-700"
                 title={it.title}
                 onClick={() => openDetail(it)}
               >
                 {it.title}
               </button>
-
               <button
                 aria-label="삭제"
                 title="삭제"
@@ -349,10 +357,10 @@ export default function ChatList({ collapsed }: { collapsed: boolean }) {
         </ul>
         <div ref={sentinelRef} />
         {(isLoading || isFetchingNextPage) && (
-          <div className="py-2 text-center text-xs text-gray-500">불러오는 중…</div>
+          <div className="py-2 text-center text-xs text-slate-500">불러오는 중…</div>
         )}
         {!hasNextPage && !isLoading && (
-          <div className="py-2 text-center text-xs text-gray-400">마지막입니다</div>
+          <div className="py-2 text-center text-xs text-slate-400">마지막입니다</div>
         )}
       </div>
 
