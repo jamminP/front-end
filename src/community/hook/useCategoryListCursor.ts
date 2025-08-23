@@ -1,14 +1,10 @@
-// /src/Community/hook/useCategoryListCursor.ts
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
-// types는 네가 가진 파일 기준으로 맞춰줘
 import type { PostCategory as Category, CursorPage, ListItem, SearchIn } from '../api/types';
 import { getPostList } from '../api/community';
 
 export interface CategoryListCursorOptions {
   limit?: number;
-  // 아래 필터들은 현재 /post/list에 전달하지 않음(스펙: category/cursor/limit만 지원).
-
   search_in?: SearchIn | 'author_id';
   keyword?: string;
   author_id?: string | number;
@@ -28,7 +24,7 @@ export const categoryListCursorKeys = {
       ...categoryListCursorKeys.all,
       {
         category,
-        search_in: normalizeSearchIn(opts.search_in), // 캐시 키 분리용
+        search_in: normalizeSearchIn(opts.search_in),
         q: opts.keyword ?? '',
         author_id: opts.author_id ?? '',
         date_from: opts.date_from ?? '',

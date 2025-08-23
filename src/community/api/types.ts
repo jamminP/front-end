@@ -125,3 +125,25 @@ export interface TopWeeklyResponse {
   count: number;
   items: TopWeeklyItem[];
 }
+
+export interface CommentRequest {
+  user?: number;
+  content: string;
+  parent_comment_id: number;
+}
+export interface CommentResponse {
+  id: number;
+  post_id: number;
+  content: string;
+  author_nickname: string;
+  author_id: number;
+  parent_id: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GETCommentResponse {
+  total: string;
+  count: string;
+  items: CommentResponse[];
+}
