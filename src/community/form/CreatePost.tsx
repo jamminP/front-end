@@ -2,8 +2,8 @@ import { useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import PostForm, { PostFormValues } from './PostForm';
 import { useCreateFree, useCreateShare, useCreateStudy } from '../hook/useCommunityPosts';
-import { StudyPostRequest } from '../api/types';
 import { uploadWithPresignedJson } from '../api/presignedJson';
+import { PostRequest, StudyDetail } from '../api/types';
 
 const toISODate = (d?: string) => (d ? new Date(`${d}T00:00:00`).toISOString() : '');
 
@@ -72,15 +72,17 @@ export default function CreatePost() {
         }
 
         if (v.category === 'study') {
-          const body: StudyPostRequest = {
+          const body: PostRequest = {
             title: v.title,
             content: v.content,
-            user_id: currentUserId,
-            recruit_start: toISODate(v.recruit_start),
-            recruit_end: toISODate(v.recruit_end),
-            study_start: toISODate(v.study_start),
-            study_end: toISODate(v.study_end),
-            max_member: Number(v.max_members ?? 0),
+            user_id: v.id,
+            study_recruitment: {
+              recruit_start: toISODate(v.recruit_start),
+              recruit_end: toISODate(v.recruit_end),
+              study_start: toISODate(v.study_start),
+              study_end: toISODate(v.study_end),
+              max_member: Number(v.max_members ?? 0),
+            },
           };
           const res = await studyMut.mutateAsync(body);
           const id = (res as any).id ?? (res as any).post_id;
