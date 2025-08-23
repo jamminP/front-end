@@ -93,7 +93,10 @@ function DetailModal({
     <Portal>
       <div className="fixed inset-0 z-[9999] flex items-center justify-center">
         <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-        <div className="relative z-10 w-[min(900px,96vw)] max-h-[88vh] overflow-auto rounded-2xl bg-white p-5 shadow-2xl">
+        <div
+          className=" relative z-10 w-[min(900px,96vw)] max-h-[88vh] rounded-2xl bg-white p-5 shadow-2xl overflow-y-auto
+          [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:w-0 [&::-webkit-scrollbar]:h-0"
+        >
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-slate-900">
               {target.kind === 'plan' ? '학습 계획' : '자료 요약'} 상세
