@@ -10,22 +10,19 @@ export default function CommunityAll() {
   const navigate = useNavigate();
   const currentUserId = 18;
 
-  const [q] = useState(''); // 검색어 쓰면 setQ로 갱신
+  const [q] = useState('');
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteCursor('all', q);
 
-  // 모든 페이지 합치기
   const rawItems: ListItem[] = useMemo(
     () => data?.pages.flatMap((p) => p.items ?? []) ?? [],
     [data],
   );
 
-  // 고유 key 보장 + id 없을 때도 렌더되도록 정리
   const items = useMemo(() => {
     const out: Array<{ item: ListItem; id: number | null; key: string }> = [];
     const seen = new Set<string>();
     rawItems.forEach((it, idx) => {
-      // 카테고리별 id 우선 추출 (id/post_id도 방어)
       const rawId: unknown =
         (it as any).id ??
         (it as any).post_id ??
@@ -68,6 +65,8 @@ export default function CommunityAll() {
                 category: post.category,
                 created_at: (post as any).created_at,
                 views: (post as any).views,
+                like_count: post.like_count,
+                comment_count: post.comment_count,
               }}
               currentUserId={currentUserId}
               onClick={(clickedId) => {

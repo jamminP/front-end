@@ -41,6 +41,8 @@ export default function CommunityFree() {
                   category: post.category,
                   created_at: post.created_at,
                   views: post.views,
+                  like_count: post.like_count,
+                  comment_count: post.comment_count,
                 }}
                 currentUserId={currentUserId}
                 onClick={() => navigate(`/community/free/${id}`)}

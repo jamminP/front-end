@@ -42,7 +42,7 @@ export default function CommunityShare() {
             <li key={key}>
               <PostCard
                 post={{
-                  id: did ?? -1, // PostCard가 number 필수면 임시값
+                  id: did ?? -1,
                   title: post.title,
                   content: '',
                   author_id: post.author_id,
@@ -50,6 +50,8 @@ export default function CommunityShare() {
                   category: post.category,
                   created_at: post.created_at,
                   views: post.views,
+                  like_count: post.like_count,
+                  comment_count: post.comment_count,
                 }}
                 currentUserId={currentUserId}
                 onClick={(clickedId) => {
