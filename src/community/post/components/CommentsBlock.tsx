@@ -21,7 +21,6 @@ export default function CommentsBlock({
 
   return (
     <section className="space-y-4">
-      {/* 최상위 댓글 입력 */}
       <div className="rounded-l bg-gray-200/50 p-2">
         <div className="flex items-center gap-3 border-y-1 border-gray-400/50 bg-none px-2 py-1">
           <input
@@ -58,7 +57,6 @@ export default function CommentsBlock({
               nickname={c.author_nickname ?? `User#${c.author_id}`}
               created_at={c.created_at}
             />
-
             <div className="rounded-xl bg-gray-100 p-4 text-sm shadow whitespace-pre-wrap">
               {c.content}
             </div>
@@ -74,11 +72,11 @@ export default function CommentsBlock({
 
             {reply_to === c.id && (
               <InlineReplyEditor
+                submitting={creating}
                 onSubmit={(text) => {
                   if (!text.trim()) return;
                   createReply(c.id, text.trim());
                 }}
-                submitting={creating}
               />
             )}
 
@@ -151,7 +149,7 @@ function InlineReplyEditor({
           }}
           aria-label="대댓글 전송"
         >
-          <img src={squarePen} alt="comment button" className="w-4 h-4" />
+          등록
         </button>
       </div>
     </div>

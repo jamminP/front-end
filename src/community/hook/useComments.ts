@@ -1,9 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getComments, createComment } from '../api/community';
-import { CommentResponse } from '../api/types';
+import type { CommentResponse } from '../api/types';
 
 export type CommentNode = CommentResponse & { replies: CommentResponse[] };
+
+function sortByDateAsc(a: CommentResponse, b: CommentResponse) {
+  return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+}
 
 export function useComments(post_id: number, current_user_id: number) {
   const qc = useQueryClient();
@@ -11,31 +15,24 @@ export function useComments(post_id: number, current_user_id: number) {
 
   const listQ = useQuery({
     queryKey: ['community', 'comments', post_id],
-    queryFn: () => getComments(post_id),
+    queryFn: () => getComments(post_id, { order: 'id', offset: 0, limit: 50 }),
     staleTime: 15_000,
   });
 
-  const items = useMemo<CommentResponse[]>(() => {
-    const d = listQ.data;
-    const arr = Array.isArray(d) ? d : [];
-    return arr.map((c) => ({
-      ...c,
-      parent_id: c.parent_id,
-    }));
-  }, [listQ.data]);
+  const items = useMemo<CommentResponse[]>(() => listQ.data?.items ?? [], [listQ.data]);
 
   const tree = useMemo<CommentNode[]>(() => {
     const roots = items.filter((c) => c.parent_id === null).sort(sortByDateAsc);
-    const childrenMap = new Map<number, CommentResponse[]>();
 
-    items.forEach((c) => {
+    const childrenMap = new Map<number, CommentResponse[]>();
+    for (const c of items) {
       if (c.parent_id !== null) {
-        const pidNum = Number(c.parent_id);
-        const arr = childrenMap.get(pidNum) ?? [];
+        const pid = Number(c.parent_id);
+        const arr = childrenMap.get(pid) ?? [];
         arr.push(c);
-        childrenMap.set(pidNum, arr);
+        childrenMap.set(pid, arr);
       }
-    });
+    }
 
     return roots.map((r) => ({
       ...r,
@@ -45,7 +42,11 @@ export function useComments(post_id: number, current_user_id: number) {
 
   const mutation = useMutation({
     mutationFn: (payload: { content: string; parent_id: number | null }) =>
-      createComment(post_id, current_user_id ?? undefined, payload.content),
+      createComment(post_id, {
+        user: current_user_id,
+        content: payload.content,
+        parent_comment_id: payload.parent_id ?? 0,
+      }),
     onSuccess: () => {
       setReplyTo(null);
       qc.invalidateQueries({ queryKey: ['community', 'comments', post_id] });
@@ -53,16 +54,13 @@ export function useComments(post_id: number, current_user_id: number) {
   });
 
   return {
-    ...listQ,
     tree,
+    isLoading: listQ.isLoading,
+    isError: listQ.isError,
     reply_to,
     setReplyTo,
+    creating: mutation.isPending,
     createRoot: (content: string) => mutation.mutate({ content, parent_id: null }),
     createReply: (parent_id: number, content: string) => mutation.mutate({ content, parent_id }),
-    creating: mutation.isPending,
   };
-}
-
-function sortByDateAsc(a: CommentResponse, b: CommentResponse) {
-  return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
 }
