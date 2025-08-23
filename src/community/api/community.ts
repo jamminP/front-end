@@ -8,6 +8,8 @@ import type {
   TopWeeklyResponse,
   CommentResponse,
   CommentTreeItem,
+  GETCommentResponse,
+  GetCommentsParams,
 } from './types';
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
@@ -148,27 +150,54 @@ function normalizeComments(raw: any): CommentResponse[] {
   return [];
 }
 
-export const getComments = async (postId: number): Promise<CommentResponse[]> => {
-  const raw = await http<any>(`/api/v1/community/post/${postId}/comments`); // ← comments 복수형 확인
-  return normalizeComments(raw);
-};
-
-export const createComment = (
-  user: number,
+export function getComments(
   post_id: number,
-  content: string,
-  parent_comment_id?: number,
-) =>
-  http<CommentResponse>(`/api/v1/community/post/${post_id}/comment`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({
-      user: user,
-      content: content.trim(),
-      parent_comment_id:
-        typeof parent_comment_id === 'number' && parent_comment_id > 0 ? parent_comment_id : null,
-    }),
+  params: GetCommentsParams = {},
+): Promise<GETCommentResponse> {
+  const { order = 'id', offset = 0, limit = 50 } = params;
+  const qs = new URLSearchParams({
+    order,
+    offset: String(offset),
+    limit: String(limit),
   });
+
+  return http<GETCommentResponse>(`/api/v1/community/post/${post_id}/comments?${qs}`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+}
+
+export interface CreateCommentBody {
+  post_id: number;
+  user: number;
+  content: string;
+  parent_comment_id: number | null;
+}
+
+export async function createComment(
+  post_id: number,
+  payload: CreateCommentBody,
+): Promise<CommentResponse> {
+  const qs = new URLSearchParams({ user: String(payload.user) }).toString();
+
+  const body: Record<string, unknown> = { content: payload.content };
+  if (payload.parent_comment_id != null && payload.parent_comment_id > 0) {
+    body.parent_comment_id = payload.parent_comment_id;
+  }
+
+  const res = await fetch(`/api/v1/community/post/${post_id}/comment?${qs}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    credentials: 'include',
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`createComment failed: ${res.status} ${text}`);
+  }
+  return res.json() as Promise<CommentResponse>;
+}
 
 export async function listComments(postId: number): Promise<CommentTreeItem[]> {
   try {
