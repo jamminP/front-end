@@ -1,10 +1,19 @@
 import { Virtuoso } from 'react-virtuoso';
 import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
-import type { Msg, PlanMsg, LoadingMsg, ChallengePromptMsg, TextMsg } from '@src/ai/types/types';
+import type {
+  Msg,
+  PlanMsg,
+  LoadingMsg,
+  ChallengePromptMsg,
+  TextMsg,
+  KeywordsMsg,
+  PointsMsg,
+} from '@src/ai/types/types';
 import Bubble from './Bubble';
 import PlanPreview from './PlanPreview';
 import CalendarBubble from './CalendarBubble';
+import KeywordChips from './KeywordChips';
 
 type Props = {
   messages: Msg[];
@@ -12,6 +21,7 @@ type Props = {
   onStartReached?: () => void;
   gapY?: '0' | '0.5' | '1' | '1.5' | '2';
   onChoice?: (value: string, msgId: string) => void;
+  onKeywordClick?: (kw: string) => void;
 };
 
 const gapToClass = {
@@ -42,6 +52,7 @@ export default function VirtualMessageList({
   onStartReached,
   gapY = '0.5',
   onChoice,
+  onKeywordClick,
 }: Props) {
   const wrapClass = gapToClass[gapY];
 
@@ -77,6 +88,26 @@ export default function VirtualMessageList({
               <div className="flex justify-start">
                 <div className="w-full md:w-auto max-w-full md:max-w-none rounded-2xl px-4 py-3 bg-white shadow-sm">
                   <PlanPreview plan={pm.plan} />
+                </div>
+              </div>
+            </RowAnim>
+          );
+        }
+
+        if (m.kind === 'points') {
+          const pm = m as PointsMsg;
+          return (
+            <RowAnim>
+              <div className="flex justify-start">
+                <div className="w-full md:w-auto rounded-2xl px-4 py-3 bg-white shadow-sm">
+                  <div className="text-xs font-semibold text-slate-500 mb-2">
+                    {pm.title ?? '핵심 포인트'}
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1 text-sm text-slate-800">
+                    {pm.points.map((p, i) => (
+                      <li key={i}>{p}</li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             </RowAnim>
@@ -178,6 +209,23 @@ export default function VirtualMessageList({
                       </button>
                     ),
                   )}
+                </div>
+              </div>
+            </RowAnim>
+          );
+        }
+
+        if (m.kind === 'keywords') {
+          const km = m as KeywordsMsg;
+          return (
+            <RowAnim>
+              <div className="flex justify-start">
+                <div className="w-full md:w-auto max-w-full md:max-w-none">
+                  <KeywordChips
+                    keywords={km.keywords}
+                    title={km.title ?? '키워드'}
+                    onChipClick={onKeywordClick}
+                  />
                 </div>
               </div>
             </RowAnim>
