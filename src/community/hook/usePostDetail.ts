@@ -15,9 +15,7 @@ export function usePostDetail<C extends Category>(category: C, postId: number) {
     queryKey: ['community', 'post', category, postId],
     queryFn: async () => {
       const data = await getPostDetail(postId);
-      if (data.category !== category) {
-        throw new Error(`카테고리 불일치: 요청=${category}, 응답=${data.category}`);
-      }
+      const normalized = { ...data, category: String(data.category).toLowerCase() as ItemCategory };
       return data as DetailMap[C];
     },
     enabled: Number.isFinite(postId),

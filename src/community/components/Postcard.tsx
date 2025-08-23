@@ -4,11 +4,12 @@ export interface Post {
   id: number;
   title: string;
   author_id: number;
+  author_nickname: string;
   category: 'free' | 'share' | 'study';
   content: string;
   created_at: string;
   views: number;
-
+  badge?: string;
   recruit_start?: string;
   recruit_end?: string;
   study_start?: string;
@@ -44,7 +45,7 @@ const PostCard: FC<PostCardProps> = ({ post, currentUserId, isAdmin = false, onC
       onClick={handleCardClick}
     >
       <nav>
-        <span className="font-semibold text-gray-800">{post.author_id}</span>
+        <span className="font-semibold text-gray-800">{post.author_nickname}</span>
         <span className="ml-2 text-xs">{post.created_at}</span>
       </nav>
       {canEdit && (

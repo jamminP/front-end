@@ -1,62 +1,75 @@
 import { useMemo, useState } from 'react';
 import { useInfiniteCursor } from '../hook/useInfiniteCursor';
 import { useIntersection } from '../hook/useIntersection';
-import PostCard from '../components/Postcard';
 import { useNavigate } from 'react-router-dom';
+import type { ListItem } from '../api/types';
+import PostCard from '../components/Postcard';
 
-type StudyPostResponse = {
-  id: number;
-  title: string;
-  content: string;
-  author_id: string;
-  category: 'study';
-  created_at: string;
-  views: number;
-  badge?: string;
-  remaining?: number;
-  max_member?: number;
-};
-
-export default function CommunityStudy() {
+export default function CommunityShare() {
   const [q] = useState('');
   const navigate = useNavigate();
-  const currentUserId = 0;
+  const currentUserId = 18;
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteCursor<StudyPostResponse>('study', q);
+    useInfiniteCursor('share', q);
 
-  const items = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data]);
+  const items: ListItem[] = useMemo(() => data?.pages.flatMap((p) => p.items ?? []) ?? [], [data]);
+
+  const toNumber = (v: unknown) => {
+    if (v == null) return null;
+    const n = typeof v === 'string' ? Number(v) : (v as number);
+    return Number.isFinite(n) ? (n as number) : null;
+  };
+
+  const detailIdOf = (it: any) =>
+    toNumber(it.id) ?? toNumber(it.post_id) ?? toNumber(it.share_post_id);
 
   const sentinelRef = useIntersection(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   });
 
+  if (isError) return <div className="p-4 text-red-500">목록을 불러오지 못했어요.</div>;
+
   return (
     <>
       <ul className="space-y-3">
-        {items.map((post) => (
-          <li key={post.id}>
-            <PostCard
-              post={post}
-              currentUserId={currentUserId}
-              onClick={() => navigate(`/community/study/${post.id}`)}
-            />
-            {(post.badge || post.remaining !== undefined) && (
-              <div className="mt-1 text-sm text-gray-600">
-                {post.badge ? `상태: ${post.badge}` : null}
-                {post.remaining !== undefined && post.max_member !== undefined
-                  ? ` · ${post.remaining}/${post.max_member} 남음`
-                  : null}
-              </div>
-            )}
-          </li>
-        ))}
+        {items.map((post, idx) => {
+          if (post.category !== 'share') return null;
+
+          const detailId = detailIdOf(post);
+          const key =
+            detailId != null
+              ? `share-${detailId}`
+              : `share-${(post as any).created_at ?? 'no-date'}-${idx}`;
+
+          return (
+            <li key={key}>
+              <PostCard
+                post={{
+                  id: detailId ?? -1,
+                  title: post.title,
+                  content: '',
+                  author_id: post.author_id,
+                  author_nickname: post.author_nickname ?? '',
+                  category: post.category,
+                  created_at: post.created_at,
+                  views: post.views,
+                }}
+                currentUserId={currentUserId}
+                onClick={(clickedId) => {
+                  if (!Number.isFinite(clickedId) || clickedId <= 0) return;
+                  navigate(`/community/share/${clickedId}`);
+                }}
+              />
+            </li>
+          );
+        })}
       </ul>
 
       <div ref={sentinelRef} className="h-12" />
       {isFetchingNextPage && <div className="py-4 text-center">더 불러오는 중…</div>}
       {!hasNextPage && !isLoading && items.length > 0 && (
-        <div className="py-6 text-center text-gray-500">더 이상 불러올 게시물이 없습니다.</div>
+        <div className="py-6 text-center text-gray-500">마지막이에요.</div>
       )}
     </>
   );

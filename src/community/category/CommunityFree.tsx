@@ -1,18 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useInfiniteCursor } from '../hook/useInfiniteCursor';
 import { useIntersection } from '../hook/useIntersection';
-import PostCard from '../components/Postcard';
 import { useNavigate } from 'react-router-dom';
 
-type FreePostResponse = {
-  id: number;
-  title: string;
-  content: string;
-  author_id: string;
-  category: 'free';
-  created_at: string;
-  views: number;
-};
+import type { ListItem } from '../api/types';
+import { getPostId } from '../api/community';
+import PostCard from '../components/Postcard';
 
 export default function CommunityFree() {
   const [q] = useState('');
@@ -20,26 +13,41 @@ export default function CommunityFree() {
   const currentUserId = 18;
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteCursor<FreePostResponse>('free', q);
+    useInfiniteCursor('free', q);
 
-  const items = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data]);
+  const items: ListItem[] = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data]);
 
   const sentinelRef = useIntersection(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   });
 
+  if (isError) return <div className="p-4 text-red-500">목록을 불러오지 못했어요.</div>;
+
   return (
     <>
       <ul className="space-y-3">
-        {items.map((post) => (
-          <li key={post.id}>
-            <PostCard
-              post={post}
-              currentUserId={currentUserId}
-              onClick={() => navigate(`/community/free/${post.id}`)}
-            />
-          </li>
-        ))}
+        {items.map((post) => {
+          if (post.category !== 'free') return null;
+          const id = getPostId(post);
+          return (
+            <li key={id}>
+              <PostCard
+                post={{
+                  id,
+                  title: post.title,
+                  content: '',
+                  author_id: post.author_id,
+                  author_nickname: post.author_nickname ?? '',
+                  category: post.category,
+                  created_at: post.created_at,
+                  views: post.views,
+                }}
+                currentUserId={currentUserId}
+                onClick={() => navigate(`/community/free/${id}`)}
+              />
+            </li>
+          );
+        })}
       </ul>
 
       <div ref={sentinelRef} className="h-12" />
