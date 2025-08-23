@@ -2,11 +2,25 @@ import googleIcon from '../login/img/google-icon.png';
 import kakaoIcon from '../login/img/kakao-icon.png';
 
 export default function Login() {
+  const isMobile = window.innerWidth <= 768;
+  const width = isMobile ? window.innerWidth : window.innerWidth * 0.35;
+  const height = isMobile ? window.innerHeight : window.innerHeight * 0.7;
+  const left = window.screenX + (window.outerWidth - width) / 2;
+  const top = window.screenY + (window.outerHeight - height) / 2;
+
   const handleGoogleLogin = () => {
-    window.location.href = 'https://backend.evida.site/api/v1/users/auth/google/login';
+    window.open(
+      'https://backend.evida.site/api/v1/users/auth/google/login',
+      'googleLogin',
+      `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`,
+    );
   };
   const handleKakaoLogin = () => {
-    window.location.href = 'https://backend.evida.site/api/v1/users/auth/kakao/login';
+    window.open(
+      'https://backend.evida.site/api/v1/users/auth/kakao/login',
+      'kakaoLogin',
+      `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`,
+    );
   };
   return (
     <section className="w-full h-screen max-w-[1400px] m-auto flex flex-col justify-center items-center">
