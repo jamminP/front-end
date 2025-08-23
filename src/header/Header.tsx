@@ -14,6 +14,8 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
+      logout();
+      localStorage.removeItem('user');
       await axios.post(
         'https://backend.evida.site/api/v1/users/auth/google/logout',
         {},
@@ -23,7 +25,6 @@ export default function Header() {
       // 오류가 나도 무시하고 로그아웃 처리
       console.warn('Logout request failed, but front will log out anyway', err);
     } finally {
-      logout(); // Zustand 상태 초기화
       navigate('/'); // 메인 페이지로 이동
     }
   };
