@@ -6,6 +6,7 @@ export type Badge = '모집중' | '모집완료';
 export interface BaseListItem {
   category: ItemCategory;
   title: string;
+  content: string;
   author_id: number;
   author_nickname: string;
   created_at: string;
@@ -180,3 +181,18 @@ export type CommentTreeItem = {
   created_at: string;
   updated_at: string;
 };
+
+//request
+export interface PostRequest {
+  title: string;
+  content: string;
+  category?: 'study';
+  user_id: number;
+  study_recruitment?: {
+    recruit_start?: string;
+    recruit_end?: string;
+    study_start?: string;
+    study_end?: string;
+    max_member?: number;
+  };
+}
