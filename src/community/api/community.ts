@@ -14,6 +14,8 @@ import type {
   PatchPostRequest,
   PatchCommentsParams,
   PatchCommentsRequest,
+  DeletePostParams,
+  DeleteCommentParams,
 } from './types';
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
@@ -218,4 +220,15 @@ export const patchComment = (
   http<any>(`/api/v1/community/comment/${params.comment_id}?user=${params.user}`, {
     method: 'PATCH',
     body: JSON.stringify(body),
+  });
+
+//delete
+export const deletePost = (params: DeletePostParams) =>
+  http<void>(`/api/v1/community/post/${params.post_id}?user=${params.user}`, {
+    method: 'DELETE',
+  });
+
+export const deleteComment = (params: DeleteCommentParams) =>
+  http<void>(`/api/v1/community/post/${params.comment_id}?user=${params.user}`, {
+    method: 'DELETE',
   });

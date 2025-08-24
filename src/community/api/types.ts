@@ -263,3 +263,14 @@ export interface PostDetailResponse {
   study_end?: string;
   max_member?: number;
 }
+
+// delete
+export interface DeletePostParams {
+  post_id: number;
+  user: number;
+}
+
+export interface DeleteCommentParams {
+  comment_id: number;
+  user: number;
+}
