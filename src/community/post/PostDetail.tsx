@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { usePostDetail } from '../hook/usePostDetail';
 import CommentsBlock from '../post/components/CommentsBlock';
 import recruiting from '../img/recruiting.png';
@@ -10,6 +10,7 @@ const isCategory = (v: string): v is Category => v === 'free' || v === 'share' |
 
 export default function PostDetailPage() {
   const { category: raw, id } = useParams();
+  const navigate = useNavigate();
   if (!raw || !id || !isCategory(raw)) return <div className="p-6">잘못된 경로입니다.</div>;
 
   const category = raw;
@@ -100,7 +101,10 @@ export default function PostDetailPage() {
   }) {
     const canEdit = isAdmin || post.author_id === current_user_id;
 
-    const handleEditClick = (e: React.MouseEvent) => e.stopPropagation();
+    const handleEditClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      navigate(`/community/${post.category}/${(post as any).id}/edit`);
+    };
     const handleDeleteClick = (e: React.MouseEvent) => e.stopPropagation();
 
     return (
@@ -151,7 +155,10 @@ export default function PostDetailPage() {
   }) {
     const canEdit = isAdmin || post.author_id === current_user_id;
 
-    const handleEditClick = (e: React.MouseEvent) => e.stopPropagation();
+    const handleEditClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      navigate(`/community/${post.category}/${(post as any).id}/edit`);
+    };
     const handleDeleteClick = (e: React.MouseEvent) => e.stopPropagation();
 
     const meta = post.study_recruitment;

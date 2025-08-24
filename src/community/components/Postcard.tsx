@@ -1,4 +1,5 @@
 import React, { FC } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export interface Post {
   id: number;
@@ -33,7 +34,11 @@ const PostCard: FC<PostCardProps> = ({ post, currentUserId, isAdmin = false, onC
   const canEdit = isAdmin || post.author_id === currentUserId;
 
   const handleCardClick = () => onClick(post.id);
-  const handleEditClick = (e: React.MouseEvent) => e.stopPropagation();
+  const navigate = useNavigate();
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/community/${post.category}/${post.id}/edit`);
+  };
   const handleDeleteClick = (e: React.MouseEvent) => e.stopPropagation();
 
   function formatDate(iso?: string | null) {
