@@ -229,6 +229,6 @@ export const deletePost = (params: DeletePostParams) =>
   });
 
 export const deleteComment = (params: DeleteCommentParams) =>
-  http<void>(`/api/v1/community/post/${params.comment_id}?user=${params.user}`, {
+  http<void>(`/api/v1/community/comment/${params.comment_id}?user=${params.user}`, {
     method: 'DELETE',
   });
