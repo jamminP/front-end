@@ -19,6 +19,7 @@ import PostDetail from './community/post/PostDetail';
 import { useCallback, useEffect, useState } from 'react';
 import useAuthStore from './store/authStore';
 import axios from 'axios';
+import EditPost from './community/form/EditPost';
 
 function AppContent() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
@@ -56,6 +57,8 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/community/create" element={<CreatePost />} />
+          <Route path="/community/:category/:id/edit" element={<EditPost />} />
+
           <Route path="/community" element={<CommunityLayout />}>
             <Route index element={<CommunityAll />} />
             <Route path="free" element={<CommunityFree />} />
