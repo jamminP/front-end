@@ -4,6 +4,9 @@ import CommentsBlock from '../post/components/CommentsBlock';
 import recruiting from '../img/recruiting.png';
 import completed from '../img/completed.png';
 import type { FreeDetail, ShareDetail, StudyDetail } from '../api/types';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { deletePost } from '../api/community';
+import LikeButton from './components/LikeButton';
 
 type Category = 'free' | 'share' | 'study';
 const isCategory = (v: string): v is Category => v === 'free' || v === 'share' || v === 'study';
@@ -19,6 +22,23 @@ export default function PostDetailPage() {
 
   const current_user_id = 18;
   const isAdmin = false;
+
+  const qc = useQueryClient();
+  const { mutate: removePost, isPending: deletingPost } = useMutation({
+    mutationFn: () => deletePost({ post_id: postId, user: current_user_id }),
+    onSuccess: () => {
+      qc.invalidateQueries({
+        predicate: (q) => Array.isArray(q.queryKey) && q.queryKey.includes('community'),
+      });
+      navigate(`/community/${category}`);
+    },
+  });
+
+  const onDeletePost = () => {
+    if (window.confirm('게시글을 삭제할까요?')) {
+      removePost();
+    }
+  };
 
   if (isLoading) return <div className="p-6 text-center">불러오는 중…</div>;
   if (isError || !data)
@@ -105,7 +125,10 @@ export default function PostDetailPage() {
       e.stopPropagation();
       navigate(`/community/${post.category}/${(post as any).id}/edit`);
     };
-    const handleDeleteClick = (e: React.MouseEvent) => e.stopPropagation();
+    const handleDeleteClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onDeletePost();
+    };
 
     return (
       <section className="rounded-2xl bg-gray-100 p-5 shadow-md">
@@ -113,7 +136,7 @@ export default function PostDetailPage() {
           nickname={post.author_nickname}
           created_at={post.created_at}
           views={post.views}
-          rightExtra={<div className="text-sm">❤️ {post.like_count ?? 0}</div>}
+          rightExtra={<LikeButton post_id={post.id} current_user_id={current_user_id} />}
         />
 
         {canEdit && (
@@ -121,7 +144,11 @@ export default function PostDetailPage() {
             <button className="text-xs text-black hover:text-[#0180F5]" onClick={handleEditClick}>
               수정
             </button>
-            <button className="text-xs text-black hover:text-[#0180F5]" onClick={handleDeleteClick}>
+            <button
+              className="text-xs text-black hover:text-[#0180F5]"
+              onClick={handleDeleteClick}
+              disabled={deletingPost}
+            >
               삭제
             </button>
           </div>
@@ -171,7 +198,7 @@ export default function PostDetailPage() {
           nickname={post.author_nickname}
           created_at={post.created_at}
           views={post.views}
-          rightExtra={<div className="text-sm">❤️ {post.like_count ?? 0}</div>}
+          rightExtra={<LikeButton post_id={post.id} current_user_id={current_user_id} />}
         />
 
         {canEdit && (

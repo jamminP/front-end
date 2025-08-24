@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useComments, type CommentNode } from '../../hook/useComments';
 import type { CommentResponse } from '../../api/types';
-import { patchComment } from '../../api/community';
+import { deleteComment, patchComment } from '../../api/community';
 import squarePen from '../../img/square-pen.png';
 
 export default function CommentsBlock({
@@ -36,21 +36,15 @@ export default function CommentsBlock({
     },
   });
 
-  // 댓글 삭제 (DELETE) — 백엔드 경로가 /comment/{id}?user= 인 것으로 가정
   const { mutate: removeComment, isPending: deleting } = useMutation({
-    mutationFn: async (comment_id: number) => {
-      const res = await fetch(`/api/v1/community/comment/${comment_id}?user=${current_user_id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        const t = await res.text().catch(() => '');
-        throw new Error(`삭제 실패: ${res.status} ${t}`);
-      }
-    },
+    mutationFn: (comment_id: number) => deleteComment({ comment_id, user: current_user_id }),
     onSuccess: () => {
-      // 목록 새로고침
-      qc.invalidateQueries({ queryKey: ['community', 'comments', post_id] });
+      qc.invalidateQueries({
+        predicate: (q) =>
+          Array.isArray(q.queryKey) &&
+          q.queryKey.includes(post_id) &&
+          q.queryKey.some((k) => k === 'comments' || k === 'comment' || k === 'commentTree'),
+      });
     },
   });
 
@@ -65,9 +59,10 @@ export default function CommentsBlock({
   };
 
   const confirmDelete = (id: number) => {
-    if (window.confirm('댓글을 삭제할까요?')) {
-      removeComment(id);
-    }
+    if (!window.confirm('댓글을 삭제할까요?')) return;
+    if (editingId === id) cancelEdit();
+    if (reply_to === id) setReplyTo(null);
+    removeComment(id);
   };
 
   if (isLoading) return <div className="py-6 text-center">댓글 불러오는 중…</div>;
@@ -76,7 +71,6 @@ export default function CommentsBlock({
 
   return (
     <section className="space-y-4">
-      {/* 루트 입력 */}
       <div className="rounded-l bg-gray-200/50 p-2">
         <div className="flex items-center gap-3 border-y-1 border-gray-400/50 bg-none px-2 py-1">
           <input

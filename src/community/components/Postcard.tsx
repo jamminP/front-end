@@ -1,5 +1,6 @@
 import React, { FC } from 'react';
 import { useNavigate } from 'react-router-dom';
+import LikeButton from '../post/components/LikeButton';
 
 export interface Post {
   id: number;
@@ -109,7 +110,7 @@ const PostCard: FC<PostCardProps> = ({ post, currentUserId, isAdmin = false, onC
 
       <div className="flex justify-end items-center mt-3 text-xs text-gray-500 gap-4">
         <span>💬 {post.comment_count ?? 0}</span>
-        <span>❤️ {post.like_count ?? 0}</span>
+        <LikeButton post_id={post.id} current_user_id={currentUserId} />
         <span>👁 {post.views ?? 0}</span>
       </div>
     </div>
