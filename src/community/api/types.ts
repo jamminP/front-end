@@ -274,3 +274,18 @@ export interface DeleteCommentParams {
   comment_id: number;
   user: number;
 }
+
+//like
+export interface GetLikePrams {
+  post_id: number;
+}
+
+export interface PostLikeParams {
+  post_id: number;
+  user: number;
+}
+
+export interface LikeStatus {
+  liked: boolean;
+  like_count: number;
+}

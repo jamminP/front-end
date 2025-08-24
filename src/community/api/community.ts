@@ -16,6 +16,9 @@ import type {
   PatchCommentsRequest,
   DeletePostParams,
   DeleteCommentParams,
+  GetLikePrams,
+  PostLikeParams,
+  LikeStatus,
 } from './types';
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
@@ -231,4 +234,15 @@ export const deletePost = (params: DeletePostParams) =>
 export const deleteComment = (params: DeleteCommentParams) =>
   http<void>(`/api/v1/community/comment/${params.comment_id}?user=${params.user}`, {
     method: 'DELETE',
+  });
+
+//like
+export const GetLike = (params: GetLikePrams) =>
+  http<LikeStatus>(`/api/v1/community/post/${params.post_id}/like`, {
+    method: 'GET',
+  });
+
+export const PostLike = (params: PostLikeParams) =>
+  http<LikeStatus>(`/api/v1/community/post/${params.post_id}/likes`, {
+    method: 'POST',
   });
