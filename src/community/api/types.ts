@@ -239,3 +239,27 @@ export interface PatchPostRequest {
   study_end?: string;
   max_member?: number;
 }
+
+export interface StudyRecruitment {
+  recruit_start?: string;
+  recruit_end?: string;
+  study_start?: string;
+  study_end?: string;
+  max_member?: number;
+}
+
+export interface PostDetailResponse {
+  post_id: number;
+  title: string;
+  content: string;
+  category: ItemCategory;
+  author_id: number;
+  created_at: string;
+  // 합의: study는 우선 study_recruitment 사용, 평탄화 필드는 폴백
+  study_recruitment?: StudyRecruitment;
+  recruit_start?: string;
+  recruit_end?: string;
+  study_start?: string;
+  study_end?: string;
+  max_member?: number;
+}
