@@ -1,60 +1,55 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { GetLike, PostLike } from '../api/community';
-import type { LikeStatus } from '../api/types';
+
+type LikeStatus = { liked: boolean; like_count: number };
 
 export function usePostLike(post_id: number, currentUserId: number) {
   const qc = useQueryClient();
-
-  const key = ['community', 'like', post_id] as const;
+  const likeKey = ['community', 'like', post_id] as const;
   const postKey = ['community', 'post', post_id] as const;
 
-  const { data, isLoading, isError } = useQuery<LikeStatus>({
-    queryKey: key,
+  const q = useQuery<LikeStatus>({
+    queryKey: likeKey,
     queryFn: () => GetLike({ post_id }),
+    staleTime: 30_000,
   });
 
   const { mutate: toggleLike, isPending } = useMutation({
     mutationFn: () => PostLike({ post_id, user: currentUserId }),
     onMutate: async () => {
-      await qc.cancelQueries({ queryKey: key });
-      const prev = qc.getQueryData<LikeStatus>(key);
-      const next =
-        prev != null
-          ? { liked: !prev.liked, like_count: prev.like_count + (prev.liked ? -1 : 1) }
-          : undefined;
+      await qc.cancelQueries({ queryKey: likeKey });
 
-      if (next) qc.setQueryData<LikeStatus>(key, next);
-
+      const prevLike = qc.getQueryData<LikeStatus>(likeKey);
       const prevPost = qc.getQueryData<any>(postKey);
-      if (prevPost && next) {
-        qc.setQueryData<any>(postKey, { ...prevPost, like_count: next.like_count });
-      }
-      return { prev, prevPost };
+
+      const base: LikeStatus = prevLike ?? {
+        liked: false,
+        like_count: Number(prevPost?.like_count ?? 0),
+      };
+
+      const next: LikeStatus = {
+        liked: !base.liked,
+        like_count: base.like_count + (base.liked ? -1 : 1),
+      };
+
+      qc.setQueryData(likeKey, next);
+      if (prevPost) qc.setQueryData(postKey, { ...prevPost, like_count: next.like_count });
+
+      return { prevLike, prevPost };
     },
     onError: (_e, _v, ctx) => {
-      if (ctx?.prev) qc.setQueryData<LikeStatus>(key, ctx.prev);
-      if (ctx?.prevPost) qc.setQueryData<any>(postKey, ctx.prevPost);
-    },
-    onSuccess: (res: any) => {
-      // 응답에 최신 상태가 함께 오면 반영
-      const next = (res as LikeStatus) ?? qc.getQueryData<LikeStatus>(key);
-      if (next) qc.setQueryData<LikeStatus>(key, next);
-
-      const prevPost = qc.getQueryData<any>(postKey);
-      if (prevPost && next)
-        qc.setQueryData<any>(postKey, { ...prevPost, like_count: next.like_count });
+      if (ctx?.prevLike) qc.setQueryData(likeKey, ctx.prevLike);
+      if (ctx?.prevPost) qc.setQueryData(postKey, ctx.prevPost);
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: key });
+      qc.invalidateQueries({ queryKey: likeKey });
     },
   });
 
   return {
-    liked: data?.liked ?? false,
-    like_count: data?.like_count ?? 0,
-    isLoading,
-    isError,
-    toggleLike,
+    liked: q.data?.liked ?? false,
+    like_count: q.data?.like_count ?? Number(qc.getQueryData<any>(postKey)?.like_count ?? 0),
     isPending,
+    toggleLike,
   };
 }
