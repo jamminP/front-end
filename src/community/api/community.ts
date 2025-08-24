@@ -10,6 +10,10 @@ import type {
   CommentTreeItem,
   GETCommentResponse,
   GetCommentsParams,
+  PatchPostParams,
+  PatchPostRequest,
+  PatchCommentsParams,
+  PatchCommentsRequest,
 } from './types';
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
@@ -142,14 +146,6 @@ export function createStudyPost(
   return postCreate(user, { ...payload, category: 'study' as const });
 }
 
-function normalizeComments(raw: any): CommentResponse[] {
-  if (Array.isArray(raw)) return raw as CommentResponse[];
-  if (Array.isArray(raw?.items)) return raw.items as CommentResponse[];
-  if (Array.isArray(raw?.data)) return raw.data as CommentResponse[];
-  if (Array.isArray(raw?.item)) return raw.item as CommentResponse[];
-  return [];
-}
-
 export function getComments(
   post_id: number,
   params: GetCommentsParams = {},
@@ -206,3 +202,20 @@ export async function listComments(postId: number): Promise<CommentTreeItem[]> {
     throw e;
   }
 }
+
+//patch post / comment
+export const patchPost = (params: PatchPostParams, body: PatchPostRequest) =>
+  http<any>(`/api/v1/community/post/${params.post_id}?user=${params.user}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+
+export const patchComment = (
+  post_id: number,
+  params: PatchCommentsParams,
+  body: PatchCommentsRequest,
+) =>
+  http<any>(`/api/v1/community/comment/${params.comment_id}?user=${params.user}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });

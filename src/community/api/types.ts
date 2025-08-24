@@ -213,3 +213,29 @@ export interface GetCommentsParams {
   offset?: number;
   limit?: number;
 }
+
+//Comment Patch
+export interface PatchCommentsParams {
+  comment_id: number;
+  user: number;
+}
+
+export interface PatchCommentsRequest {
+  content: string;
+}
+
+//Patch Post
+export interface PatchPostParams {
+  post_id: number;
+  user: number;
+}
+
+export interface PatchPostRequest {
+  title: string;
+  content: string;
+  recruit_start?: string;
+  recruit_end?: string;
+  study_start?: string;
+  study_end?: string;
+  max_member?: number;
+}
