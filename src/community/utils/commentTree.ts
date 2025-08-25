@@ -1,4 +1,4 @@
-import type { CommentTreeItem } from '../api/community';
+import type { CommentTreeItem } from '../api/types';
 
 export interface CommentNode extends CommentTreeItem {
   children: CommentNode[];

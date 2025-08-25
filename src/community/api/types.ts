@@ -1,208 +1,137 @@
-export type Category = 'free' | 'share' | 'study' | 'all';
+export type PostCategory = 'all' | 'free' | 'share' | 'study';
+export type ItemCategory = 'free' | 'share' | 'study';
 
-export interface FreePostItem {
-  id: number;
+export type Badge = '모집중' | '모집완료';
+
+export interface BaseListItem {
+  category: ItemCategory;
   title: string;
   content: string;
-  category: 'free';
-  author_id: string;
-  views: number;
-  created_at: string;
-  imageUrl?: string | null;
-}
-
-export interface SharePostItem {
-  id: number;
-  title: string;
-  content: string;
-  category: 'share';
-  author_id: string;
-  views: number;
-  created_at: string;
-  updated_at: string;
-  data_share?: { file_url?: string | null; img_url?: string | null; description?: string | null };
-}
-
-export interface StudyPostItem {
-  id: number;
-  title: string;
-  content: string;
-  category: 'study';
-  author_id: string;
-  views: number;
-  created_at: string;
-  updated_at: string;
-  study_recruitment: {
-    badge?: string;
-    max_member?: number;
-    recruit_start?: string;
-    recruit_end?: string;
-    study_start?: string;
-    study_end?: string;
-  };
-}
-
-export type AllPostItem = {
-  id: number;
-  contents: string;
-  category: 'free' | 'share' | 'study';
-  title: string;
-  author_id: string;
-  views: number;
-  created_at: string;
-  badge?: string;
-  remaining?: number;
-  max_member?: number;
-};
-
-export interface FreePostRequest {
-  title: string;
-  content: string;
-  user_id: number;
-  category: 'free';
-}
-export interface FreeBoardResponse {
-  image_url: string | null;
-}
-export interface FreePostResponse {
-  id: number;
-  title: string;
-  content: string;
-  category: 'free';
-  author_id: string;
-  views: number;
-  created_at: string;
-  updated_at: string;
-  free_board?: FreeBoardResponse;
-}
-
-export interface SharePostRequest {
-  title: string;
-  content: string;
-  user_id: number;
-  file_url?: string | null;
-  img_url?: string | null;
-  category?: 'share';
-}
-export interface d_ataShareResponse {
-  file_url: string | null;
-}
-export interface SharePostResponse {
-  id: number;
-  title: string;
-  content: string;
-  category: 'share';
-  author_id: string;
-  views: number;
-  data_share: d_ataShareResponse;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface StudyPostRequest {
-  title: string;
-  content: string;
-  category?: 'study';
-  user_id: number;
-  recruit_start: string;
-  recruit_end: string;
-  study_start: string;
-  study_end: string;
-  max_member: number;
-}
-export interface StudyRecruitmentResponse {
-  recruit_start: string;
-  recruit_end: string;
-  study_start: string;
-  study_end: string;
-  max_member: number;
-}
-export interface StudyPostResponse {
-  id: number;
-  title: string;
-  content: string;
-  category: 'study';
-  author_id: string;
-  views: number;
-  study_recruitment: StudyRecruitmentResponse;
-  created_at: string;
-  updated_at: string;
-}
-
-export type FreePostUpdateRequest = Partial<Pick<FreePostRequest, 'title' | 'content'>>;
-export type SharePostUpdateRequest = Partial<Pick<SharePostRequest, 'title' | 'content'>> & {
-  file_url?: string | null;
-};
-export type StudyPostUpdateRequest = Partial<
-  Pick<
-    StudyPostRequest,
-    | 'title'
-    | 'content'
-    | 'recruit_start'
-    | 'recruit_end'
-    | 'study_start'
-    | 'study_end'
-    | 'max_member'
-  >
->;
-
-export interface CommentRequest {
-  post_id: number;
-  content: string;
-  parent_id?: number | null;
-  user_id: number;
-}
-export interface CommentResponse {
-  id: number;
-  post_id: number;
-  content: string;
-  author_id: string;
-  parent_id: number | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export type AllPostResponse = FreePostResponse | SharePostResponse | StudyPostResponse;
-
-export interface Post {
-  post_id: number;
-  title: string;
-  content: string;
-  author_id: string;
-  category: Category;
+  author_id: number;
+  author_nickname: string;
   created_at: string;
   views: number;
-  likes?: number;
-  comments?: number;
+  like_count: number;
+  comment_count: number;
 }
 
-export type SearchIn = 'title' | 'content' | 'title_content' | 'author';
+export type IdKeyOf<C extends ItemCategory> = C extends 'free'
+  ? 'free_post_id'
+  : C extends 'share'
+    ? 'share_post_id'
+    : 'study_post_id';
 
-export interface ListCursorParams {
-  limit?: number;
-  author_id?: number;
-  cursor?: string | null;
-  search_in?: SearchIn;
-  keyword?: string;
-  date_from?: string;
-  date_to?: string;
-  badge?: string;
-}
+export type ListItemOf<C extends ItemCategory> = BaseListItem & { category: C } & Record<
+    IdKeyOf<C>,
+    number
+  > &
+  (C extends 'free'
+    ? { images?: string[] }
+    : C extends 'share'
+      ? { files?: string[] }
+      : {
+          badge: Badge;
+          study_recruitment?: {
+            recruit_start: string;
+            recruit_end: string;
+            study_start: string;
+            study_end: string;
+            max_member: number;
+          };
+        });
 
-export interface ListCursorResult<T> {
-  count: number;
-  next_cursor: string | null;
+export type FreeListItem = ListItemOf<'free'>;
+export type ShareListItem = ListItemOf<'share'>;
+export type StudyListItem = ListItemOf<'study'>;
+export type ListItem = FreeListItem | ShareListItem | StudyListItem;
+
+export interface CursorPage<T> {
   items: T[];
+  next_cursor?: number | null;
 }
 
-export interface SearchPostItem {
-  post_id: number;
+// ===== Detail =====
+export interface BaseDetail {
+  id: number;
   title: string;
   content: string;
-  category: Category;
+  category: ItemCategory;
+  author_id: number;
+  author_nickname: string;
+  views: number;
+  like_count: number;
+  comment_count: number;
   created_at: string;
-  badge?: '모집중' | '모집완료';
+  updated_at: string;
 }
+
+export type FreeDetail = BaseDetail & {
+  category: 'free';
+  images?: string[];
+};
+
+export type ShareDetail = BaseDetail & {
+  category: 'share';
+  files?: string[];
+};
+
+export type StudyDetail = BaseDetail & {
+  category: 'study';
+  badge: Badge;
+  study_recruitment: {
+    recruit_start: string;
+    recruit_end: string;
+    study_start: string;
+    study_end: string;
+    max_member: number;
+  };
+};
+
+export type PostDetail = FreeDetail | ShareDetail | StudyDetail;
+
+// 카테고리별 페이지/디테일 반환 타입 매핑
+export type PageByCategory<C extends PostCategory> = C extends 'all'
+  ? CursorPage<ListItem>
+  : C extends 'free'
+    ? CursorPage<ListItemOf<'free'>>
+    : C extends 'share'
+      ? CursorPage<ListItemOf<'share'>>
+      : CursorPage<ListItemOf<'study'>>;
+
+export type DetailByCategory<C extends ItemCategory> = C extends 'free'
+  ? FreeDetail
+  : C extends 'share'
+    ? ShareDetail
+    : StudyDetail;
+
+// CREATE POST
+export interface CreatePostBase {
+  title: string;
+  content: string;
+  category: ItemCategory;
+  user_id: number;
+}
+
+export type CreateFreePostBody = CreatePostBase & { category: 'free' };
+export type CreateSharePostBody = CreatePostBase & { category: 'share' };
+export type CreateStudyPostBody = CreatePostBase & {
+  category: 'study';
+  recruit_start: string;
+  recruit_end: string;
+  study_start: string;
+  study_end: string;
+  max_member: number;
+};
+
+export type CreatePostBody = CreateFreePostBody | CreateSharePostBody | CreateStudyPostBody;
+
+export type CreatePostApiId = { post_id: number } | { id: number } | { postId: number };
+export interface CreatePostResult {
+  post_id: number;
+}
+
+// 검색
+export type SearchIn = 'title' | 'title_content' | 'content' | 'author';
 
 export type TopCategory = 'study' | 'free' | 'share';
 
@@ -210,7 +139,7 @@ export interface TopWeeklyItem {
   post_id: number;
   title: string;
   category: TopCategory;
-  author_id: number; // author_id 타입 재정립 필요가 있음 일단 int로 받기.
+  author_id: number;
   total_views_7d: number;
   created_at: string;
 }
@@ -219,4 +148,51 @@ export interface TopWeeklyResponse {
   category: TopCategory;
   count: number;
   items: TopWeeklyItem[];
+}
+
+export interface CommentRequest {
+  user?: number;
+  content: string;
+  parent_comment_id: number;
+}
+export interface CommentResponse {
+  id: number;
+  post_id: number;
+  content: string;
+  author_nickname: string;
+  author_id: number;
+  parent_id: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GETCommentResponse {
+  total: string;
+  count: string;
+  items: CommentResponse[];
+}
+
+export type CommentTreeItem = {
+  id: number;
+  post_id: number;
+  content: string;
+  author_id: number;
+  parent_id: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
+//request
+export interface PostRequest {
+  title: string;
+  content: string;
+  category?: 'study';
+  user_id: number;
+  study_recruitment?: {
+    recruit_start?: string;
+    recruit_end?: string;
+    study_start?: string;
+    study_end?: string;
+    max_member?: number;
+  };
 }
