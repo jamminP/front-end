@@ -36,7 +36,7 @@ export default function CommunityTab({ category }: { category: PostCategory }) {
       </div>
 
       <div className="shrink-0 ml-2">
-        <SearchIcon category={category} />
+        <SearchIcon category="all" />
       </div>
     </div>
   );
