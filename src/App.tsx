@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import './App.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import CommunityLayout from './community/CommunityLayout';
@@ -16,6 +16,7 @@ import CommunityShare from './community/category/CommunityShare';
 import AiPage from './ai/AiPage';
 import CommunityStudy from './community/category/CommunityStudy';
 import PostDetail from './community/post/PostDetail';
+import EditPost from './community/form/EditPost';
 import AppContent from './AppContent';
 import StudyApplicants from './mypage/components/StudyApplicants';
 import MyApplications from './mypage/components/MyApplications';
@@ -29,6 +30,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/community/create" element={<CreatePost />} />
+          <Route path="/community/:category/:id/edit" element={<EditPost />} />
+
           <Route path="/community" element={<CommunityLayout />}>
             <Route index element={<CommunityAll />} />
             <Route path="free" element={<CommunityFree />} />

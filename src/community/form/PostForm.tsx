@@ -20,8 +20,8 @@ export type PostFormValues = {
 interface PostFormProps {
   initialValues?: Partial<PostFormValues>;
   submitLabel?: string;
-  onSubmit: (values: PostFormValues) => void;
-  disabled?: boolean;
+  onSubmit: (values: PostFormValues) => void | Promise<void>;
+  disabled: boolean;
 }
 
 const defaults: PostFormValues = {
@@ -71,6 +71,7 @@ function validate(values: PostFormValues, limitMembers: boolean): Errors {
       }
     }
   }
+
   if (values.category === 'free') {
     const imgs = values.freeImages ?? [];
     if (imgs.length > 10) e.freeLimit = '이미지는 최대 10장까지 업로드할 수 있어요.';
@@ -89,13 +90,11 @@ function validate(values: PostFormValues, limitMembers: boolean): Errors {
     if (total > BYTES_10MB)
       e.shareLimit = `총 용량은 10MB 이하여야 합니다. (현재 ${bytesToMB(total)}MB)`;
     const allow = new Set([
-      'image/png',
-      'image/jpeg',
       'application/pdf',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ]);
     const bad = files.find((f) => !allow.has(f.type));
-    if (bad) e.shareLimit = '허용되지 않는 파일 형식이 있어요. (png, jpg, pdf, docx만 가능)';
+    if (bad) e.shareLimit = '허용되지 않는 파일 형식이 있어요. ( pdf, docx만 가능)';
   }
 
   return e;
@@ -153,7 +152,7 @@ export default function PostForm({
   const onBlur = (name: keyof PostFormValues | 'limitMembers' | 'shareLimit' | 'freeLimit') => () =>
     setTouched((t) => ({ ...t, [name]: true }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setTouched({
       title: true,
@@ -175,8 +174,7 @@ export default function PostForm({
       ...values,
       max_members: isStudy && limitMembers ? values.max_members : undefined,
     };
-
-    onSubmit(payload);
+    await onSubmit(payload); // ✅ async 허용
   };
 
   const err = (k: keyof PostFormValues | 'limitMembers' | 'shareLimit' | 'freeLimit') => touched[k];
@@ -209,7 +207,6 @@ export default function PostForm({
   } = useDropzone({
     multiple: true,
     accept: {
-      'image/*': ['.png', '.jpg', '.jpeg'],
       'application/pdf': ['.pdf'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
     },
@@ -237,8 +234,8 @@ export default function PostForm({
           onBlur={onBlur('title')}
           placeholder="제목을 입력하세요"
           disabled={disabled}
-          className={`w-full h-10 border border-gray-300 rounded-md px-4 py-3 ${
-            err('title') ? 'border-red-500' : 'border-#1B3043'
+          className={`w-full h-10 border rounded-md px-4 py-3 ${
+            err('title') ? 'border-red-500' : 'border-[#1B3043]'
           }`}
         />
         {err('title') && <p className="text-red-500 text-sm">{errors.title}</p>}
@@ -251,13 +248,14 @@ export default function PostForm({
           onChange={setField('category')}
           onBlur={onBlur('category')}
           disabled={disabled}
-          className="w-full h-10 border border-gray-300 rounded-md px-3 py-2 border-#1B3043"
+          className="w-full h-10 border border-gray-300 rounded-md px-3 py-2"
         >
           <option value="free">자유</option>
           <option value="share">자료 공유</option>
           <option value="study">스터디</option>
         </select>
       </div>
+
       {isStudy && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
           <div>
@@ -390,6 +388,7 @@ export default function PostForm({
           </div>
         </div>
       )}
+
       {isFree && (
         <div>
           <label className="block text-sm font-medium mb-2">
@@ -397,7 +396,9 @@ export default function PostForm({
           </label>
           <div
             {...getFreeRootProps()}
-            className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${isFreeDrag ? 'border-black' : 'border-slate-300'}`}
+            className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${
+              isFreeDrag ? 'border-black' : 'border-slate-300'
+            }`}
           >
             <input {...getFreeInputProps()} />
             <p className="text-sm">
@@ -454,14 +455,17 @@ export default function PostForm({
           )}
         </div>
       )}
+
       {isShare && (
         <div>
           <label className="block text-sm font-medium mb-2">
-            파일 업로드 (PNG/JPG/PDF/DOCX · 최대 10개 · 총 10MB 이하)
+            파일 업로드 (PDF/DOCX · 최대 10개 · 총 10MB 이하)
           </label>
           <div
             {...getShareRootProps()}
-            className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${isShareDrag ? 'border-black' : 'border-slate-300'}`}
+            className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer ${
+              isShareDrag ? 'border-black' : 'border-slate-300'
+            }`}
           >
             <input {...getShareInputProps()} />
             <p className="text-sm">
@@ -542,12 +546,13 @@ export default function PostForm({
           onBlur={onBlur('content')}
           placeholder="내용을 입력하세요"
           disabled={disabled}
-          className={`w-full border border-gray-300 rounded-md px-3 py-2 min-h-[400px] ${
+          className={`w-full border rounded-md px-3 py-2 min-h-[400px] ${
             err('content') ? 'border-red-400' : 'border-gray-300'
           }`}
         />
         {err('content') && <p className="text-red-500 text-sm">{errors.content}</p>}
       </div>
+
       <div className="flex justify-end gap-2">
         <button
           type="submit"
