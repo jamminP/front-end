@@ -238,11 +238,11 @@ export const deleteComment = (params: DeleteCommentParams) =>
 
 //like
 export const GetLike = (params: GetLikePrams) =>
-  http<LikeStatus>(`/api/v1/community/post/${params.post_id}/like`, {
+  http<LikeStatus>(`/api/v1/community/post/${params.post_id}/likes`, {
     method: 'GET',
   });
 
 export const PostLike = (params: PostLikeParams) =>
-  http<LikeStatus>(`/api/v1/community/post/${params.post_id}/likes`, {
+  http<LikeStatus>(`/api/v1/community/post/${params.post_id}/like`, {
     method: 'POST',
   });
