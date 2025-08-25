@@ -44,6 +44,7 @@ export default function StudyPlanFetcher({ onEventsGenerated }: StudyPlanFetcher
           limit: 10,
           offset: 0,
         },
+        withCredentials: true,
       });
 
       if (response.data.success) {
