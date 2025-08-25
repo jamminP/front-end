@@ -254,3 +254,7 @@ export const PostLike = (params: PostLikeParams) =>
   http<LikeStatus>(`/api/v1/community/post/${params.post_id}/like`, {
     method: 'POST',
   });
+
+export async function getPostDetail(postId: number): Promise<PostDetail> {
+  return http<PostDetail>(DETAIL_ENDPOINT(postId));
+}

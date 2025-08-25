@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-import { useParams, Link, useNavigate } from 'react-router-dom';
-=======
-import { useParams, Link, useLocation } from 'react-router-dom';
+// src/community/post/PostDetail.tsx
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
->>>>>>> origin/dev
 import { usePostDetail } from '../hook/usePostDetail';
 import CommentsBlock from '../post/components/CommentsBlock';
 import recruiting from '../img/recruiting.png';
@@ -32,14 +29,11 @@ const appearItem: Variants = {
 
 export default function PostDetailPage() {
   const { category: raw, id } = useParams();
-<<<<<<< HEAD
-  const navigate = useNavigate();
-=======
   const { state } = useLocation() as {
     state?: { post?: Partial<StudyDetail | FreeDetail | ShareDetail> };
   };
+  const navigate = useNavigate();
 
->>>>>>> origin/dev
   if (!raw || !id || !isCategory(raw)) return <div className="p-6">잘못된 경로입니다.</div>;
 
   const category = raw;
@@ -50,9 +44,9 @@ export default function PostDetailPage() {
   const current_user_id = 18;
   const isAdmin = false;
 
-<<<<<<< HEAD
+  // 삭제 mutation (HEAD 쪽 로직 유지)
   const qc = useQueryClient();
-  const { mutate: removePost, isPending: deletingPost } = useMutation({
+  const { mutate: onDeletePost, isPending: deletingPost } = useMutation({
     mutationFn: () => deletePost({ post_id: postId, user: current_user_id }),
     onSuccess: () => {
       qc.invalidateQueries({
@@ -62,17 +56,7 @@ export default function PostDetailPage() {
     },
   });
 
-  const onDeletePost = () => {
-    if (window.confirm('게시글을 삭제할까요?')) {
-      removePost();
-    }
-  };
-
-  if (isLoading) return <div className="p-6 text-center">불러오는 중…</div>;
-  if (isError || !data)
-    return <div className="p-6 text-center text-red-500">게시글을 불러오지 못했어요.</div>;
-=======
-  // 리스트에서 넘겨준 프리뷰가 있으면 로딩 동안 사용
+  // 리스트에서 넘겨준 프리뷰가 있으면 로딩 동안 사용 (dev 쪽 유지)
   const preview = state?.post ?? {};
   const base = {
     id: postId,
@@ -86,7 +70,6 @@ export default function PostDetailPage() {
     like_count: (preview as any).like_count ?? 0,
     comment_count: (preview as any).comment_count ?? 0,
   };
->>>>>>> origin/dev
 
   if (isError) {
     return (
@@ -220,10 +203,9 @@ export default function PostDetailPage() {
     };
     const handleDeleteClick = (e: React.MouseEvent) => {
       e.stopPropagation();
-      onDeletePost();
+      if (window.confirm('게시글을 삭제할까요?')) onDeletePost();
     };
 
-    // files 안전 처리
     const shareFiles =
       post.category === 'share' && Array.isArray((post as ShareDetail).files)
         ? ((post as ShareDetail).files as NonNullable<ShareDetail['files']>)
@@ -319,7 +301,10 @@ export default function PostDetailPage() {
       e.stopPropagation();
       navigate(`/community/${post.category}/${(post as any).id}/edit`);
     };
-    const handleDeleteClick = (e: React.MouseEvent) => e.stopPropagation();
+    const handleDeleteClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (window.confirm('게시글을 삭제할까요?')) onDeletePost();
+    };
 
     const meta = post.study_recruitment;
     const badgeIcon =
@@ -348,7 +333,11 @@ export default function PostDetailPage() {
             <button className="text-xs text-black hover:text-[#0180F5]" onClick={handleEditClick}>
               수정
             </button>
-            <button className="text-xs text-black hover:text-[#0180F5]" onClick={handleDeleteClick}>
+            <button
+              className="text-xs text-black hover:text-[#0180F5]"
+              onClick={handleDeleteClick}
+              disabled={deletingPost}
+            >
               삭제
             </button>
           </motion.div>
