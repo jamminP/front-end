@@ -1,10 +1,21 @@
-// /src/Community/Category/CommunityAll.tsx
 import { useMemo, useState } from 'react';
 import { useInfiniteCursor } from '../hook/useInfiniteCursor';
 import { useIntersection } from '../hook/useIntersection';
 import type { ListItem } from '../api/types';
 import PostCard from '../components/Postcard';
 import { useNavigate } from 'react-router-dom';
+import { getPostId } from '../api/community';
+
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
+
+const listVariants = {
+  hidden: { opacity: 0, y: 8 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { type: 'spring', stiffness: 120, damping: 16 } as const,
+  },
+} satisfies Variants;
 
 export default function CommunityAll() {
   const navigate = useNavigate();
@@ -44,6 +55,12 @@ export default function CommunityAll() {
     return out;
   }, [rawItems]);
 
+  type AdaptedItem = ListItem & { id: number };
+  const adaptedItems = useMemo(
+    () => (data?.pages.flatMap((p) => p.items) ?? []).map((p) => ({ ...p, id: getPostId(p) })),
+    [data],
+  );
+
   const sentinelRef = useIntersection(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   });
@@ -52,35 +69,33 @@ export default function CommunityAll() {
 
   return (
     <>
-      <ul className="space-y-3">
-        {items.map(({ item: post, id, key }) => (
-          <li key={key}>
-            <PostCard
-              post={{
-                id: id ?? -1,
-                title: post.title,
-                content: (post as any).content ?? (post as any).contents ?? '',
-                author_id: (post as any).author_id,
-                author_nickname: post.author_nickname ?? '',
-                category: post.category,
-                created_at: (post as any).created_at,
-                views: (post as any).views,
-                like_count: post.like_count,
-                comment_count: post.comment_count,
-              }}
-              currentUserId={currentUserId}
-              onClick={(clickedId) => {
-                if (!Number.isFinite(clickedId) || clickedId <= 0) return;
-                navigate(`/community/${post.category}/${clickedId}`);
-              }}
-            />
-          </li>
-        ))}
-      </ul>
+      <AnimatePresence mode="popLayout">
+        <ul className="space-y-3">
+          {adaptedItems.map((post) => (
+            <motion.li
+              key={post.id}
+              variants={listVariants}
+              initial="hidden"
+              animate="show"
+              exit={{ opacity: 0, y: -6 }}
+              layout
+              whileHover={{ y: -2, scale: 1.01 }}
+              transition={{ layout: { duration: 0.2 } }}
+              className="will-change-transform"
+            >
+              <PostCard
+                post={post}
+                currentUserId={currentUserId}
+                onClick={(id) => navigate(`/community/${id}`)}
+              />
+            </motion.li>
+          ))}
+        </ul>
+      </AnimatePresence>
 
       <div ref={sentinelRef} className="h-12" />
       {isFetchingNextPage && <div className="py-4 text-center">더 불러오는 중…</div>}
-      {!hasNextPage && !isLoading && items.length > 0 && (
+      {!hasNextPage && !isLoading && adaptedItems.length > 0 && (
         <div className="py-6 text-center text-gray-500">마지막이에요.</div>
       )}
     </>
