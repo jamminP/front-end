@@ -6,12 +6,35 @@ interface Applicant {
   id: number;
   user_id: number;
   output_data: string;
-  start_data: string;
-  end_data: string;
+  start_date: string;
+  end_date: string;
 }
 
+//더미데이터
+const dummyApplicants: Applicant[] = [
+  {
+    id: 1,
+    user_id: 101,
+    output_data: JSON.stringify({
+      title: '리액트 스터디 모집',
+      description: '초보자 환영! 매주 토요일 온라인 진행',
+    }),
+    start_date: '2025-09-01',
+    end_date: '2025-09-30',
+  },
+  {
+    id: 2,
+    user_id: 102,
+    output_data: JSON.stringify({
+      title: '알고리즘 스터디',
+      description: '백준 골드 목표, 디스코드 진행',
+    }),
+    start_date: '2025-09-05',
+    end_date: '2025-10-05',
+  },
+];
+
 export default function StudyApplicants() {
-  const userId = useAuthStore((state) => state.user?.id);
   const [applicants, setApplicants] = useState<Applicant[]>([]);
 
   // const fetchApplicantList = async () => {
@@ -24,9 +47,26 @@ export default function StudyApplicants() {
   //   }
   // };
 
-  // useEffect(() => {
-  //   fetchApplicantList();
-  // }, []);
+  useEffect(() => {
+    //fetchApplicantList();
+    setApplicants(dummyApplicants);
+  }, []);
+
+  // 무한스크롤: 스크롤 이벤트 감지 (나중에 API 연결 시 교체)
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop + 100 >=
+        document.documentElement.scrollHeight
+      ) {
+        // 👇 여기서 다음 5개 API 호출 예정
+        console.log('스크롤 바닥 → 다음 데이터 가져오기');
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleAction = async (
     applicationId: number,
@@ -83,7 +123,7 @@ export default function StudyApplicants() {
                       {parsedOutput.description}
                     </p>
                     <span className="text-[.8rem] text-[#c2c2c2]">
-                      {c.start_data.slice(0, 10)}~{c.end_data.slice(0, 10)}
+                      {c.start_date.slice(0, 10)}~{c.end_date.slice(0, 10)}
                     </span>
                   </div>
                   <div>

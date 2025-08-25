@@ -45,7 +45,9 @@ export default function MyPage() {
               isActive ? 'text-[#0180F5]' : 'text-[#878787]'
             }`
           }
-        ></NavLink>
+        >
+          스터디 신청자 목록
+        </NavLink>
       </nav>
       <section className="w-[90%] m-[50px_auto] md:m-[0] md:w-[80%]">
         <Outlet />
