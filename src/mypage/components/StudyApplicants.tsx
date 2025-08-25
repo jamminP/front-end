@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 interface Applicant {
   application_id: number;
@@ -14,18 +15,20 @@ interface ApplicantList {
   items: Applicant[];
 }
 
-export default function StudyApplicants({ postId }: { postId: number }) {
+export default function StudyApplicants() {
+  const { postId } = useParams<{ postId: string }>();
+  const postIdNum = postId ? Number(postId) : null;
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
   const fetchApplicantList = async () => {
-    if (loading || !hasMore) return;
+    if (!postIdNum || loading || !hasMore) return;
     setLoading(true);
     try {
       const res = await axios.get<ApplicantList>(
-        `https://backend.evida.site/api/v1/users/myinfo/${postId}/applications?limit=5${
+        `https://backend.evida.site/api/v1/users/myinfo/${postIdNum}/applications?limit=5${
           nextCursor ? `&cursor=${nextCursor}` : ''
         }`,
         { withCredentials: true },
@@ -33,8 +36,7 @@ export default function StudyApplicants({ postId }: { postId: number }) {
 
       setApplicants((prev) => [...prev, ...res.data.items]);
       setNextCursor(res.data.next_cursor || null);
-      if (res.data.next_cursor === 0)
-        setHasMore(res.data.next_cursor != null && res.data.next_cursor !== 0);
+      if (res.data.next_cursor === 0) setHasMore(res.data.next_cursor !== 0);
     } catch (err) {
       console.error(err);
     } finally {
@@ -62,7 +64,7 @@ export default function StudyApplicants({ postId }: { postId: number }) {
 
   useEffect(() => {
     fetchApplicantList();
-  }, []);
+  }, [postIdNum]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -75,14 +77,7 @@ export default function StudyApplicants({ postId }: { postId: number }) {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [nextCursor, loading, hasMore]);
-
-  useEffect(() => {
-    setApplicants([]);
-    setNextCursor(null);
-    setHasMore(true);
-    fetchApplicantList();
-  }, [postId]);
+  }, [nextCursor, loading, hasMore, postIdNum]);
 
   return (
     <>
