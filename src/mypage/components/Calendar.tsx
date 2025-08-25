@@ -89,7 +89,7 @@ export default function MyCalendar() {
             <p className="modal-date">{modalEvent.date}</p>
             <div className="modal-description">
               {modalEvent.description.split('\n').map((line, idx) => (
-                <p key={idx}>{line}</p>
+                <p key={idx}>{line.slice(8)}</p>
               ))}
             </div>
             <button className="modal-close" onClick={() => setModalEvent(null)}>

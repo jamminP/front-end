@@ -343,7 +343,16 @@ export default function AiMain({ externalCommand }: { externalCommand?: StartCom
                   }}
                 />
               </div>
-              <InputBar inputRef={inputRef} onSend={send} />
+              <InputBar
+                inputRef={inputRef}
+                onSend={send}
+                summaryMode={selectedAction?.id === 'summary'}
+                placeholder={
+                  selectedAction?.id === 'summary'
+                    ? '요약할 텍스트를 붙여넣어 주세요 (최소 10자)'
+                    : 'Evi 에게 물어보세요'
+                }
+              />
             </div>
           </motion.section>
         )}

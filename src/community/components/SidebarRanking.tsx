@@ -59,7 +59,7 @@ export default function SidebarRanking() {
   const { study, free, share, isLoading, isError } = useTopWeeklyAll(5);
 
   return (
-    <aside className="space-y-4">
+    <aside className="hidden md:block space-y-4 md:w-65 lg:w-66">
       <Block
         title="스터디 TOP 5"
         items={study.data?.items}
