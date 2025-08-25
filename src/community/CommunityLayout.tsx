@@ -13,20 +13,17 @@ const CommunityLayout = () => {
 
   return (
     <div className="w-full">
-      {/* 상단 sticky 바: 높이 안정화 (h-14 = 56px) */}
-      <nav className="sticky inset-x-0 z-30 bg-white top-20">
+      <nav className="sticky inset-x-0 z-30 bg-white top-14 md:top-20">
         <div className="mx-auto w-full max-w-[1100px] px-4 sm:px-6 lg:px-8 h-14 flex items-center">
           <CommunityTab category={category} />
         </div>
       </nav>
 
-      {/* 본문 */}
       <div className="mx-auto mt-22 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-[320px_minmax(0,720px)] gap-8 lg:max-w-[1100px] lg:mx-auto">
           <aside
             className="order-1 lg:order-1 hidden lg:block w-[320px] sticky self-start"
             style={{
-              // 헤더 + 탭바
               top: 'calc(var(--site-header-h, 70px) + 56px)',
             }}
           >
