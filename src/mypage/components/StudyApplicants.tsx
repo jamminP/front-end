@@ -1,4 +1,3 @@
-import useAuthStore from '@src/store/authStore';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
@@ -17,7 +16,7 @@ const dummyApplicants: Applicant[] = [
     user_id: 101,
     output_data: JSON.stringify({
       title: '리액트 스터디 모집',
-      description: '초보자 환영! 매주 토요일 온라인 진행',
+      description: '신청자 : 홍길동',
     }),
     start_date: '2025-09-01',
     end_date: '2025-09-30',
@@ -27,7 +26,7 @@ const dummyApplicants: Applicant[] = [
     user_id: 102,
     output_data: JSON.stringify({
       title: '알고리즘 스터디',
-      description: '백준 골드 목표, 디스코드 진행',
+      description: '신청자 : 김영희',
     }),
     start_date: '2025-09-05',
     end_date: '2025-10-05',
@@ -59,7 +58,7 @@ export default function StudyApplicants() {
         window.innerHeight + document.documentElement.scrollTop + 100 >=
         document.documentElement.scrollHeight
       ) {
-        // 👇 여기서 다음 5개 API 호출 예정
+        // 여기서 다음 5개 API 호출 예정
         console.log('스크롤 바닥 → 다음 데이터 가져오기');
       }
     };
@@ -129,13 +128,13 @@ export default function StudyApplicants() {
                   <div className="flex">
                     <button
                       onClick={() => handleAction(c.id, c.user_id, 'approve')}
-                      className="flex justify-center items-center text-[.9rem] mr-[5px] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[64px] md:h-[64px] rounded-4xl text-[#ffffff] bg-[#f1513c]"
+                      className="flex justify-center items-center text-[.9rem] mr-[5px] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[60px] md:h-[40px] rounded-4xl text-[#ffffff] bg-[#1b3043] cursor-pointer"
                     >
                       승인
                     </button>
                     <button
                       onClick={() => handleAction(c.id, c.user_id, 'reject')}
-                      className="flex justify-center items-center text-[.9rem] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[64px] md:h-[64px] rounded-4xl text-[#ffffff] bg-[#1b3043]"
+                      className="flex justify-center items-center text-[.9rem] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[60px] md:h-[40px] rounded-4xl text-[#364153] bg-[#ebe6e7] cursor-pointer"
                     >
                       거절
                     </button>

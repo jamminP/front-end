@@ -37,8 +37,18 @@ const dummyApplicants: Applicant[] = [
 export default function MyApplications() {
   const [applicants, setApplicants] = useState<Applicant[]>([]);
 
+  // const fetchApplications = async () => {
+  //   try {
+  //     const res = await axios.get(`/api/v1/community/post/주소바꿔야됑`, {
+  //       withCredentials: true,
+  //     });
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
+
   useEffect(() => {
-    //fetchApplicantList();
+    //fetchApplications();
     setApplicants(dummyApplicants);
   }, []);
 
