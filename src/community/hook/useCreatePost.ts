@@ -1,7 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { createPostJSON, uploadWithPresignedJson } from '../api/presignedJson';
-import { assertUploadLimits, assertFreeTypes, assertShareTypes } from '../utils/upload';
-
+import { assertUploadLimits, assertFreeTypes, assertShareTypes } from '../utils/mime';
 type Payload =
   | { category: 'free'; title: string; content: string; freeImages: File[] }
   | { category: 'share'; title: string; content: string; shareFiles: File[] }
