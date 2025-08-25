@@ -4,6 +4,7 @@ import { useComments, type CommentNode } from '../../hook/useComments';
 import type { CommentResponse } from '../../api/types';
 import { deleteComment, patchComment } from '../../api/community';
 import squarePen from '../../img/square-pen.png';
+import { FaPen } from 'react-icons/fa';
 
 export default function CommentsBlock({
   post_id,
@@ -71,7 +72,7 @@ export default function CommentsBlock({
 
   return (
     <section className="space-y-4">
-      <div className="rounded-l bg-gray-200/50 p-2">
+      <div className=" bg-gray-200/10 mx-2">
         <div className="flex items-center gap-3 border-y-1 border-gray-400/50 bg-none px-2 py-1">
           <input
             className="flex-1 outline-none text-sm"
@@ -103,7 +104,7 @@ export default function CommentsBlock({
       {/* 트리 렌더 */}
       <div className="space-y-3">
         {tree.map((c: CommentNode) => (
-          <div key={c.id} className="rounded-2xl bg-gray-200/70 p-4 shadow-sm">
+          <div key={c.id} className="border-1 border-gray-200 p-4 shadow-sm">
             <CommentHeader
               nickname={c.author_nickname ?? `User#${c.author_id}`}
               created_at={c.created_at}
@@ -146,7 +147,7 @@ export default function CommentsBlock({
             />
 
             {/* 루트 댓글 본문 / 수정 입력 */}
-            <div className="rounded-xl bg-gray-100 p-4 text-sm shadow whitespace-pre-wrap">
+            <div className="rounded-lg border-[0.8px] border-gray-200 bg-gray-100 p-2 text-sm shadow whitespace-pre-wrap">
               {editingId === c.id ? (
                 <textarea
                   className="w-full resize-y border p-2 text-sm rounded"
@@ -160,7 +161,7 @@ export default function CommentsBlock({
             </div>
 
             {/* 답글/액션 */}
-            <div className="mt-2 flex items-center gap-3 text-sm text-gray-600">
+            <div className="mt-2 flex justify-end items-center gap-3 pl-1 text-[12px] text-gray-600">
               <button
                 className="hover:underline"
                 onClick={() => setReplyTo(reply_to === c.id ? null : c.id)}
@@ -183,9 +184,12 @@ export default function CommentsBlock({
 
             {/* 대댓글 목록 */}
             {c.replies.length > 0 && (
-              <div className="mt-3 space-y-3 pl-6">
+              <div className="mt-2 space-y-3  pl-3">
                 {c.replies.map((r: CommentResponse) => (
-                  <div key={r.id} className="rounded-2xl bg-gray-200/70 p-4 shadow-sm">
+                  <div
+                    key={r.id}
+                    className="rounded-lg bg-white border border-gray-100  p-4 shadow-sm"
+                  >
                     <CommentHeader
                       nickname={r.author_nickname ?? `User#${r.author_id}`}
                       created_at={r.created_at}
@@ -284,33 +288,31 @@ function InlineReplyEditor({
 }) {
   const [v, setV] = useState('');
   return (
-    <div className="mt-3 rounded-2xl bg-gray-200/70 p-3">
-      <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3">
-        <input
-          className="flex-1 outline-none text-sm"
-          placeholder="대댓글을 입력하세요."
-          value={v}
-          onChange={(e) => setV(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && v.trim()) {
-              onSubmit(v.trim());
-              setV('');
-            }
-          }}
-        />
-        <button
-          className="p-2 shadow bg-[#1B3043] text-white rounded disabled:opacity-50"
-          disabled={!v.trim() || submitting}
-          onClick={() => {
-            if (!v.trim()) return;
+    <div className="mt-3 flex justify-between border-y border-gray-300">
+      <input
+        className="pl-2 py-2 outline-none text-sm"
+        placeholder="대댓글을 입력하세요."
+        value={v}
+        onChange={(e) => setV(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && v.trim()) {
             onSubmit(v.trim());
             setV('');
-          }}
-          aria-label="대댓글 전송"
-        >
-          등록
-        </button>
-      </div>
+          }
+        }}
+      />
+      <button
+        className="p-1 text-black/80 text-sm"
+        disabled={!v.trim() || submitting}
+        onClick={() => {
+          if (!v.trim()) return;
+          onSubmit(v.trim());
+          setV('');
+        }}
+        aria-label="대댓글 전송"
+      >
+        <FaPen />
+      </button>
     </div>
   );
 }
