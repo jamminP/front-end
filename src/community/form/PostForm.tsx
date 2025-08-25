@@ -21,6 +21,7 @@ interface PostFormProps {
   initialValues?: Partial<PostFormValues>;
   submitLabel?: string;
   onSubmit: (values: PostFormValues) => void | Promise<void>;
+  disabled: boolean;
 }
 
 const defaults: PostFormValues = {
@@ -89,13 +90,11 @@ function validate(values: PostFormValues, limitMembers: boolean): Errors {
     if (total > BYTES_10MB)
       e.shareLimit = `총 용량은 10MB 이하여야 합니다. (현재 ${bytesToMB(total)}MB)`;
     const allow = new Set([
-      'image/png',
-      'image/jpeg',
       'application/pdf',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ]);
     const bad = files.find((f) => !allow.has(f.type));
-    if (bad) e.shareLimit = '허용되지 않는 파일 형식이 있어요. (png, jpg, pdf, docx만 가능)';
+    if (bad) e.shareLimit = '허용되지 않는 파일 형식이 있어요. ( pdf, docx만 가능)';
   }
 
   return e;
@@ -208,7 +207,6 @@ export default function PostForm({
   } = useDropzone({
     multiple: true,
     accept: {
-      'image/*': ['.png', '.jpg', '.jpeg'],
       'application/pdf': ['.pdf'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
     },
@@ -237,7 +235,7 @@ export default function PostForm({
           placeholder="제목을 입력하세요"
           disabled={disabled}
           className={`w-full h-10 border rounded-md px-4 py-3 ${
-            err('title') ? 'border-red-500' : 'border-[#1B3043]' /* ✅ */
+            err('title') ? 'border-red-500' : 'border-[#1B3043]'
           }`}
         />
         {err('title') && <p className="text-red-500 text-sm">{errors.title}</p>}
@@ -461,7 +459,7 @@ export default function PostForm({
       {isShare && (
         <div>
           <label className="block text-sm font-medium mb-2">
-            파일 업로드 (PNG/JPG/PDF/DOCX · 최대 10개 · 총 10MB 이하)
+            파일 업로드 (PDF/DOCX · 최대 10개 · 총 10MB 이하)
           </label>
           <div
             {...getShareRootProps()}

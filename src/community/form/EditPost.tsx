@@ -95,7 +95,12 @@ export default function EditPost() {
 
   return (
     <div className="p-6 max-w-[720px] mx-auto space-y-4">
-      <PostForm initialValues={initialValues} submitLabel="수정 저장" onSubmit={handleSubmit} />
+      <PostForm
+        initialValues={initialValues}
+        submitLabel="수정 저장"
+        onSubmit={handleSubmit}
+        disabled
+      />
     </div>
   );
 }
