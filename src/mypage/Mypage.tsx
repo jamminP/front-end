@@ -3,7 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 export default function MyPage() {
   return (
     <div className="flex flex-col md:flex-row w-full h-full max-w-[1400px] m-auto p-[100px_0_0_0] md:p-[150px_0_50px_0]">
-      <nav className="flex md:flex-col justify-center md:justify-start gap-[30px] md:w-[20%] mt-[5px]">
+      <nav className="flex flex-wrap md:flex-col justify-center md:justify-start gap-[20px] md:gap-[30px] md:w-[20%] mt-[5px]">
         <NavLink
           to="/mypage"
           end
