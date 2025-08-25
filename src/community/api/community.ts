@@ -23,7 +23,7 @@ import type {
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
 const LIST_ENDPOINT = '/api/v1/community/post/list';
-const DETAIL_ENDPOINT = (postId: number) => `/api/v1/community/post/${postId}`;
+export const DETAIL_ENDPOINT = (postId: number) => `/api/v1/community/post/${postId}`;
 const CREATE_POST = `${BASE}/api/v1/community/post`;
 
 export type CreatePostCategory = 'free' | 'share' | 'study';
@@ -38,19 +38,28 @@ export interface GetPostListParams {
   category: PostCategory;
   cursor?: number | null;
   limit?: number;
+  search_in?: 'title' | 'title_content' | 'content' | 'author';
+  keyword?: string;
+  author_id?: string | number;
+  date_from?: string;
+  date_to?: string;
+  badge?: string;
 }
 
 export async function getPostList(params: GetPostListParams): Promise<CursorPage<ListItem>> {
   const qs = new URLSearchParams();
   qs.set('category', params.category);
-  if (params.cursor != null) qs.set('cursor', String(params.cursor)); // 0 허용
+  if (params.cursor != null) qs.set('cursor', String(params.cursor));
   if (params.limit != null) qs.set('limit', String(params.limit));
+  if (params.keyword) qs.set('q', params.keyword.trim());
+  if (params.search_in) qs.set('search_in', params.search_in);
+  if (params.author_id != null && params.author_id !== '')
+    qs.set('author_id', String(params.author_id));
+  if (params.date_from) qs.set('date_from', params.date_from);
+  if (params.date_to) qs.set('date_to', params.date_to);
+  if (params.badge) qs.set('badge', params.badge);
 
   return http<CursorPage<ListItem>>(`${LIST_ENDPOINT}?${qs.toString()}`);
-}
-
-export async function getPostDetail(postId: number): Promise<PostDetail> {
-  return http<PostDetail>(DETAIL_ENDPOINT(postId));
 }
 
 const TOP_WEEKLY_PATH: Record<TopCategory, string> = {
@@ -97,10 +106,9 @@ async function postCreate(user: number, body: Record<string, any>): Promise<Crea
   const res = await http<any>(`${CREATE_POST}?${qs}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include', // 세션/쿠키 사용하는 경우 유지
+    credentials: 'include',
     body: JSON.stringify({ ...body, user_id: user }),
   });
-
   const data = res as any;
   const pid: unknown = data?.post_id ?? data?.id ?? data?.postId;
   if (typeof pid !== 'number' || !Number.isFinite(pid)) {
@@ -168,11 +176,18 @@ export function getComments(
   });
 }
 
+<<<<<<< HEAD
 export interface CreateCommentBody {
   user: number;
   content: string;
   parent_comment_id: number | null;
 }
+=======
+export const getComments = async (postId: number): Promise<CommentResponse[]> => {
+  const raw = await http<any>(`/api/v1/community/post/${postId}/comments`);
+  return normalizeComments(raw);
+};
+>>>>>>> origin/dev
 
 export async function createComment(
   post_id: number,
@@ -187,9 +202,19 @@ export async function createComment(
 
   const res = await fetch(`/api/v1/community/post/${post_id}/comment?${qs}`, {
     method: 'POST',
+<<<<<<< HEAD
     headers: { 'Content-Type': 'application/json; charset=utf-8' },
     credentials: 'include',
     body: JSON.stringify(body),
+=======
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      user,
+      content: content.trim(),
+      parent_comment_id:
+        typeof parent_comment_id === 'number' && parent_comment_id > 0 ? parent_comment_id : null,
+    }),
+>>>>>>> origin/dev
   });
 
   if (!res.ok) {
@@ -208,6 +233,7 @@ export async function listComments(postId: number): Promise<CommentTreeItem[]> {
   }
 }
 
+<<<<<<< HEAD
 //patch post / comment
 export const patchPost = (params: PatchPostParams, body: PatchPostRequest) =>
   http<any>(`/api/v1/community/post/${params.post_id}?user=${params.user}`, {
@@ -246,3 +272,8 @@ export const PostLike = (params: PostLikeParams) =>
   http<LikeStatus>(`/api/v1/community/post/${params.post_id}/like`, {
     method: 'POST',
   });
+=======
+export async function getPostDetail(postId: number): Promise<PostDetail> {
+  return http<PostDetail>(DETAIL_ENDPOINT(postId));
+}
+>>>>>>> origin/dev

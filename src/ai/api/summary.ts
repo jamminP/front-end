@@ -21,3 +21,30 @@ export async function fetchSummaryRows(userId: number, limit = 10, offset = 0) {
   const res = await getSummaries(userId, limit, offset);
   return pickSummaries(res);
 }
+
+// 정보 요약 단일 조회
+export function getSummaryById(summaryId: number, withUser = false) {
+  const params = withUser ? { user_id: getResolvedUserId() } : undefined;
+  return http.get(`/api/v1/ai/summary/${summaryId}`, { params });
+}
+
+// 정보 요약 삭제
+export function deleteSummary(summaryId: number) {
+  return http.delete(`/api/v1/ai/summary/${summaryId}`);
+}
+
+export type CreateSummaryReq = {
+  title: string;
+  input_data: string;
+  input_type: 'text';
+  summary_type: 'general';
+  file_url: string;
+};
+
+export function createSummaryForMe(body: CreateSummaryReq) {
+  const uid = getResolvedUserId();
+  if (!uid) throw new Error('사용자 ID를 확인할 수 없습니다.');
+  return http.post('/api/v1/ai/summary', body, {
+    params: { user_id: uid },
+  });
+}

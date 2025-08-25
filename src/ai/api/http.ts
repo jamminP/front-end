@@ -1,51 +1,19 @@
-import axios, { AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosHeaders, InternalAxiosRequestConfig } from 'axios';
+import { getCookie } from './cookies';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
-// axios 인스턴스
 export const http = axios.create({
   baseURL: BASE_URL,
-  timeout: 10_000,
-  headers: {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  withCredentials: false,
+  timeout: 30_000,
+  headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+  withCredentials: true,
 });
 
-// 토큰 기반 세팅시 사용 예정.
-export function setAuthToken(token?: string) {
-  if (token) http.defaults.headers.common.Authorization = `Bearer ${token}`;
-  else delete http.defaults.headers.common.Authorization;
-}
-
-// 에러 추출 코드
-export function extractErrorMessage(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    const data = error.response?.data as any;
-    const serverMsg =
-      data?.message ??
-      data?.detail ??
-      data?.error ??
-      data?.msg ??
-      (typeof data === 'string' ? data.trim() || null : null);
-
-    if (serverMsg) return serverMsg;
-
-    if (error.code === 'ECONNABORTED') return '요청 시간이 초과되었습니다.';
-    if (!error.response) return '네트워크 오류가 발생했습니다.';
-    return `요청 실패 (HTTP ${error.response.status})`;
-  }
-
-  return (error as Error)?.message ?? '알 수 없는 오류가 발생했습니다.';
-}
-
-// 에러 클래스 보기 편하도록 수정
 export class HttpError extends Error {
   status?: number;
   data?: unknown;
   isNetwork: boolean;
-
   constructor(message: string, opts?: { status?: number; data?: unknown; isNetwork?: boolean }) {
     super(message);
     this.name = 'HttpError';
@@ -55,29 +23,52 @@ export class HttpError extends Error {
   }
 }
 
-// 요청 인터셉터
-http.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    if (typeof window !== 'undefined' && !navigator.onLine) {
-      return Promise.reject(new HttpError('오프라인 상태입니다.', { isNetwork: true }));
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
+function attachAuthHeader(config: InternalAxiosRequestConfig) {
+  const headers =
+    config.headers instanceof AxiosHeaders ? config.headers : new AxiosHeaders(config.headers);
 
-// 응답/에러 인터셉터
+  const cookieToken = getCookie('access_token')?.trim?.() || null;
+
+  if (cookieToken) {
+    headers.set('Authorization', `Bearer ${cookieToken}`);
+    config.headers = headers;
+  } else {
+    if (headers.has('Authorization')) headers.delete('Authorization');
+    config.headers = headers;
+  }
+
+  return config;
+}
+
+http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  if (typeof window !== 'undefined' && !navigator.onLine) {
+    return Promise.reject(new HttpError('오프라인 상태입니다.', { isNetwork: true }));
+  }
+  return attachAuthHeader(config);
+});
+
 http.interceptors.response.use(
   (res) => res,
   (error: AxiosError) => {
-    const message = extractErrorMessage(error);
-    const status = error.response?.status;
-    const data = error.response?.data;
+    const data = error.response?.data as any;
+    const serverMsg =
+      data?.message ??
+      data?.detail ??
+      data?.error ??
+      data?.msg ??
+      (typeof data === 'string' ? data.trim() || null : null);
+    const msg =
+      serverMsg ??
+      (error.code === 'ECONNABORTED'
+        ? '요청 시간이 초과되었습니다.'
+        : !error.response
+          ? '네트워크 오류가 발생했습니다.'
+          : `요청 실패 (HTTP ${error.response.status})`);
 
     return Promise.reject(
-      new HttpError(message, {
-        status,
-        data,
+      new HttpError(msg, {
+        status: error.response?.status,
+        data: error.response?.data,
         isNetwork: !error.response,
       }),
     );

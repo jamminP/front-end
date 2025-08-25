@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import CommunityLayout from './community/CommunityLayout';
@@ -16,6 +16,7 @@ import CommunityShare from './community/category/CommunityShare';
 import AiPage from './ai/AiPage';
 import CommunityStudy from './community/category/CommunityStudy';
 import PostDetail from './community/post/PostDetail';
+<<<<<<< HEAD
 import { useCallback, useEffect, useState } from 'react';
 import useAuthStore from './store/authStore';
 import axios from 'axios';
@@ -49,9 +50,14 @@ function AppContent() {
       checkLogin();
     }
   }, [location.pathname, checkLogin, isLoggedIn]);
+=======
+import AppContent from './AppContent';
+>>>>>>> origin/dev
 
+export default function App() {
   return (
-    <>
+    <BrowserRouter>
+      <AppContent />
       <Header />
       <main>
         <Routes>
@@ -76,14 +82,6 @@ function AppContent() {
           <Route path="/ai" element={<AiPage />} />
         </Routes>
       </main>
-    </>
-  );
-}
-
-export default function App() {
-  return (
-    <BrowserRouter>
-      <AppContent />
     </BrowserRouter>
   );
 }
