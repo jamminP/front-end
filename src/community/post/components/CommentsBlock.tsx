@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useComments, type CommentNode } from '../../hook/useComments';
 import type { CommentResponse } from '../../api/types';
+import { deleteComment, patchComment } from '../../api/community';
 import squarePen from '../../img/square-pen.png';
 
 export default function CommentsBlock({
@@ -11,9 +13,57 @@ export default function CommentsBlock({
   current_user_id: number;
 }) {
   const [rootContent, setRootContent] = useState('');
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState('');
+
+  const qc = useQueryClient();
 
   const { tree, isLoading, isError, createRoot, createReply, reply_to, setReplyTo, creating } =
     useComments(post_id, current_user_id);
+
+  // 댓글 수정 (PATCH)
+  const { mutate: saveEdit, isPending: saving } = useMutation({
+    mutationFn: (vars: { comment_id: number; content: string }) =>
+      patchComment(
+        post_id,
+        { comment_id: vars.comment_id, user: current_user_id },
+        { content: vars.content },
+      ),
+    onSuccess: () => {
+      setEditingId(null);
+      setEditValue('');
+      qc.invalidateQueries({ queryKey: ['community', 'comments', post_id] });
+    },
+  });
+
+  const { mutate: removeComment, isPending: deleting } = useMutation({
+    mutationFn: (comment_id: number) => deleteComment({ comment_id, user: current_user_id }),
+    onSuccess: () => {
+      qc.invalidateQueries({
+        predicate: (q) =>
+          Array.isArray(q.queryKey) &&
+          q.queryKey.includes(post_id) &&
+          q.queryKey.some((k) => k === 'comments' || k === 'comment' || k === 'commentTree'),
+      });
+    },
+  });
+
+  const startEdit = (id: number, currentContent: string) => {
+    setEditingId(id);
+    setEditValue(currentContent);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditValue('');
+  };
+
+  const confirmDelete = (id: number) => {
+    if (!window.confirm('댓글을 삭제할까요?')) return;
+    if (editingId === id) cancelEdit();
+    if (reply_to === id) setReplyTo(null);
+    removeComment(id);
+  };
 
   if (isLoading) return <div className="py-6 text-center">댓글 불러오는 중…</div>;
   if (isError)
@@ -21,7 +71,6 @@ export default function CommentsBlock({
 
   return (
     <section className="space-y-4">
-      {/* 최상위 댓글 입력 */}
       <div className="rounded-l bg-gray-200/50 p-2">
         <div className="flex items-center gap-3 border-y-1 border-gray-400/50 bg-none px-2 py-1">
           <input
@@ -51,37 +100,88 @@ export default function CommentsBlock({
         </div>
       </div>
 
+      {/* 트리 렌더 */}
       <div className="space-y-3">
         {tree.map((c: CommentNode) => (
           <div key={c.id} className="rounded-2xl bg-gray-200/70 p-4 shadow-sm">
             <CommentHeader
               nickname={c.author_nickname ?? `User#${c.author_id}`}
               created_at={c.created_at}
+              rightArea={
+                c.author_id === current_user_id && (
+                  <div className="flex items-center gap-3 text-xs text-gray-600">
+                    {editingId !== c.id ? (
+                      <>
+                        <button
+                          className="hover:underline"
+                          onClick={() => startEdit(c.id, c.content)}
+                        >
+                          수정
+                        </button>
+                        <button
+                          className="hover:underline"
+                          onClick={() => confirmDelete(c.id)}
+                          disabled={deleting}
+                        >
+                          삭제
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          className="hover:underline"
+                          onClick={() => saveEdit({ comment_id: c.id, content: editValue.trim() })}
+                          disabled={!editValue.trim() || saving}
+                        >
+                          저장
+                        </button>
+                        <button className="hover:underline" onClick={cancelEdit}>
+                          취소
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )
+              }
             />
 
+            {/* 루트 댓글 본문 / 수정 입력 */}
             <div className="rounded-xl bg-gray-100 p-4 text-sm shadow whitespace-pre-wrap">
-              {c.content}
+              {editingId === c.id ? (
+                <textarea
+                  className="w-full resize-y border p-2 text-sm rounded"
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  rows={3}
+                />
+              ) : (
+                c.content
+              )}
             </div>
 
+            {/* 답글/액션 */}
             <div className="mt-2 flex items-center gap-3 text-sm text-gray-600">
               <button
                 className="hover:underline"
                 onClick={() => setReplyTo(reply_to === c.id ? null : c.id)}
+                disabled={editingId === c.id}
               >
                 {reply_to === c.id ? '답글 취소' : '답글 달기'}
               </button>
             </div>
 
+            {/* 대댓글 입력 */}
             {reply_to === c.id && (
               <InlineReplyEditor
+                submitting={creating}
                 onSubmit={(text) => {
                   if (!text.trim()) return;
                   createReply(c.id, text.trim());
                 }}
-                submitting={creating}
               />
             )}
 
+            {/* 대댓글 목록 */}
             {c.replies.length > 0 && (
               <div className="mt-3 space-y-3 pl-6">
                 {c.replies.map((r: CommentResponse) => (
@@ -89,9 +189,57 @@ export default function CommentsBlock({
                     <CommentHeader
                       nickname={r.author_nickname ?? `User#${r.author_id}`}
                       created_at={r.created_at}
+                      rightArea={
+                        r.author_id === current_user_id && (
+                          <div className="flex items-center gap-3 text-xs text-gray-600">
+                            {editingId !== r.id ? (
+                              <>
+                                <button
+                                  className="hover:underline"
+                                  onClick={() => startEdit(r.id, r.content)}
+                                >
+                                  수정
+                                </button>
+                                <button
+                                  className="hover:underline"
+                                  onClick={() => confirmDelete(r.id)}
+                                  disabled={deleting}
+                                >
+                                  삭제
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  className="hover:underline"
+                                  onClick={() =>
+                                    saveEdit({ comment_id: r.id, content: editValue.trim() })
+                                  }
+                                  disabled={!editValue.trim() || saving}
+                                >
+                                  저장
+                                </button>
+                                <button className="hover:underline" onClick={cancelEdit}>
+                                  취소
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        )
+                      }
                     />
+
                     <div className="rounded-xl bg-gray-100 p-4 text-sm shadow whitespace-pre-wrap">
-                      {r.content}
+                      {editingId === r.id ? (
+                        <textarea
+                          className="w-full resize-y border p-2 text-sm rounded"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          rows={3}
+                        />
+                      ) : (
+                        r.content
+                      )}
                     </div>
                   </div>
                 ))}
@@ -104,7 +252,15 @@ export default function CommentsBlock({
   );
 }
 
-function CommentHeader({ nickname, created_at }: { nickname: string; created_at: string }) {
+function CommentHeader({
+  nickname,
+  created_at,
+  rightArea,
+}: {
+  nickname: string;
+  created_at: string;
+  rightArea?: React.ReactNode;
+}) {
   return (
     <div className="mb-2 flex items-start justify-between">
       <div className="flex items-start gap-3">
@@ -114,6 +270,7 @@ function CommentHeader({ nickname, created_at }: { nickname: string; created_at:
           <div className="text-xs text-gray-500">{formatDate(created_at)}</div>
         </div>
       </div>
+      {rightArea}
     </div>
   );
 }
@@ -151,7 +308,7 @@ function InlineReplyEditor({
           }}
           aria-label="대댓글 전송"
         >
-          <img src={squarePen} alt="comment button" className="w-4 h-4" />
+          등록
         </button>
       </div>
     </div>
