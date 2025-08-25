@@ -1,5 +1,4 @@
 import { Link, useNavigate } from 'react-router-dom';
-import bellIcon from '../header/img/bell.png';
 import { useState } from 'react';
 import useAuthStore from '@src/store/authStore';
 import axios from 'axios';
@@ -23,7 +22,7 @@ export default function Header() {
       );
     } catch (err) {
       // 오류가 나도 무시하고 로그아웃 처리
-      console.warn('Logout request failed, but front will log out anyway', err);
+      console.warn(err);
     } finally {
       navigate('/'); // 메인 페이지로 이동
     }
@@ -83,10 +82,6 @@ export default function Header() {
                 />
               </div>
             </Link>
-            <div className="relative">
-              <img src={bellIcon} />
-              <span className="absolute w-[8px] h-[8px] bg-[#f00] rounded-full top-0 right-0"></span>
-            </div>
           </>
         ) : (
           <>
