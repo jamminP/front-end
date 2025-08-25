@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosHeaders, InternalAxiosRequestConfig } from 'axios';
+import { getCookie } from './cookies';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
@@ -22,25 +23,30 @@ export class HttpError extends Error {
   }
 }
 
-http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  if (import.meta.env.DEV) {
-    const envToken = (import.meta.env as any).VITE_DEV_ACCESS_TOKEN?.trim?.();
-    const lsToken = localStorage.getItem('dev_access_token')?.trim?.();
-    const token = envToken || lsToken;
-    if (token) {
-      const headers =
-        config.headers instanceof AxiosHeaders ? config.headers : new AxiosHeaders(config.headers);
-      headers.set('Authorization', `Bearer ${token}`);
-      config.headers = headers;
-    }
+function attachAuthHeader(config: InternalAxiosRequestConfig) {
+  const headers =
+    config.headers instanceof AxiosHeaders ? config.headers : new AxiosHeaders(config.headers);
+
+  const cookieToken = getCookie('access_token')?.trim?.() || null;
+
+  if (cookieToken) {
+    headers.set('Authorization', `Bearer ${cookieToken}`);
+    config.headers = headers;
+  } else {
+    if (headers.has('Authorization')) headers.delete('Authorization');
+    config.headers = headers;
   }
+
+  return config;
+}
+
+http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   if (typeof window !== 'undefined' && !navigator.onLine) {
     return Promise.reject(new HttpError('오프라인 상태입니다.', { isNetwork: true }));
   }
-  return config;
+  return attachAuthHeader(config);
 });
 
-// ==== 응답 에러 포맷 통일 ====
 http.interceptors.response.use(
   (res) => res,
   (error: AxiosError) => {
@@ -58,6 +64,7 @@ http.interceptors.response.use(
         : !error.response
           ? '네트워크 오류가 발생했습니다.'
           : `요청 실패 (HTTP ${error.response.status})`);
+
     return Promise.reject(
       new HttpError(msg, {
         status: error.response?.status,
