@@ -109,6 +109,7 @@ export default function PostDetailPage() {
         isAdmin={isAdmin}
         loading={isLoading}
         layoutKey={postId}
+        refetchDetail={refetch}
       />
     );
   }
@@ -288,12 +289,14 @@ export default function PostDetailPage() {
     isAdmin,
     loading,
     layoutKey,
+    refetchDetail,
   }: {
     post: StudyDetail;
     current_user_id: number;
     isAdmin: boolean;
     loading: boolean;
     layoutKey: number;
+    refetchDetail: () => Promise<any>;
   }) {
     const canEdit = isAdmin || post.author_id === current_user_id;
 
@@ -310,7 +313,8 @@ export default function PostDetailPage() {
     const badgeIcon =
       post.badge === '모집중' ? recruiting : post.badge === '모집완료' ? completed : null;
     const isAuthor = post.author_id === current_user_id;
-    const canApply = post.badge === '모집중' && !isAuthor;
+    const badgeAllows = !loading && post.badge?.trim() === '모집중';
+    const canApply = badgeAllows && !isAuthor;
 
     return (
       <motion.section
@@ -370,14 +374,20 @@ export default function PostDetailPage() {
             <div>
               스터디 기간 : {formatDate(meta.study_start)} ~ {formatDate(meta.study_end)}
             </div>
-            <div>
+            <div className="flex justify-center py-2">
               <button
-                disabled={!canApply}
+                type="button"
+                className={`px-3 py-1 w-60 rounded ${
+                  canApply
+                    ? 'bg-black text-white hover:opacity-80'
+                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                }`}
+                // disabled={loading || !canApply}
                 onClick={async () => {
-                  const r = await refetch(); // 최신 상태로 재검증
+                  const r = await refetchDetail();
                   const fresh = (r?.data ?? post) as StudyDetail;
 
-                  if (fresh.badge !== '모집중' || fresh.author_id === current_user_id) {
+                  if (fresh.badge?.trim() !== '모집중' || fresh.author_id === current_user_id) {
                     alert('지금은 신청할 수 없는 상태예요.');
                     return;
                   }
@@ -385,12 +395,14 @@ export default function PostDetailPage() {
                   try {
                     await applyStudy({ post_id: fresh.id, user: current_user_id });
                     alert('신청이 접수되었어요.');
-                    await refetch(); // 필요하면 다시 새로고침
+                    await refetchDetail();
                   } catch (e: any) {
-                    alert(e?.message ?? '신청에 실패했어요.');
+                    alert('신청에 실패했어요.');
                   }
                 }}
-              />
+              >
+                참여하기
+              </button>
             </div>
           </motion.div>
 

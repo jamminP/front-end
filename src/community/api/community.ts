@@ -21,6 +21,7 @@ import type {
   LikeStatus,
   ApplyStudyPrams,
   StudyApplicationResponse,
+  Badge,
 } from './types';
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
@@ -45,7 +46,7 @@ export interface GetPostListParams {
   author_id?: string | number;
   date_from?: string;
   date_to?: string;
-  badge?: string;
+  badge?: Badge;
 }
 
 export async function getPostList(params: GetPostListParams): Promise<CursorPage<ListItem>> {
