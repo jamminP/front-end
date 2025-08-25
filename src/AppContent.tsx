@@ -11,6 +11,7 @@ export default function AppContent() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   // 로컬에서 로그인 상태 복구
   useEffect(() => {
@@ -22,6 +23,7 @@ export default function AppContent() {
 
   // ✅ 테스트용 refresh 강제 실행
   useEffect(() => {
+    if (!isLoggedIn) return;
     const testRefresh = async () => {
       try {
         await axios.post(
