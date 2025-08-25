@@ -3,7 +3,7 @@ import useAuthStore from './store/authStore';
 import { useEffect } from 'react';
 import axios, { AxiosError } from 'axios';
 
-// 🔹 컴포넌트 외부 전역 변수
+// 컴포넌트 외부 전역 변수
 let isRefreshing = false;
 
 export default function AppContent() {
@@ -12,7 +12,7 @@ export default function AppContent() {
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
 
-  // 🔹 로컬에서 로그인 상태 복구
+  // 로컬에서 로그인 상태 복구
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
@@ -20,7 +20,25 @@ export default function AppContent() {
     }
   }, [setAuthData]);
 
-  // 🔹 새창: OAuth 등에서 부모창에 데이터 전달
+  // ✅ 테스트용 refresh 강제 실행
+  useEffect(() => {
+    const testRefresh = async () => {
+      try {
+        await axios.post(
+          'https://backend.evida.site/api/v1/users/auth/refresh',
+          {},
+          { withCredentials: true },
+        );
+        console.log('리프레시 성공');
+      } catch (err) {
+        console.error('리프레시 실패', err);
+      }
+    };
+
+    testRefresh();
+  }, []);
+
+  // 새창: OAuth 등에서 부모창에 데이터 전달
   useEffect(() => {
     if (!window.opener) return;
     const fetchUser = async () => {
@@ -38,7 +56,7 @@ export default function AppContent() {
     fetchUser();
   }, []);
 
-  // 🔹 부모창: 새창 메시지 수신
+  // 부모창: 새창 메시지 수신
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== 'https://eunbin.evida.site') return;
@@ -51,7 +69,7 @@ export default function AppContent() {
     return () => window.removeEventListener('message', handleMessage);
   }, [setAuthData, navigate]);
 
-  // 🔹 부모창: axios 인터셉터로 토큰 만료 감지
+  // 부모창: axios 인터셉터로 토큰 만료 감지
   useEffect(() => {
     const interceptor = axios.interceptors.response.use(
       (res) => res,
@@ -60,7 +78,7 @@ export default function AppContent() {
 
         if (
           axios.isAxiosError(err) &&
-          //err.response?.status === 401 &&
+          err.response?.status === 401 &&
           originalRequest &&
           !originalRequest._retry
         ) {
@@ -74,7 +92,7 @@ export default function AppContent() {
                 {},
                 { withCredentials: true },
               );
-              // 🔹 큐 재시도 제거: refresh만 처리, 실패한 요청 재시도하지 않음
+              // 큐 재시도 제거: refresh만 처리, 실패한 요청 재시도하지 않음
               return Promise.resolve();
             } catch (refreshError) {
               logout();
@@ -94,7 +112,7 @@ export default function AppContent() {
     return () => axios.interceptors.response.eject(interceptor);
   }, [logout, navigate]);
 
-  // 🔹 Zustand 상태 변경 시 로컬 업데이트
+  // Zustand 상태 변경 시 로컬 업데이트
   useEffect(() => {
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
