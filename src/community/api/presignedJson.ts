@@ -1,157 +1,66 @@
-import { sanitizeFilename } from '../utils/upload';
+import type { Cat } from '../utils/mime';
+import { validateByCategory, pickContentType } from '../utils/mime';
+import { getPresigned, attachUploaded } from '../api/attachments';
+import { shortenFilename } from '../utils/filename';
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
-const CREATE_PREFIX = `${BASE}/api/v1/community/post`;
-
-export type Category = 'free' | 'share' | 'study';
-export type ApiId = { id?: number; post_id?: number } & Record<string, unknown>;
-
-export type CreatePostJSONBody =
-  | { category: 'free' | 'share'; title: string; content: string; user_id: number }
-  | {
-      category: 'study';
-      title: string;
-      content: string;
-      user_id: number;
-      recruit_start?: string;
-      recruit_end?: string;
-      study_start?: string;
-      study_end?: string;
-      max_member?: number;
-    };
-
-export async function createPostJSON(body: CreatePostJSONBody): Promise<ApiId> {
-  const url = `${CREATE_PREFIX}/${body.category}`;
-  const { category, ...payload } = body as any;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(payload),
-  });
-  const text = await res.text();
-  if (!res.ok) {
-    console.error('[createPostJSON]', url, res.status, text);
-    throw new Error(`createPostJSON ${res.status}: ${text}`);
-  }
-  return text ? JSON.parse(text) : {};
-}
-
-type PresignReq = { filename: string; content_type: string };
-
-type PresignRaw = {
-  key: string;
-  url: string;
-  fields: Record<string, string>;
-  expires_in: number;
-};
-
-export type PresignRes = {
-  key: string;
-  url: string;
-  fields: Record<string, string>;
-  expiresIn: number;
-};
-
-function normalizePresign(r: PresignRaw): PresignRes {
-  return {
-    key: r.key,
-    url: r.url,
-    fields: r.fields || {},
-    expiresIn: r.expires_in ?? 0,
-  };
-}
-
-async function requestPresignedJSON(
-  category: Exclude<Category, 'study'>,
-  postId: number,
-  file: File,
-): Promise<PresignRes> {
-  const url = `${CREATE_PREFIX}/${category}/${postId}/attachments/presigned`;
-  const body: PresignReq = {
-    filename: file.name,
-    content_type: file.type || 'application/octet-stream',
-  };
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(body),
-  });
-  const text = await res.text();
-  if (!res.ok) {
-    console.error('[presigned]', url, res.status, text);
-    throw new Error(`presigned ${res.status}: ${text}`);
-  }
-  const json = text ? JSON.parse(text) : {};
-  return normalizePresign(json as PresignRaw);
-}
-
-async function postPolicyToS3(p: PresignRes, file: File) {
-  const fd = new FormData();
-  for (const [k, v] of Object.entries(p.fields)) {
-    fd.append(k, v);
-  }
-  fd.append('file', file);
-
-  const res = await fetch(p.url, { method: 'POST', body: fd });
-  if (!res.ok) {
-    const t = await res.text();
-    console.error('[S3 POST ERR]', res.status, t);
-    throw new Error(`S3 POST 실패: ${res.status} ${t}`);
-  }
-}
-
-async function attachJSON(
-  category: Exclude<Category, 'study'>,
-  postId: number,
-  body: {
-    key: string;
-    file_name: string;
-    content_type: string;
-    file_size: number;
-    order: number;
-  },
-) {
-  const url = `${CREATE_PREFIX}/${category}/${postId}/attachments/attach`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(body),
-  });
-  const text = await res.text();
-  if (!res.ok) {
-    console.error('[attach]', url, res.status, text);
-    throw new Error(`attach ${res.status}: ${text}`);
-  }
-  return text ? JSON.parse(text) : {};
+export interface UploadResult {
+  file: File;
+  ok: boolean;
+  key?: string;
+  error?: string;
+  uploadName?: string;
 }
 
 export async function uploadWithPresignedJson(
-  category: Exclude<Category, 'study'>,
-  postId: number,
+  cat: Cat,
+  params: { post_id: number; user: number },
   files: File[],
-): Promise<string[]> {
-  const keys: string[] = [];
-  await Promise.all(
-    files.map(async (raw, i) => {
-      const file = sanitizeFilename(raw);
+  onProgress?: (file: File, loaded: number, total: number) => void,
+): Promise<UploadResult[]> {
+  const results: UploadResult[] = [];
 
-      const p = await requestPresignedJSON(category, postId, file);
+  for (const file of files) {
+    const valid = validateByCategory(cat, file);
+    if (!valid.ok) {
+      results.push({ file, ok: false, error: valid.reason });
+      continue;
+    }
+    const content_type = pickContentType(file)!;
 
-      await postPolicyToS3(p, file);
+    const uploadName = shortenFilename(file.name, { maxTotal: 80, maxBase: 40 });
 
-      await attachJSON(category, postId, {
-        key: p.key,
-        file_name: file.name,
-        content_type: file.type || 'application/octet-stream',
-        file_size: file.size,
-        order: i,
+    try {
+      const presigned = await getPresigned(cat, params, {
+        filename: uploadName,
+        content_type,
       });
 
-      keys.push(p.key);
-    }),
-  );
-  return keys;
+      const form = new FormData();
+      Object.entries(presigned.fields).forEach(([k, v]) => form.append(k, v));
+      form.append('file', file);
+
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', presigned.url);
+        xhr.upload.onprogress = (evt) => {
+          if (evt.lengthComputable && onProgress) onProgress(file, evt.loaded, evt.total);
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(`스토리지 업로드 실패: ${xhr.status}`));
+        };
+        xhr.onerror = () => reject(new Error('스토리지 업로드 네트워크 오류'));
+        xhr.send(form);
+      });
+
+      const key = presigned.fields.key;
+      await attachUploaded(cat, params, { key });
+
+      results.push({ file, ok: true, key, uploadName });
+    } catch (e: any) {
+      results.push({ file, ok: false, error: e?.message || '업로드 실패' });
+    }
+  }
+
+  return results;
 }
