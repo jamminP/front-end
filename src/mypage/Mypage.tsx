@@ -37,6 +37,15 @@ export default function MyPage() {
         >
           챌린지
         </NavLink>
+        <NavLink
+          to="/mypage/applicants"
+          end
+          className={({ isActive }) =>
+            `text-[16px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
+              isActive ? 'text-[#0180F5]' : 'text-[#878787]'
+            }`
+          }
+        ></NavLink>
       </nav>
       <section className="w-[90%] m-[50px_auto] md:m-[0] md:w-[80%]">
         <Outlet />
