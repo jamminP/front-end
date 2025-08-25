@@ -3,7 +3,6 @@ import { useInfiniteCursor } from '../hook/useInfiniteCursor';
 import { useIntersection } from '../hook/useIntersection';
 import { useNavigate } from 'react-router-dom';
 import type { ListItem } from '../api/types';
-import { getPostId } from '../api/community';
 import PostCard, { type Post } from '../components/Postcard';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 
@@ -11,6 +10,12 @@ const listVariants: Variants = {
   hidden: { opacity: 0, y: 10 },
   show: { opacity: 1, y: 0, transition: { duration: 0.18 } },
   exit: { opacity: 0, y: -8 },
+};
+
+const resolveId = (it: any): number | null => {
+  const raw = it?.id ?? it?.post_id ?? it?.share_post_id ?? it?.free_post_id ?? it?.study_post_id;
+  const n = typeof raw === 'string' ? Number(raw) : raw;
+  return Number.isFinite(n) ? (n as number) : null;
 };
 
 export default function CommunityShare() {
@@ -28,14 +33,12 @@ export default function CommunityShare() {
     const out: Array<{ key: string; id: number | null; item: ListItem }> = [];
     items.forEach((it, idx) => {
       if (it.category !== 'share') return;
-      const id = getPostId(it);
+      const id = resolveId(it);
       const key =
-        Number.isFinite(id) && id > 0
-          ? `share-${id}`
-          : `share-${(it as any).created_at ?? 'no-date'}-${idx}`;
+        id != null ? `share-${id}` : `share-${(it as any).created_at ?? 'no-date'}-${idx}`;
       if (seen.has(key)) return;
       seen.add(key);
-      out.push({ key, id: Number.isFinite(id) ? id : null, item: it });
+      out.push({ key, id, item: it });
     });
     return out;
   }, [items]);
