@@ -7,7 +7,7 @@ import recruiting from '../img/recruiting.png';
 import completed from '../img/completed.png';
 import type { FreeDetail, ShareDetail, StudyDetail } from '../api/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deletePost } from '../api/community';
+import { applyStudy, deletePost } from '../api/community';
 import LikeButton from './components/LikeButton';
 
 type Category = 'free' | 'share' | 'study';
@@ -39,7 +39,7 @@ export default function PostDetailPage() {
   const category = raw;
   const postId = Number(id);
 
-  const { data, isLoading, isError } = usePostDetail(category, postId);
+  const { data, isLoading, isError, refetch } = usePostDetail(category, postId);
 
   const current_user_id = 18;
   const isAdmin = false;
@@ -309,6 +309,8 @@ export default function PostDetailPage() {
     const meta = post.study_recruitment;
     const badgeIcon =
       post.badge === '모집중' ? recruiting : post.badge === '모집완료' ? completed : null;
+    const isAuthor = post.author_id === current_user_id;
+    const canApply = post.badge === '모집중' && !isAuthor;
 
     return (
       <motion.section
@@ -367,6 +369,28 @@ export default function PostDetailPage() {
             </div>
             <div>
               스터디 기간 : {formatDate(meta.study_start)} ~ {formatDate(meta.study_end)}
+            </div>
+            <div>
+              <button
+                disabled={!canApply}
+                onClick={async () => {
+                  const r = await refetch(); // 최신 상태로 재검증
+                  const fresh = (r?.data ?? post) as StudyDetail;
+
+                  if (fresh.badge !== '모집중' || fresh.author_id === current_user_id) {
+                    alert('지금은 신청할 수 없는 상태예요.');
+                    return;
+                  }
+
+                  try {
+                    await applyStudy({ post_id: fresh.id, user: current_user_id });
+                    alert('신청이 접수되었어요.');
+                    await refetch(); // 필요하면 다시 새로고침
+                  } catch (e: any) {
+                    alert(e?.message ?? '신청에 실패했어요.');
+                  }
+                }}
+              />
             </div>
           </motion.div>
 
