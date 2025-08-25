@@ -1,4 +1,3 @@
-import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import CommunityTab from './components/CommunityTab';
 import SidebarRanking from './components/SidebarRanking';
@@ -17,7 +16,7 @@ const CommunityLayout = () => {
       {/* 상단 sticky 바: 높이 안정화 (h-14 = 56px) */}
       <nav className="sticky inset-x-0 z-30 bg-white top-20">
         <div className="mx-auto w-full max-w-[1100px] px-4 sm:px-6 lg:px-8 h-14 flex items-center">
-          <CommunityTab />
+          <CommunityTab category={category} />
         </div>
       </nav>
 

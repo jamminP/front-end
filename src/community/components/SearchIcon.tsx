@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import SearchPopover from './Search';
 import { baseClass } from './CreatePostButton';
+import type { PostCategory } from '../api/types';
 
-export default function SearchIcon() {
+export default function SearchIcon({ category = 'all' }: { category?: PostCategory }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -22,7 +23,7 @@ export default function SearchIcon() {
 
       {open && (
         <div className="absolute right-0 mt-2 z-50">
-          <SearchPopover onClose={() => setOpen(false)} />
+          <SearchPopover category={category} onClose={() => setOpen(false)} />
         </div>
       )}
     </div>

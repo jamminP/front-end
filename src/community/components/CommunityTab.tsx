@@ -1,6 +1,6 @@
-// src/community/components/CommunityTab.tsx
 import { NavLink } from 'react-router-dom';
 import SearchIcon from './SearchIcon';
+import type { PostCategory } from '../api/types';
 
 const tabs = [
   { lable: '전체', path: '/community' },
@@ -9,7 +9,7 @@ const tabs = [
   { lable: '스터디', path: '/community/study' },
 ];
 
-const CommunityTab = () => {
+export default function CommunityTab({ category }: { category: PostCategory }) {
   return (
     <div className="w-full flex items-center gap-2">
       <div className="min-w-0 flex-1 overflow-x-auto no-scrollbar">
@@ -36,10 +36,8 @@ const CommunityTab = () => {
       </div>
 
       <div className="shrink-0 ml-2">
-        <SearchIcon />
+        <SearchIcon category={category} />
       </div>
     </div>
   );
-};
-
-export default CommunityTab;
+}
