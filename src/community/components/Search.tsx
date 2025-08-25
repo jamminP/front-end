@@ -237,7 +237,7 @@ export default function SearchPopover({
         <div className="mt-2 flex items-center gap-2">
           <ScopeSelect value={search_in} onChange={setSearchIn} />
 
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ml-2.5 flex items-center gap-1">
             <DatePicker
               dateFormat="yyyy.MM.dd"
               selected={startDate}
@@ -304,7 +304,6 @@ export default function SearchPopover({
         )}
       </ul>
 
-      {/* Fallback 버튼: 스크롤 인터섹션이 막힌 환경 대비 */}
       {hasNextPage && (
         <div className="p-3 border-t">
           <button
