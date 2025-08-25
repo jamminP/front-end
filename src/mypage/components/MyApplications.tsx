@@ -18,9 +18,11 @@ export default function MyApplications() {
 
   const fetchApplications = async () => {
     try {
-      const res = await axios.get(`https://backend.evida.site/api/v1/users/myinfo/applications`, {
-        withCredentials: true,
-      });
+      const res = await axios.get<{ items: Applicant[] }>(
+        `https://backend.evida.site/api/v1/users/myinfo/applications`,
+        { withCredentials: true },
+      );
+      setApplicants(res.data.items);
     } catch (err) {
       console.error(err);
     }
@@ -45,27 +47,20 @@ export default function MyApplications() {
         <>
           <ul>
             {applicants.map((c) => {
-              const parsedOutput = (() => {
-                try {
-                  return JSON.parse(c.output_data);
-                } catch {
-                  return '데이터 오류';
-                }
-              })();
               return (
                 <li
-                  key={c.id}
+                  key={c.application_id}
                   className="flex justify-between md:items-center flex-col md:flex-row w-[100%] text-[#252525] bg-[#ffffff] rounded-2xl mb-[5%] md:mb-[2%] p-[25px] border-[1px] border-[#e9e9e9] transform transition-transform duration-300 hover:translate-y-[-5px]"
                 >
                   <div className="w-full md:w-[80%]">
                     <h4 className="text-[1.1rem] font-bold tracking-[-.03rem] leading-[1.3]">
-                      {parsedOutput.title}
+                      {c.post_title}
                     </h4>
                     <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
-                      {parsedOutput.description}
+                      카테고리 : {c.post_category} / 스터디장 : {c.owner_nickname}
                     </p>
                     <span className="text-[.8rem] text-[#c2c2c2]">
-                      {c.start_date.slice(0, 10)}~{c.end_date.slice(0, 10)}
+                      신청일 : {new Date(c.applied_at).toLocaleDateString()}
                     </span>
                   </div>
                   <div
