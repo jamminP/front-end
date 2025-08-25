@@ -1,12 +1,10 @@
-import { sanitizeFilename } from '../utils/upload';
+import type { Cat } from '../utils/mime';
+import { validateByCategory, pickContentType } from '../utils/mime';
+import { getPresigned, attachUploaded } from '../api/attachments';
+import { shortenFilename } from '../utils/filename';
+import { http } from './http';
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
-const CREATE_PREFIX = `${BASE}/api/v1/community/post`;
-
-export type Category = 'free' | 'share' | 'study';
-export type ApiId = { id?: number; post_id?: number } & Record<string, unknown>;
-
-export type CreatePostJSONBody =
+type CreateBody =
   | { category: 'free' | 'share'; title: string; content: string; user_id: number }
   | {
       category: 'study';
@@ -20,138 +18,109 @@ export type CreatePostJSONBody =
       max_member?: number;
     };
 
-export async function createPostJSON(body: CreatePostJSONBody): Promise<ApiId> {
-  const url = `${CREATE_PREFIX}/${body.category}`;
-  const { category, ...payload } = body as any;
-  const res = await fetch(url, {
+export async function createPostJSON(body: CreateBody) {
+  const qs = new URLSearchParams({ user: String(body.user_id) }).toString();
+  return http<any>(`/api/v1/community/post?${qs}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
   });
-  const text = await res.text();
-  if (!res.ok) {
-    console.error('[createPostJSON]', url, res.status, text);
-    throw new Error(`createPostJSON ${res.status}: ${text}`);
-  }
-  return text ? JSON.parse(text) : {};
 }
 
-type PresignReq = { filename: string; content_type: string };
-
-type PresignRaw = {
-  key: string;
-  url: string;
-  fields: Record<string, string>;
-  expires_in: number;
-};
-
-export type PresignRes = {
-  key: string;
-  url: string;
-  fields: Record<string, string>;
-  expiresIn: number;
-};
-
-function normalizePresign(r: PresignRaw): PresignRes {
-  return {
-    key: r.key,
-    url: r.url,
-    fields: r.fields || {},
-    expiresIn: r.expires_in ?? 0,
-  };
+export interface UploadResult {
+  file: File;
+  ok: boolean;
+  key?: string;
+  error?: string;
+  uploadName?: string;
 }
 
-async function requestPresignedJSON(
-  category: Exclude<Category, 'study'>,
-  postId: number,
+async function uploadWithPresignedPOST(
   file: File,
-): Promise<PresignRes> {
-  const url = `${CREATE_PREFIX}/${category}/${postId}/attachments/presigned`;
-  const body: PresignReq = {
-    filename: file.name,
-    content_type: file.type || 'application/octet-stream',
-  };
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(body),
-  });
-  const text = await res.text();
-  if (!res.ok) {
-    console.error('[presigned]', url, res.status, text);
-    throw new Error(`presigned ${res.status}: ${text}`);
-  }
-  const json = text ? JSON.parse(text) : {};
-  return normalizePresign(json as PresignRaw);
-}
-
-async function postPolicyToS3(p: PresignRes, file: File) {
-  const fd = new FormData();
-  for (const [k, v] of Object.entries(p.fields)) {
-    fd.append(k, v);
-  }
-  fd.append('file', file);
-
-  const res = await fetch(p.url, { method: 'POST', body: fd });
-  if (!res.ok) {
-    const t = await res.text();
-    console.error('[S3 POST ERR]', res.status, t);
-    throw new Error(`S3 POST 실패: ${res.status} ${t}`);
-  }
-}
-
-async function attachJSON(
-  category: Exclude<Category, 'study'>,
-  postId: number,
-  body: {
-    key: string;
-    file_name: string;
-    content_type: string;
-    file_size: number;
-    order: number;
-  },
+  presigned: { url: string; fields: Record<string, string> },
+  onProgress?: (file: File, loaded: number, total: number) => void,
 ) {
-  const url = `${CREATE_PREFIX}/${category}/${postId}/attachments/attach`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify(body),
+  const form = new FormData();
+  for (const [k, v] of Object.entries(presigned.fields)) form.append(k, v);
+  form.append('file', file, file.name);
+
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', presigned.url);
+
+    xhr.upload.onprogress = (evt) => {
+      if (evt.lengthComputable && onProgress) onProgress(file, evt.loaded, evt.total);
+    };
+    xhr.onerror = () => reject(new Error('스토리지 업로드 네트워크 오류'));
+    xhr.ontimeout = () => reject(new Error('스토리지 업로드 타임아웃'));
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+      } else {
+        let detail = '';
+        try {
+          const xml =
+            xhr.responseXML || new DOMParser().parseFromString(xhr.responseText, 'application/xml');
+          const code = xml?.getElementsByTagName('Code')[0]?.textContent || '';
+          const msg = xml?.getElementsByTagName('Message')[0]?.textContent || '';
+          detail = [code, msg].filter(Boolean).join(' - ');
+        } catch {}
+        console.error('S3 error status:', xhr.status, 'url:', xhr.responseURL);
+        console.error('S3 error body:', xhr.responseText);
+        reject(new Error(`스토리지 업로드 실패 (${xhr.status})${detail ? `: ${detail}` : ''}`));
+      }
+    };
+
+    xhr.send(form);
   });
-  const text = await res.text();
-  if (!res.ok) {
-    console.error('[attach]', url, res.status, text);
-    throw new Error(`attach ${res.status}: ${text}`);
-  }
-  return text ? JSON.parse(text) : {};
+
+  const key = presigned.fields.key;
+  const objectUrl = `${presigned.url.replace(/\/$/, '')}/${key}`;
+  return { key, objectUrl };
 }
 
 export async function uploadWithPresignedJson(
-  category: Exclude<Category, 'study'>,
-  postId: number,
+  cat: Cat,
+  post_id: number,
   files: File[],
-): Promise<string[]> {
-  const keys: string[] = [];
-  await Promise.all(
-    files.map(async (raw, i) => {
-      const file = sanitizeFilename(raw);
+  onProgress?: (file: File, loaded: number, total: number) => void,
+  userId?: number,
+): Promise<UploadResult[]> {
+  const results: UploadResult[] = [];
+  const user = 18; // 필요 시 파라미터화
 
-      const p = await requestPresignedJSON(category, postId, file);
+  for (const file of files) {
+    const valid = validateByCategory(cat, file);
+    if (!valid.ok) {
+      results.push({ file, ok: false, error: valid.reason });
+      continue;
+    }
+    const content_type = pickContentType(file)!;
+    const uploadName = shortenFilename(file.name, { maxTotal: 80, maxBase: 40 });
 
-      await postPolicyToS3(p, file);
+    try {
+      const presigned = await getPresigned(
+        cat,
+        { post_id, user },
+        { filename: uploadName, content_type },
+      );
 
-      await attachJSON(category, postId, {
-        key: p.key,
-        file_name: file.name,
-        content_type: file.type || 'application/octet-stream',
-        file_size: file.size,
-        order: i,
-      });
+      let key: string;
+      if (presigned.fields) {
+        const r = await uploadWithPresignedPOST(file, presigned, onProgress);
+        key = r.key;
+      } else {
+        throw new Error('유효하지 않은 presign 응답');
+      }
 
-      keys.push(p.key);
-    }),
-  );
-  return keys;
+      await attachUploaded(cat, { post_id, user }, { key });
+
+      results.push({ file, ok: true, key, uploadName });
+    } catch (e: any) {
+      results.push({ file, ok: false, error: e?.message || '업로드 실패' });
+    }
+  }
+
+  return results;
 }

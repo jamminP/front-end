@@ -8,6 +8,17 @@ import type {
   TopWeeklyResponse,
   CommentResponse,
   CommentTreeItem,
+  GETCommentResponse,
+  GetCommentsParams,
+  PatchPostParams,
+  PatchPostRequest,
+  PatchCommentsParams,
+  PatchCommentsRequest,
+  DeletePostParams,
+  DeleteCommentParams,
+  GetLikePrams,
+  PostLikeParams,
+  LikeStatus,
 } from './types';
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
@@ -148,35 +159,53 @@ export function createStudyPost(
   return postCreate(user, { ...payload, category: 'study' as const });
 }
 
-function normalizeComments(raw: any): CommentResponse[] {
-  if (Array.isArray(raw)) return raw as CommentResponse[];
-  if (Array.isArray(raw?.items)) return raw.items as CommentResponse[];
-  if (Array.isArray(raw?.data)) return raw.data as CommentResponse[];
-  if (Array.isArray(raw?.item)) return raw.item as CommentResponse[];
-  return [];
+export function getComments(
+  post_id: number,
+  params: GetCommentsParams = {},
+): Promise<GETCommentResponse> {
+  const { order = 'id', offset = 0, limit = 50 } = params;
+  const qs = new URLSearchParams({
+    order,
+    offset: String(offset),
+    limit: String(limit),
+  });
+
+  return http<GETCommentResponse>(`/api/v1/community/post/${post_id}/comments?${qs}`, {
+    method: 'GET',
+    credentials: 'include',
+  });
 }
 
-export const getComments = async (postId: number): Promise<CommentResponse[]> => {
-  const raw = await http<any>(`/api/v1/community/post/${postId}/comments`);
-  return normalizeComments(raw);
-};
+export interface CreateCommentBody {
+  user: number;
+  content: string;
+  parent_comment_id: number | null;
+}
 
-export const createComment = (
-  user: number,
+export async function createComment(
   post_id: number,
-  content: string,
-  parent_comment_id?: number,
-) =>
-  http<CommentResponse>(`/api/v1/community/post/${post_id}/comment`, {
+  payload: CreateCommentBody,
+): Promise<CommentResponse> {
+  const qs = new URLSearchParams({ user: String(payload.user) }).toString();
+
+  const body: Record<string, unknown> = { content: payload.content };
+  if (payload.parent_comment_id != null && payload.parent_comment_id > 0) {
+    body.parent_comment_id = payload.parent_comment_id;
+  }
+
+  const res = await fetch(`/api/v1/community/post/${post_id}/comment?${qs}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({
-      user,
-      content: content.trim(),
-      parent_comment_id:
-        typeof parent_comment_id === 'number' && parent_comment_id > 0 ? parent_comment_id : null,
-    }),
+    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    credentials: 'include',
+    body: JSON.stringify(body),
   });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`createComment failed: ${res.status} ${text}`);
+  }
+  return res.json() as Promise<CommentResponse>;
+}
 
 export async function listComments(postId: number): Promise<CommentTreeItem[]> {
   try {
@@ -186,6 +215,45 @@ export async function listComments(postId: number): Promise<CommentTreeItem[]> {
     throw e;
   }
 }
+
+//patch post / comment
+export const patchPost = (params: PatchPostParams, body: PatchPostRequest) =>
+  http<any>(`/api/v1/community/post/${params.post_id}?user=${params.user}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+
+export const patchComment = (
+  post_id: number,
+  params: PatchCommentsParams,
+  body: PatchCommentsRequest,
+) =>
+  http<any>(`/api/v1/community/comment/${params.comment_id}?user=${params.user}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+
+//delete
+export const deletePost = (params: DeletePostParams) =>
+  http<void>(`/api/v1/community/post/${params.post_id}?user=${params.user}`, {
+    method: 'DELETE',
+  });
+
+export const deleteComment = (params: DeleteCommentParams) =>
+  http<void>(`/api/v1/community/comment/${params.comment_id}?user=${params.user}`, {
+    method: 'DELETE',
+  });
+
+//like
+export const GetLike = (params: GetLikePrams) =>
+  http<LikeStatus>(`/api/v1/community/post/${params.post_id}/likes`, {
+    method: 'GET',
+  });
+
+export const PostLike = (params: PostLikeParams) =>
+  http<LikeStatus>(`/api/v1/community/post/${params.post_id}/like`, {
+    method: 'POST',
+  });
 
 export async function getPostDetail(postId: number): Promise<PostDetail> {
   return http<PostDetail>(DETAIL_ENDPOINT(postId));

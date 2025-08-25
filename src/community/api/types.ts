@@ -196,3 +196,96 @@ export interface PostRequest {
     max_member?: number;
   };
 }
+
+export interface CommentResponse {
+  id: number;
+  post_id: number;
+  content: string;
+  author_nickname: string;
+  author_id: number;
+  parent_id: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GetCommentsParams {
+  order?: 'id' | '-id';
+  offset?: number;
+  limit?: number;
+}
+
+//Comment Patch
+export interface PatchCommentsParams {
+  comment_id: number;
+  user: number;
+}
+
+export interface PatchCommentsRequest {
+  content: string;
+}
+
+//Patch Post
+export interface PatchPostParams {
+  post_id: number;
+  user: number;
+}
+
+export interface PatchPostRequest {
+  title: string;
+  content: string;
+  recruit_start?: string;
+  recruit_end?: string;
+  study_start?: string;
+  study_end?: string;
+  max_member?: number;
+}
+
+export interface StudyRecruitment {
+  recruit_start?: string;
+  recruit_end?: string;
+  study_start?: string;
+  study_end?: string;
+  max_member?: number;
+}
+
+export interface PostDetailResponse {
+  post_id: number;
+  title: string;
+  content: string;
+  category: ItemCategory;
+  author_id: number;
+  created_at: string;
+  // 합의: study는 우선 study_recruitment 사용, 평탄화 필드는 폴백
+  study_recruitment?: StudyRecruitment;
+  recruit_start?: string;
+  recruit_end?: string;
+  study_start?: string;
+  study_end?: string;
+  max_member?: number;
+}
+
+// delete
+export interface DeletePostParams {
+  post_id: number;
+  user: number;
+}
+
+export interface DeleteCommentParams {
+  comment_id: number;
+  user: number;
+}
+
+//like
+export interface GetLikePrams {
+  post_id: number;
+}
+
+export interface PostLikeParams {
+  post_id: number;
+  user: number;
+}
+
+export interface LikeStatus {
+  liked: boolean;
+  like_count: number;
+}
