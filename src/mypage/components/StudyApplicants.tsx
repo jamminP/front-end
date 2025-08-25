@@ -2,90 +2,87 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 
 interface Applicant {
-  id: number;
-  user_id: number;
-  output_data: string;
-  start_date: string;
-  end_date: string;
+  application_id: number;
+  applicant_id: number;
+  applicant_nickname?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  applied_at: string;
+}
+interface ApplicantList {
+  count: number;
+  next_cursor: number;
+  items: Applicant[];
 }
 
-//더미데이터
-const dummyApplicants: Applicant[] = [
-  {
-    id: 1,
-    user_id: 101,
-    output_data: JSON.stringify({
-      title: '리액트 스터디 모집',
-      description: '신청자 : 홍길동',
-    }),
-    start_date: '2025-09-01',
-    end_date: '2025-09-30',
-  },
-  {
-    id: 2,
-    user_id: 102,
-    output_data: JSON.stringify({
-      title: '알고리즘 스터디',
-      description: '신청자 : 김영희',
-    }),
-    start_date: '2025-09-05',
-    end_date: '2025-10-05',
-  },
-];
-
-export default function StudyApplicants() {
+export default function StudyApplicants({ postId }: { postId: number }) {
   const [applicants, setApplicants] = useState<Applicant[]>([]);
+  const [nextCursor, setNextCursor] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
-  // const fetchApplicantList = async () => {
-  //   try {
-  //     const res = await axios.get(`/api/v1/community/post/주소바꿔야됑`, {
-  //       withCredentials: true,
-  //     });
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
+  const fetchApplicantList = async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+    try {
+      const res = await axios.get<ApplicantList>(
+        `https://backend.evida.site/api/v1/users/myinfo/${postId}/applications?limit=5${
+          nextCursor ? `&cursor=${nextCursor}` : ''
+        }`,
+        { withCredentials: true },
+      );
+
+      setApplicants((prev) => [...prev, ...res.data.items]);
+      setNextCursor(res.data.next_cursor || null);
+      if (res.data.next_cursor === 0)
+        setHasMore(res.data.next_cursor != null && res.data.next_cursor !== 0);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAction = async (
+    applicationId: number,
+    applicantId: number,
+    action: 'approve' | 'reject',
+  ) => {
+    try {
+      await axios.post(
+        `https://backend.evida.site/api/v1/community/study-application/${applicationId}/${action}?user=${applicantId}`,
+        {},
+        { withCredentials: true },
+      );
+      setApplicants((prev) => prev.filter((a) => a.application_id !== applicationId));
+    } catch (err) {
+      console.error(err);
+      alert('처리 중 오류가 발생했습니다.');
+    }
+  };
 
   useEffect(() => {
-    //fetchApplicantList();
-    setApplicants(dummyApplicants);
+    fetchApplicantList();
   }, []);
 
-  // 무한스크롤: 스크롤 이벤트 감지 (나중에 API 연결 시 교체)
   useEffect(() => {
     const handleScroll = () => {
       if (
         window.innerHeight + document.documentElement.scrollTop + 100 >=
         document.documentElement.scrollHeight
       ) {
-        // 여기서 다음 5개 API 호출 예정
-        console.log('스크롤 바닥 → 다음 데이터 가져오기');
+        fetchApplicantList();
       }
     };
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [nextCursor, loading, hasMore]);
 
-  const handleAction = async (
-    applicationId: number,
-    userId: number,
-    action: 'approve' | 'reject',
-  ) => {
-    try {
-      await axios.post(
-        `https://backend.evida.site/api/v1/community/study-application/${applicationId}/${action}?user=${userId}`,
-        {},
-        { withCredentials: true },
-      );
-
-      // 성공 시 목록에서 제거
-      setApplicants((prev) => prev.filter((a) => a.id !== applicationId));
-    } catch (err) {
-      console.error(err);
-      alert('처리 중 오류가 발생했습니다.');
-    }
-  };
+  useEffect(() => {
+    setApplicants([]);
+    setNextCursor(null);
+    setHasMore(true);
+    fetchApplicantList();
+  }, [postId]);
 
   return (
     <>
@@ -102,47 +99,42 @@ export default function StudyApplicants() {
         <>
           <ul>
             {applicants.map((c) => {
-              const parsedOutput = (() => {
-                try {
-                  return JSON.parse(c.output_data);
-                } catch {
-                  return '데이터 오류';
-                }
-              })();
               return (
                 <li
-                  key={c.id}
+                  key={c.application_id}
                   className="flex justify-between md:items-center flex-col md:flex-row w-[100%] text-[#252525] bg-[#ffffff] rounded-2xl mb-[5%] md:mb-[2%] p-[25px] border-[1px] border-[#e9e9e9] transform transition-transform duration-300 hover:translate-y-[-5px]"
                 >
                   <div className="w-full md:w-[80%]">
                     <h4 className="text-[1.1rem] font-bold tracking-[-.03rem] leading-[1.3]">
-                      {parsedOutput.title}
+                      {c.applicant_nickname ?? '알 수 없음'}
                     </h4>
                     <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
-                      {parsedOutput.description}
+                      신청일 : {new Date(c.applied_at).toLocaleDateString()}
                     </p>
-                    <span className="text-[.8rem] text-[#c2c2c2]">
-                      {c.start_date.slice(0, 10)}~{c.end_date.slice(0, 10)}
-                    </span>
+                    <span className="text-[.8rem] text-[#c2c2c2]">상태 : {c.status}</span>
                   </div>
-                  <div className="flex">
-                    <button
-                      onClick={() => handleAction(c.id, c.user_id, 'approve')}
-                      className="flex justify-center items-center text-[.9rem] mr-[5px] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[60px] md:h-[40px] rounded-4xl text-[#ffffff] bg-[#1b3043] cursor-pointer"
-                    >
-                      승인
-                    </button>
-                    <button
-                      onClick={() => handleAction(c.id, c.user_id, 'reject')}
-                      className="flex justify-center items-center text-[.9rem] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[60px] md:h-[40px] rounded-4xl text-[#364153] bg-[#ebe6e7] cursor-pointer"
-                    >
-                      거절
-                    </button>
-                  </div>
+                  {c.status === 'pending' && (
+                    <div className="flex">
+                      <button
+                        onClick={() => handleAction(c.application_id, c.applicant_id, 'approve')}
+                        className="flex justify-center items-center text-[.9rem] mr-[5px] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[60px] md:h-[40px] rounded-4xl text-[#ffffff] bg-[#1b3043] cursor-pointer"
+                      >
+                        승인
+                      </button>
+                      <button
+                        onClick={() => handleAction(c.application_id, c.applicant_id, 'reject')}
+                        className="flex justify-center items-center text-[.9rem] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[60px] md:h-[40px] rounded-4xl text-[#364153] bg-[#ebe6e7] cursor-pointer"
+                      >
+                        거절
+                      </button>
+                    </div>
+                  )}
                 </li>
               );
             })}
           </ul>
+          {loading && <p className="text-gray-500 mt-2">로딩 중...</p>}
+          {!hasMore && <p className="text-gray-500 mt-2">더 이상 신청자가 없습니다.</p>}
         </>
       )}
     </>
