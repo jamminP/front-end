@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 interface Applicant {
@@ -23,7 +23,7 @@ export default function StudyApplicants() {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchApplicantList = async () => {
+  const fetchApplicantList = useCallback(async () => {
     if (!postIdNum || loading || !hasMore) return;
     setLoading(true);
     try {
@@ -36,13 +36,13 @@ export default function StudyApplicants() {
 
       setApplicants((prev) => [...prev, ...res.data.items]);
       setNextCursor(res.data.next_cursor || null);
-      if (res.data.next_cursor === 0) setHasMore(res.data.next_cursor !== 0);
+      setHasMore(res.data.next_cursor !== 0);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [postIdNum, nextCursor]);
 
   const handleAction = async (
     applicationId: number,
@@ -77,7 +77,7 @@ export default function StudyApplicants() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [nextCursor, loading, hasMore, postIdNum]);
+  }, [fetchApplicantList]);
 
   return (
     <>
