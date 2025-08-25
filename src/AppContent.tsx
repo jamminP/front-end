@@ -6,6 +6,24 @@ import axios, { AxiosError } from 'axios';
 // 컴포넌트 외부 전역 변수
 let isRefreshing = false;
 
+// 401 발생 요청 대기 큐
+let failedQueue: {
+  resolve: (value?: any) => void;
+  reject: (error: any) => void;
+  originalRequest: any;
+}[] = [];
+
+const processQueue = (error: any = null) => {
+  failedQueue.forEach(({ resolve, reject, originalRequest }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(axios(originalRequest));
+    }
+  });
+  failedQueue = [];
+};
+
 export default function AppContent() {
   const setAuthData = useAuthStore((state) => state.setAuthData);
   const user = useAuthStore((state) => state.user);
@@ -58,25 +76,36 @@ export default function AppContent() {
       async (err) => {
         const originalRequest = err.config;
 
-        if (
-          axios.isAxiosError(err) &&
-          err.response?.status === 401 &&
-          originalRequest &&
-          !originalRequest._retry
-        ) {
-          originalRequest._retry = true;
+        if (axios.isAxiosError(err) && err.response?.status === 401 && originalRequest) {
+          // 이미 재시도한 요청은 다시 시도하지 않음
+          if (!originalRequest._retry) {
+            originalRequest._retry = true;
 
-          if (!isRefreshing) {
+            // refresh 진행 중이면 큐에 대기
+            if (isRefreshing) {
+              return new Promise((resolve, reject) => {
+                failedQueue.push({ resolve, reject, originalRequest });
+              });
+            }
+
             isRefreshing = true;
+
             try {
+              // 🔹 refresh 요청
               await axios.post(
                 'https://backend.evida.site/api/v1/users/auth/refresh',
                 {},
                 { withCredentials: true },
               );
-              // 큐 재시도 제거: refresh만 처리, 실패한 요청 재시도하지 않음
-              return Promise.resolve();
+
+              // 🔹 대기 중인 요청 재시도
+              processQueue();
+
+              // 🔹 현재 요청 재시도
+              return axios(originalRequest);
             } catch (refreshError) {
+              // refresh 실패 → 큐 요청도 실패 처리, 안전하게 로그아웃
+              processQueue(refreshError);
               logout();
               localStorage.removeItem('user');
               navigate('/login');
