@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import './App.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import CommunityLayout from './community/CommunityLayout';
@@ -16,43 +16,8 @@ import CommunityShare from './community/category/CommunityShare';
 import AiPage from './ai/AiPage';
 import CommunityStudy from './community/category/CommunityStudy';
 import PostDetail from './community/post/PostDetail';
-<<<<<<< HEAD
-import { useCallback, useEffect, useState } from 'react';
-import useAuthStore from './store/authStore';
-import axios from 'axios';
 import EditPost from './community/form/EditPost';
-
-function AppContent() {
-  const setAuthData = useAuthStore((state) => state.setAuthData);
-  const logout = useAuthStore((state) => state.logout);
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-  const location = useLocation();
-
-  const checkLogin = useCallback(async () => {
-    try {
-      const res = await axios.get('https://backend.evida.site/api/v1/users/myinfo', {
-        withCredentials: true,
-      });
-      if (!isLoggedIn) setAuthData(res.data);
-    } catch (err: any) {
-      // 401이면 조용히 로그아웃 처리
-      if (axios.isAxiosError(err) && err.response?.status === 401) {
-        logout();
-      } else {
-        // 다른 에러는 콘솔에 출력
-        console.error(err);
-      }
-    }
-  }, [setAuthData, logout, isLoggedIn]);
-
-  useEffect(() => {
-    if (location.pathname !== '/login' && !isLoggedIn) {
-      checkLogin();
-    }
-  }, [location.pathname, checkLogin, isLoggedIn]);
-=======
 import AppContent from './AppContent';
->>>>>>> origin/dev
 
 export default function App() {
   return (

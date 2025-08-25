@@ -176,18 +176,11 @@ export function getComments(
   });
 }
 
-<<<<<<< HEAD
 export interface CreateCommentBody {
   user: number;
   content: string;
   parent_comment_id: number | null;
 }
-=======
-export const getComments = async (postId: number): Promise<CommentResponse[]> => {
-  const raw = await http<any>(`/api/v1/community/post/${postId}/comments`);
-  return normalizeComments(raw);
-};
->>>>>>> origin/dev
 
 export async function createComment(
   post_id: number,
@@ -202,19 +195,9 @@ export async function createComment(
 
   const res = await fetch(`/api/v1/community/post/${post_id}/comment?${qs}`, {
     method: 'POST',
-<<<<<<< HEAD
     headers: { 'Content-Type': 'application/json; charset=utf-8' },
     credentials: 'include',
     body: JSON.stringify(body),
-=======
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({
-      user,
-      content: content.trim(),
-      parent_comment_id:
-        typeof parent_comment_id === 'number' && parent_comment_id > 0 ? parent_comment_id : null,
-    }),
->>>>>>> origin/dev
   });
 
   if (!res.ok) {
@@ -233,7 +216,6 @@ export async function listComments(postId: number): Promise<CommentTreeItem[]> {
   }
 }
 
-<<<<<<< HEAD
 //patch post / comment
 export const patchPost = (params: PatchPostParams, body: PatchPostRequest) =>
   http<any>(`/api/v1/community/post/${params.post_id}?user=${params.user}`, {
@@ -272,8 +254,3 @@ export const PostLike = (params: PostLikeParams) =>
   http<LikeStatus>(`/api/v1/community/post/${params.post_id}/like`, {
     method: 'POST',
   });
-=======
-export async function getPostDetail(postId: number): Promise<PostDetail> {
-  return http<PostDetail>(DETAIL_ENDPOINT(postId));
-}
->>>>>>> origin/dev
