@@ -5,17 +5,18 @@ import { getPostList } from '../api/community';
 
 export interface CategoryListCursorOptions {
   limit?: number;
-  search_in?: SearchIn | 'author_id';
+  search_in?: SearchIn;
   keyword?: string;
   author_id?: string | number;
   date_from?: string;
   date_to?: string;
   badge?: string;
   cursor?: number | null;
+  enabled?: boolean;
 }
 
 const normalizeSearchIn = (v?: CategoryListCursorOptions['search_in']): SearchIn | undefined =>
-  v === 'author_id' ? 'author' : (v ?? undefined);
+  v ?? undefined;
 
 export const categoryListCursorKeys = {
   all: ['community', 'list'] as const,
@@ -46,6 +47,7 @@ export function useCategoryListCursor(category: Category, params: CategoryListCu
     badge,
     limit = 20,
     cursor = null,
+    enabled = true,
   } = params;
 
   type PageParam = number | null;
@@ -65,11 +67,19 @@ export function useCategoryListCursor(category: Category, params: CategoryListCu
     queryFn: ({ pageParam }) =>
       getPostList({
         category,
-        cursor: pageParam as PageParam, // 숫자 커서 사용
+        cursor: pageParam as PageParam,
         limit,
+        search_in,
+        keyword,
+        author_id,
+        date_from,
+        date_to,
+        badge,
       }),
-    getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined, // null이면 더 없음
+    getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    enabled,
   });
 
   const items: ListItem[] = useMemo(
