@@ -1,3 +1,4 @@
+// src/community/components/CommunityTab.tsx
 import { NavLink } from 'react-router-dom';
 import SearchIcon from './SearchIcon';
 
@@ -10,28 +11,32 @@ const tabs = [
 
 const CommunityTab = () => {
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-center">
-        <span className="inline-block w-8" aria-hidden />
-        <nav className="flex items-center mx-70 gap-6">
+    <div className="w-full flex items-center gap-2">
+      <div className="min-w-0 flex-1 overflow-x-auto no-scrollbar">
+        <nav className="flex flex-nowrap items-center gap-6 justify-center">
           {tabs.map((tab) => (
             <NavLink
               key={tab.path}
               to={tab.path}
               end={tab.path === '/community'}
               className={({ isActive }) =>
-                `text-base font-medium pb-1
-              border-b-2 ${isActive ? 'text-[#0180F5] border-blue-600 font-bold' : 'text-gray-500 border-transparent hover:text-[#0180F5]'}`
+                `shrink-0 whitespace-nowrap break-keep inline-flex items-center
+                 px-1.5 text-base pb-1 border-b-2
+                 ${
+                   isActive
+                     ? 'text-[#0180F5] border-blue-600 font-bold'
+                     : 'text-gray-500 border-transparent hover:text-[#0180F5]'
+                 }`
               }
             >
               {tab.lable}
             </NavLink>
           ))}
         </nav>
+      </div>
 
-        <div>
-          <SearchIcon />
-        </div>
+      <div className="shrink-0 ml-2">
+        <SearchIcon />
       </div>
     </div>
   );
