@@ -220,7 +220,7 @@ export default function PostDetailPage() {
         animate="show"
         exit={{ opacity: 0, y: 8 }}
         transition={{ layout: { duration: 0.25 } }}
-        className="rounded-2xl bg-gray-100 p-5 shadow-md"
+        className="rounded-2xl border-[0.8px] border-gray-200 bg-white p-5 shadow-lg"
       >
         <HeaderBar
           nickname={post.author_nickname}
@@ -265,7 +265,7 @@ export default function PostDetailPage() {
           {shareFiles.length > 0 && (
             <motion.div
               variants={appearItem}
-              className="mt-4 rounded-xl border bg-white p-4 text-sm"
+              className="my-1 border-t border-gray-300 bg-white text-sm"
             >
               첨부 파일 {shareFiles.length}개
             </motion.div>
@@ -319,7 +319,7 @@ export default function PostDetailPage() {
         animate="show"
         exit={{ opacity: 0, y: 8 }}
         transition={{ layout: { duration: 0.25 } }}
-        className="rounded-xl bg-gray-100 px-2 py-4 shadow-md"
+        className="rounded-xl bg-white border-[0.8px] border-gray-200 px-2 py-4 shadow-lg"
       >
         <HeaderBar
           nickname={post.author_nickname}
