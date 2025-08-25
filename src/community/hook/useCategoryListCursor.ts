@@ -74,7 +74,6 @@ export function useCategoryListCursor(category: Category, params: CategoryListCu
         author_id,
         date_from,
         date_to,
-        badge,
       }),
     getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
     staleTime: 30_000,
