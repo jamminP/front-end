@@ -11,7 +11,6 @@ export default function AppContent() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const navigate = useNavigate();
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
 
   // 로컬에서 로그인 상태 복구
   useEffect(() => {
@@ -20,25 +19,6 @@ export default function AppContent() {
       setAuthData(JSON.parse(savedUser));
     }
   }, [setAuthData]);
-
-  // ✅ 테스트용 refresh 강제 실행
-  useEffect(() => {
-    if (!isLoggedIn) return;
-    const testRefresh = async () => {
-      try {
-        await axios.post(
-          'https://backend.evida.site/api/v1/users/auth/refresh',
-          {},
-          { withCredentials: true },
-        );
-        console.log('리프레시 성공');
-      } catch (err) {
-        console.error('리프레시 실패', err);
-      }
-    };
-
-    testRefresh();
-  }, []);
 
   // 새창: OAuth 등에서 부모창에 데이터 전달
   useEffect(() => {
