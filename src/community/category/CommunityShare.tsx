@@ -13,42 +13,30 @@ const listVariants: Variants = {
   exit: { opacity: 0, y: -8 },
 };
 
-export default function CommunityStudy() {
+export default function CommunityShare() {
   const [q] = useState('');
   const navigate = useNavigate();
   const currentUserId = 18;
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteCursor('study', q);
+    useInfiniteCursor('share', q);
 
   const items: ListItem[] = useMemo(() => data?.pages.flatMap((p) => p.items ?? []) ?? [], [data]);
 
-  // 안전한 id/key 계산 + 중복 제거
   const rows = useMemo(() => {
     const seen = new Set<string>();
     const out: Array<{ key: string; id: number | null; item: ListItem }> = [];
-
-    const toNumber = (v: unknown) => {
-      if (v == null) return null;
-      const n = typeof v === 'string' ? Number(v) : (v as number);
-      return Number.isFinite(n) ? (n as number) : null;
-    };
-
     items.forEach((it, idx) => {
-      if (it.category !== 'study') return;
-
-      const raw =
-        (it as any).id ?? (it as any).post_id ?? (it as any).study_post_id ?? getPostId(it);
-
-      const id = toNumber(raw);
+      if (it.category !== 'share') return;
+      const id = getPostId(it);
       const key =
-        id != null ? `study-${id}` : `study-${(it as any).created_at ?? 'no-date'}-${idx}`;
-
+        Number.isFinite(id) && id > 0
+          ? `share-${id}`
+          : `share-${(it as any).created_at ?? 'no-date'}-${idx}`;
       if (seen.has(key)) return;
       seen.add(key);
-      out.push({ key, id, item: it });
+      out.push({ key, id: Number.isFinite(id) ? id : null, item: it });
     });
-
     return out;
   }, [items]);
 
