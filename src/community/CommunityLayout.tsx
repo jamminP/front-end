@@ -5,7 +5,6 @@ import CreatePostButton from './components/CreatePostButton';
 
 const CommunityLayout = () => {
   const location = useLocation();
-
   const category: 'free' | 'share' | 'study' = location.pathname.includes('/share')
     ? 'share'
     : location.pathname.includes('/study')
@@ -13,31 +12,37 @@ const CommunityLayout = () => {
       : 'free';
 
   return (
-    <div className="w-full flex justify-center px-4 pt-30">
-      <div className="w-full max-w-[1000px]">
-        {/* 상단 커뮤니티 탭 */}
-        <div className="text-center py-2">
-          <CommunityTab />
-        </div>
-
-        <div className="flex justify-center gap-10 mt-6">
-          {/* 좌측 인기글 */}
-          <div className="w-[240px]">
-            <SidebarRanking />
+    <div className="w-full">
+      <nav className="sticky inset-x-0 z-30 bg-white" style={{ top: 'var(--site-header-h, 70px)' }}>
+        <div className="mx-auto w-full max-w-[1100px] sm:px-6 lg:px-8 h-22 flex items-center">
+          <div className="h-10 overflow-x-auto whitespace-nowrap no-scrollbar pl-4 md:pl-8 lg:pl-40">
+            <CommunityTab />
           </div>
+        </div>
+      </nav>
 
-          {/* 본문 */}
-          <main className="flex-1 max-w-[600px]">
-            <div className="text-sm text-gray-700" />
+      <div className="mx-auto mt-16 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-[320px_minmax(0,720px)] gap-8 lg:max-w-[1100px] lg:mx-auto">
+          <aside
+            className="order-1 lg:order-1 hidden lg:block w-[320px] sticky self-start"
+            style={{
+              top: 'calc(var(--site-header-h, 68px) + 80px)',
+            }}
+          >
+            <SidebarRanking />
+          </aside>
+
+          <main className="order-2 lg:order-2 w-full">
             <Outlet />
           </main>
-          <CreatePostButton
-            category={category}
-            to="/community/create"
-            className="inline-flex self-start h-9 px-3 py-1 rounded-lg"
-          />
         </div>
       </div>
+
+      <CreatePostButton
+        category={category}
+        to="/community/create"
+        className="fixed right-4 bottom-20 md:right-10 md:bottom-10 z-40 h-9 px-3 py-1 rounded-lg"
+      />
     </div>
   );
 };
