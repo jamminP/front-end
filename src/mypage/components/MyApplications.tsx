@@ -1,5 +1,3 @@
-import useAuthStore from '@src/store/authStore';
-import axios from 'axios';
 import { useEffect, useState } from 'react';
 
 interface Applicant {
@@ -8,8 +6,8 @@ interface Applicant {
   output_data: string;
   start_date: string;
   end_date: string;
+  status: 'approved' | 'rejected' | 'pending';
 }
-
 //더미데이터
 const dummyApplicants: Applicant[] = [
   {
@@ -21,6 +19,7 @@ const dummyApplicants: Applicant[] = [
     }),
     start_date: '2025-09-01',
     end_date: '2025-09-30',
+    status: 'approved',
   },
   {
     id: 2,
@@ -31,72 +30,27 @@ const dummyApplicants: Applicant[] = [
     }),
     start_date: '2025-09-05',
     end_date: '2025-10-05',
+    status: 'rejected',
   },
 ];
 
-export default function StudyApplicants() {
+export default function MyApplications() {
   const [applicants, setApplicants] = useState<Applicant[]>([]);
-
-  // const fetchApplicantList = async () => {
-  //   try {
-  //     const res = await axios.get(`/api/v1/community/post/주소바꿔야됑`, {
-  //       withCredentials: true,
-  //     });
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
 
   useEffect(() => {
     //fetchApplicantList();
     setApplicants(dummyApplicants);
   }, []);
 
-  // 무한스크롤: 스크롤 이벤트 감지 (나중에 API 연결 시 교체)
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop + 100 >=
-        document.documentElement.scrollHeight
-      ) {
-        // 👇 여기서 다음 5개 API 호출 예정
-        console.log('스크롤 바닥 → 다음 데이터 가져오기');
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const handleAction = async (
-    applicationId: number,
-    userId: number,
-    action: 'approve' | 'reject',
-  ) => {
-    try {
-      await axios.post(
-        `https://backend.evida.site/api/v1/community/study-application/${applicationId}/${action}?user=${userId}`,
-        {},
-        { withCredentials: true },
-      );
-
-      // 성공 시 목록에서 제거
-      setApplicants((prev) => prev.filter((a) => a.id !== applicationId));
-    } catch (err) {
-      console.error(err);
-      alert('처리 중 오류가 발생했습니다.');
-    }
-  };
-
   return (
     <>
       <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">
-        신청자 목록
+        스터디 신청 현황
       </h2>
       {applicants.length === 0 ? (
         <>
           <p className="text-[1.2rem] text-[#999] font-light tracking-[-0.03rem] mt-5 pl-[5px]">
-            등록된 신청이 없습니다.
+            신청한 스터디가 없습니다.
           </p>
         </>
       ) : (
@@ -126,19 +80,17 @@ export default function StudyApplicants() {
                       {c.start_date.slice(0, 10)}~{c.end_date.slice(0, 10)}
                     </span>
                   </div>
-                  <div className="flex">
-                    <button
-                      onClick={() => handleAction(c.id, c.user_id, 'approve')}
-                      className="flex justify-center items-center text-[.9rem] mr-[5px] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[64px] md:h-[64px] rounded-4xl text-[#ffffff] bg-[#f1513c]"
-                    >
-                      승인
-                    </button>
-                    <button
-                      onClick={() => handleAction(c.id, c.user_id, 'reject')}
-                      className="flex justify-center items-center text-[.9rem] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[64px] md:h-[64px] rounded-4xl text-[#ffffff] bg-[#1b3043]"
-                    >
-                      거절
-                    </button>
+                  <div
+                    className={`flex justify-center items-center text-[.9rem] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[64px] md:h-[64px] rounded-4xl text-[#ffffff] 
+    ${
+      c.status === 'approved'
+        ? 'bg-[#f1513c]'
+        : c.status === 'rejected'
+          ? 'bg-[#1b3043]'
+          : 'bg-[#9e9e9e]'
+    }`}
+                  >
+                    {c.status === 'approved' ? '승인' : c.status === 'rejected' ? '거절' : '대기중'}
                   </div>
                 </li>
               );

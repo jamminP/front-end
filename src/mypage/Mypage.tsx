@@ -48,6 +48,17 @@ export default function MyPage() {
         >
           스터디 신청자 목록
         </NavLink>
+        <NavLink
+          to="/mypage/applications"
+          end
+          className={({ isActive }) =>
+            `text-[16px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
+              isActive ? 'text-[#0180F5]' : 'text-[#878787]'
+            }`
+          }
+        >
+          스터디 신청 현황
+        </NavLink>
       </nav>
       <section className="w-[90%] m-[50px_auto] md:m-[0] md:w-[80%]">
         <Outlet />

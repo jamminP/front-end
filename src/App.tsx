@@ -18,6 +18,7 @@ import CommunityStudy from './community/category/CommunityStudy';
 import PostDetail from './community/post/PostDetail';
 import AppContent from './AppContent';
 import StudyApplicants from './mypage/components/StudyApplicants';
+import MyApplications from './mypage/components/MyApplications';
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="calendar" element={<MyCalendar />} />
             <Route path="challenge" element={<Challenge />} />
             <Route path="applicants" element={<StudyApplicants />} />
+            <Route path="applications" element={<MyApplications />} />
           </Route>
           <Route path="/ai" element={<AiPage />} />
         </Routes>
