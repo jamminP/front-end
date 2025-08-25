@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import PostForm, { PostFormValues } from './PostForm';
 import { useCreateFree, useCreateShare, useCreateStudy } from '../hook/useCommunityPosts';
 import { uploadWithPresignedJson } from '../api/presignedJson';
-import { PostRequest, StudyDetail } from '../api/types';
+import { PostRequest } from '../api/types';
 
 const toISODate = (d?: string) => (d ? new Date(`${d}T00:00:00`).toISOString() : '');
 
@@ -14,6 +14,7 @@ export default function CreatePost() {
   const [sp] = useSearchParams();
   const initialCategory = (sp.get('category') as Cat) ?? 'free';
 
+  // TODO: 실제 로그인 유저로 교체
   const currentUserId = 18;
 
   const freeMut = useCreateFree();
@@ -36,6 +37,7 @@ export default function CreatePost() {
   const handleSubmit = useCallback(
     async (v: PostFormValues) => {
       try {
+        // ───────── 자유 ─────────
         if (v.category === 'free') {
           const created = await freeMut.mutateAsync({
             title: v.title,
@@ -43,9 +45,12 @@ export default function CreatePost() {
             user_id: currentUserId,
             category: 'free',
           });
+
           const postId = (created as any).id ?? (created as any).post_id;
           const imgs = v.freeImages ?? [];
-          if (imgs.length) {
+
+          if (Array.isArray(imgs) && imgs.length > 0) {
+            // 네가 만든 형식: (cat, postId, files)
             await uploadWithPresignedJson('free', postId, imgs);
           }
 
@@ -53,6 +58,7 @@ export default function CreatePost() {
           return;
         }
 
+        // ───────── 자료공유 ─────────
         if (v.category === 'share') {
           const created = await shareMut.mutateAsync({
             title: v.title,
@@ -60,10 +66,12 @@ export default function CreatePost() {
             user_id: currentUserId,
             category: 'share',
           });
-          const postId = (created as any).id ?? (created as any).post_id;
 
+          const postId = (created as any).id ?? (created as any).post_id;
           const files = v.shareFiles ?? [];
-          if (files.length) {
+
+          if (Array.isArray(files) && files.length > 0) {
+            // 네가 만든 형식: (cat, postId, files)
             await uploadWithPresignedJson('share', postId, files);
           }
 
@@ -71,11 +79,12 @@ export default function CreatePost() {
           return;
         }
 
+        // ───────── 스터디 ─────────
         if (v.category === 'study') {
           const body: PostRequest = {
             title: v.title,
             content: v.content,
-            user_id: v.id,
+            user_id: currentUserId, // ✅ v.id가 아니라 현재 유저
             study_recruitment: {
               recruit_start: toISODate(v.recruit_start),
               recruit_end: toISODate(v.recruit_end),
@@ -84,17 +93,22 @@ export default function CreatePost() {
               max_member: Number(v.max_members ?? 0),
             },
           };
+
           const res = await studyMut.mutateAsync(body);
           const id = (res as any).id ?? (res as any).post_id;
+
+          // 스터디는 첨부 정책 없음 → 바로 이동
           navigate(`/community/study/${id}`);
           return;
         }
       } catch (e) {
         console.error(e);
+        alert((e as Error)?.message || '저장 중 오류가 발생했어요.');
       }
     },
     [currentUserId, freeMut, shareMut, studyMut, navigate],
   );
+
   return (
     <div className="p-6 max-w-[720px] mx-auto space-y-4">
       <PostForm
