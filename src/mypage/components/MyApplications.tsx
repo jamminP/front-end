@@ -24,6 +24,11 @@ export default function MyApplications() {
       );
       setApplicants(res.data.items);
     } catch (err) {
+      const axiosErr = err as any;
+      console.error('Status:', axiosErr.response?.status);
+      console.error('Data:', axiosErr.response?.data);
+      console.error('Headers:', axiosErr.response?.headers);
+
       console.error(err);
     }
   };
