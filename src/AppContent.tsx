@@ -47,7 +47,7 @@ export default function AppContent() {
           withCredentials: true,
         });
         // 부모창에 전달
-        window.opener.postMessage({ user: res.data }, 'https://eunbin.evida.site');
+        window.opener.postMessage({ user: res.data }, 'https://evida.site');
         window.close();
       } catch (err) {
         console.error('사용자 정보 불러오기 실패', err);
@@ -59,7 +59,7 @@ export default function AppContent() {
   // 부모창: 새창 메시지 수신
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.origin !== 'https://eunbin.evida.site') return;
+      if (event.origin !== 'https://evida.site') return;
       if (event.data.user) {
         setAuthData(event.data.user);
         navigate('/');

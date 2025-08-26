@@ -8,7 +8,7 @@ export default function MyPage() {
           to="/mypage"
           end
           className={({ isActive }) =>
-            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
+            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] text-nowrap w-fit ${
               isActive ? 'text-[#0180F5]' : 'text-[#878787]'
             }`
           }
@@ -19,7 +19,7 @@ export default function MyPage() {
           to="/mypage/calendar"
           end
           className={({ isActive }) =>
-            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
+            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] text-nowrap w-fit ${
               isActive ? 'text-[#0180F5]' : 'text-[#878787]'
             }`
           }
@@ -30,7 +30,7 @@ export default function MyPage() {
           to="/mypage/challenge"
           end
           className={({ isActive }) =>
-            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
+            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] text-nowrap w-fit ${
               isActive ? 'text-[#0180F5]' : 'text-[#878787]'
             }`
           }
@@ -41,7 +41,7 @@ export default function MyPage() {
           to="/mypage/applicants"
           end
           className={({ isActive }) =>
-            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
+            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] text-nowrap w-fit ${
               isActive ? 'text-[#0180F5]' : 'text-[#878787]'
             }`
           }
@@ -52,7 +52,7 @@ export default function MyPage() {
           to="/mypage/applications"
           end
           className={({ isActive }) =>
-            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
+            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] text-nowrap w-fit ${
               isActive ? 'text-[#0180F5]' : 'text-[#878787]'
             }`
           }
