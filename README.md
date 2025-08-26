@@ -45,7 +45,6 @@ AI 공부 도우미 EVI의 프론트엔드 레포입니다. <br/>
   &nbsp;&nbsp;&nbsp;
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg" width="120" height="120"/>
   &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" width="120" height="120"/>
 </p>
 <br/>
 
