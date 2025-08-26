@@ -54,14 +54,12 @@ export default function HeroLanding() {
             >
               시작하기
             </Link>
-            <button
-              onClick={() =>
-                document.getElementById('main')?.scrollIntoView({ behavior: 'smooth' })
-              }
+            <Link
+              to={isLoggedIn ? '/ai' : '/login'}
               className="rounded-xl px-6 py-3 font-semibold border border-zinc-200 text-[var(--main)] bg-white hover:shadow transition"
             >
               기능 살펴보기
-            </button>
+            </Link>
           </div>
 
           <div className="mt-5 flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-zinc-500">
