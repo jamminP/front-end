@@ -365,7 +365,6 @@ export default function PostDetailPage() {
             <div className="flex items-center gap-2">
               <span>모집 상태 :</span>
               <span>{post.badge}</span>
-              {badgeIcon && <img src={badgeIcon} alt={post.badge} className="h-5 w-5" />}
             </div>
             <div>모집 인원 : {meta.max_member}명</div>
             <div>
