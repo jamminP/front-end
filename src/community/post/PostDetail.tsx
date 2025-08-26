@@ -362,7 +362,6 @@ export default function PostDetailPage() {
             <div className="flex items-center gap-2">
               <span>모집 상태 :</span>
               <span>{post.badge}</span>
-              {badgeIcon && <img src={badgeIcon} alt={post.badge} className="h-5 w-5" />}
             </div>
             <div>모집 인원 : {meta.max_member}명</div>
             <div>
@@ -379,7 +378,7 @@ export default function PostDetailPage() {
                     ? 'bg-black text-white hover:opacity-80'
                     : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                 }`}
-                // disabled={loading || !canApply}
+                disabled={loading || !canApply}
                 onClick={async () => {
                   const r = await refetchDetail();
                   const fresh = (r?.data ?? post) as StudyDetail;
