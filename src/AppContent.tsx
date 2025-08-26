@@ -132,5 +132,14 @@ export default function AppContent() {
     }
   }, [user]);
 
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setAuthData(JSON.parse(savedUser));
+    } else {
+      useAuthStore.getState().finishLoading();
+    }
+  }, [setAuthData]);
+
   return <></>;
 }
