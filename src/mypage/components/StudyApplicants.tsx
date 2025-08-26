@@ -63,7 +63,9 @@ export default function StudyApplicants() {
   };
 
   useEffect(() => {
-    fetchApplicantList();
+    if (postIdNum) {
+      fetchApplicantList();
+    }
   }, [postIdNum]);
 
   useEffect(() => {
