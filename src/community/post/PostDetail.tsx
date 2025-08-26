@@ -85,7 +85,6 @@ export default function PostDetailPage() {
     );
   }
 
-  // ───────────── 렌더 ─────────────
   if (category === 'study') {
     const post: StudyDetail = (data ??
       ({
@@ -180,6 +179,18 @@ export default function PostDetailPage() {
     }
   }
 
+  function formatBytes(bytes: number) {
+    if (!Number.isFinite(bytes)) return '';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let v = bytes;
+    let i = 0;
+    while (v >= 1024 && i < units.length - 1) {
+      v /= 1024;
+      i++;
+    }
+    return `${v.toFixed(v < 10 && i > 0 ? 1 : 0)} ${units[i]}`;
+  }
+
   function BasicDetailView({
     post,
     current_user_id,
@@ -205,6 +216,7 @@ export default function PostDetailPage() {
     };
 
     const shareFiles = post.category === 'share' ? normalizeFiles((post as ShareDetail).files) : [];
+    const freeImages = post.category === 'free' ? ((post as FreeDetail).images ?? []) : [];
 
     return (
       <motion.section
@@ -257,12 +269,74 @@ export default function PostDetailPage() {
             <motion.p variants={appearItem}>{post.content}</motion.p>
           )}
 
-          {shareFiles.length > 0 && (
-            <motion.div
-              variants={appearItem}
-              className="my-1 border-t border-gray-300 bg-white text-sm"
-            >
-              첨부 파일 {shareFiles.length}개
+          {post.category === 'free' && freeImages.length > 0 && (
+            <motion.div variants={appearItem} className="mt-4 space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {freeImages.map((img) => (
+                  <div key={img.id} className="overflow-hidden rounded-lg border">
+                    <img
+                      src={img.image_url}
+                      alt="첨부 이미지"
+                      className="w-full h-auto block"
+                      loading="lazy"
+                    />
+                    <div className="px-3 py-2 text-xs text-gray-500 flex justify-between">
+                      <span>{img.mime_type}</span>
+                      <span>{formatBytes(img.size_bytes)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {post.category === 'share' && shareFiles.length > 0 && (
+            <motion.div variants={appearItem} className="mt-4 space-y-2">
+              <div className="text-sm text-gray-600">첨부 파일 {shareFiles.length}개</div>
+              <ul className="divide-y rounded-lg border">
+                {shareFiles.map((f) => {
+                  const isPdf =
+                    f.mime_type === 'application/pdf' || f.file_url.toLowerCase().endsWith('.pdf');
+                  return (
+                    <li key={f.id} className="p-3 flex items-center justify-between">
+                      <div className="min-w-0 pr-3">
+                        <div className="truncate text-sm">
+                          {isPdf ? '📄 PDF' : '📎 파일'}&nbsp;
+                          <a
+                            href={f.file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline hover:opacity-80"
+                            download
+                          >
+                            {f.file_url.split('/').pop()}
+                          </a>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {f.mime_type} · {formatBytes(f.size_bytes)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={f.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs rounded-md border px-2 py-1 hover:bg-gray-50"
+                        >
+                          새 탭에서 열기
+                        </a>
+                        <a
+                          href={f.file_url}
+                          download
+                          className="text-xs rounded-md border px-2 py-1 hover:bg-gray-50"
+                        >
+                          다운로드
+                        </a>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             </motion.div>
           )}
         </ContentBox>
