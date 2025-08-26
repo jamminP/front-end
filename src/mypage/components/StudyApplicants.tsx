@@ -34,21 +34,6 @@ export default function StudyApplicants() {
   const [hasMore, setHasMore] = useState(true);
   const [myPosts, setMyPosts] = useState<Post[]>([]);
 
-  // 내 글 가져오기
-  const fetchMyPosts = useCallback(async () => {
-    if (!user) return;
-    try {
-      const res = await axios.get<{ items: Post[] }>(
-        `https://backend.evida.site/api/v1/community/post/list`,
-      );
-      const posts = res.data.items.filter((p) => p.author_id === user.id && p.category === 'study');
-      setMyPosts(posts);
-      if (posts.length === 0) setInitialLoading(false);
-    } catch (err) {
-      console.error('내 글 조회 실패', err);
-    }
-  }, [user]);
-
   // 신청자 리스트 가져오기 (페이징)
   const fetchApplicants = useCallback(async () => {
     if (loading || !hasMore) return;
@@ -106,15 +91,34 @@ export default function StudyApplicants() {
     }
   };
 
-  // 초기 로딩
+  // 초기 로딩: 내 글 가져오기 + 신청자 조회
   useEffect(() => {
-    fetchMyPosts();
-  }, [fetchMyPosts]);
+    const load = async () => {
+      if (!user) return;
 
-  // 내 글이 준비되면 신청자 가져오기
-  useEffect(() => {
-    if (myPosts.length) fetchApplicants();
-  }, [myPosts, fetchApplicants]);
+      try {
+        const res = await axios.get<{ items: Post[] }>(
+          `https://backend.evida.site/api/v1/community/post/list`,
+        );
+        const posts = res.data.items.filter(
+          (p) => p.author_id === user.id && p.category === 'study',
+        );
+        setMyPosts(posts);
+
+        if (posts.length === 0) {
+          setInitialLoading(false);
+          return;
+        }
+
+        await fetchApplicants();
+      } catch (err) {
+        console.error('내 글 조회 실패', err);
+        setInitialLoading(false);
+      }
+    };
+
+    load();
+  }, [user, fetchApplicants]);
 
   // 스크롤 이벤트로 추가 로딩
   useEffect(() => {
