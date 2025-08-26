@@ -19,7 +19,7 @@ export default function MyApplications() {
   const fetchApplications = async () => {
     try {
       const res = await axios.get<{ items: Applicant[] }>(
-        `https://backend.evida.site/api/v1/users/myinfo/applications?limit=5`,
+        `https://backend.evida.site/api/v1/users/myinfo/applications`,
         { withCredentials: true },
       );
       setApplicants(res.data.items);
