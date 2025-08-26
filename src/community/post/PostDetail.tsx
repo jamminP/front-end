@@ -41,7 +41,8 @@ export default function PostDetailPage() {
 
   const { data, isLoading, isError, refetch } = usePostDetail(category, postId);
 
-  const current_user_id = useAuthStore((s) => s.user!.id);
+  const current_user = useAuthStore((s) => s.user!);
+  const current_user_id = current_user.id;
   const isAdmin = false;
 
   const qc = useQueryClient();
@@ -378,13 +379,17 @@ export default function PostDetailPage() {
     const badgeIcon =
       post.badge === '모집중' ? recruiting : post.badge === '모집완료' ? completed : null;
 
-    const { applied, markApplied } = useAppliedPersistence(post.id);
+    const { applied, setApplied, markApplied, isChecking } = useAppliedPersistence(
+      post.id,
+      current_user_id,
+    );
 
     const { mutateAsync: doApply, isPending: applying } = useMutation({
       mutationFn: () => applyStudy({ post_id: post.id, user: current_user_id }),
     });
 
-    const canApply = !applied && post.badge === '모집중' && post.author_id !== current_user_id;
+    const canApply =
+      applied === false && post.badge === '모집중' && post.author_id !== current_user_id;
 
     return (
       <motion.section
@@ -434,7 +439,9 @@ export default function PostDetailPage() {
           >
             <div className="flex items-center gap-2">
               <span>모집 상태 :</span>
-              <span>{post.badge}</span>
+              <span className="inline-flex items-center gap-2">
+                {badgeIcon && <img src={badgeIcon} className="h-4" />} {post.badge}
+              </span>
             </div>
             <div>모집 인원 : {meta.max_member}명</div>
             <div>
@@ -451,7 +458,7 @@ export default function PostDetailPage() {
                     ? 'bg-black text-white hover:opacity-80'
                     : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                 }`}
-                disabled={loading || applying || !canApply}
+                disabled={loading || applying || !canApply || isChecking}
                 onClick={async () => {
                   if (!canApply) return;
                   markApplied();
@@ -460,11 +467,13 @@ export default function PostDetailPage() {
                     await refetchDetail();
                     alert('신청이 접수되었어요.');
                   } catch {
-                    saveAppliedToStorage(post.id, false);
+                    setApplied(false);
+                    saveAppliedToStorage(post.id, current_user_id, false);
+                    alert('신청에 실패했습니다. 다시 시도해주세요.');
                   }
                 }}
               >
-                {applied ? '신청완료' : '신청하기'}
+                {isChecking ? '확인 중…' : applied ? '신청완료' : '신청하기'}
               </button>
             </div>
           </motion.div>
@@ -490,11 +499,16 @@ export default function PostDetailPage() {
   }
 }
 
-const APPLIED_KEY = 'community:study-applied';
+/** -----------------------------
+ *  사용자별 로컬스토리지 헬퍼
+ *  ----------------------------*/
+function appliedKey(userId: number) {
+  return `community:study-applied:${userId}`;
+}
 
-function loadAppliedFromStorage(postId: number): boolean {
+function loadAppliedFromStorage(postId: number, userId: number): boolean {
   try {
-    const raw = localStorage.getItem(APPLIED_KEY);
+    const raw = localStorage.getItem(appliedKey(userId));
     if (!raw) return false;
     const map = JSON.parse(raw) as Record<string, boolean>;
     return !!map[String(postId)];
@@ -503,18 +517,23 @@ function loadAppliedFromStorage(postId: number): boolean {
   }
 }
 
-function saveAppliedToStorage(postId: number, val: boolean) {
+function saveAppliedToStorage(postId: number, userId: number, val: boolean) {
   try {
-    const raw = localStorage.getItem(APPLIED_KEY);
+    const key = appliedKey(userId);
+    const raw = localStorage.getItem(key);
     const map = raw ? (JSON.parse(raw) as Record<string, boolean>) : {};
     if (val) map[String(postId)] = true;
     else delete map[String(postId)];
-    localStorage.setItem(APPLIED_KEY, JSON.stringify(map));
+    localStorage.setItem(key, JSON.stringify(map));
   } catch {}
 }
 
-function useAppliedPersistence(postId: number) {
-  const [applied, setApplied] = useState<boolean>(() => loadAppliedFromStorage(postId));
+/** -----------------------------
+ *  신청 상태 훅 (초기값 null)
+ *  ----------------------------*/
+function useAppliedPersistence(postId: number, userId: number) {
+  // null: 서버 확인중
+  const [applied, setApplied] = useState<boolean | null>(null);
 
   useEffect(() => {
     let aborted = false;
@@ -525,27 +544,29 @@ function useAppliedPersistence(postId: number) {
         });
         if (aborted) return;
         if (res.status === 200) {
-          if (!applied) {
-            setApplied(true);
-            saveAppliedToStorage(postId, true);
-          }
+          setApplied(true);
+          saveAppliedToStorage(postId, userId, true);
         } else if (res.status === 404) {
-          if (applied) {
-            setApplied(false);
-            saveAppliedToStorage(postId, false);
-          }
+          setApplied(false);
+          saveAppliedToStorage(postId, userId, false);
+        } else {
+          // 예상치 못한 상태코드면 안전하게 false로
+          setApplied(false);
         }
-      } catch {}
+      } catch {
+        // 네트워크 오류 시 로컬 기준으로 추정
+        setApplied(loadAppliedFromStorage(postId, userId));
+      }
     })();
     return () => {
       aborted = true;
     };
-  }, [postId]);
+  }, [postId, userId]);
 
   const markApplied = () => {
     setApplied(true);
-    saveAppliedToStorage(postId, true);
+    saveAppliedToStorage(postId, userId, true);
   };
 
-  return { applied, markApplied };
+  return { applied, setApplied, markApplied, isChecking: applied === null };
 }
