@@ -251,7 +251,7 @@ export const GetLike = (params: GetLikePrams) =>
   });
 
 export const PostLike = (params: PostLikeParams) =>
-  http<LikeStatus>(`/api/v1/community/post/${params.post_id}/like?user=${params.user}`, {
+  http<LikeStatus>(`/api/v1/community/post/${params.post_id}/like`, {
     method: 'POST',
     credentials: 'include',
   });
@@ -264,16 +264,24 @@ export async function getPostDetail(postId: number): Promise<PostDetail> {
 
 export async function applyStudy(params: ApplyStudyPrams) {
   const { post_id } = params;
+<<<<<<< HEAD
   return http<StudyApplicationResponse>(`/api/v1/community/post/${post_id}/study-application`, {
+=======
+
+  return http<StudyApplicationResponse>(`/api/v1/community/post/${post_id}/study-application?`, {
+>>>>>>> c808a00 (fix: 유저 쿠키 세션 인증방식으로 변경)
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
   });
+<<<<<<< HEAD
 }
 //normalizeFiles
 export function normalizeFiles(files?: Files | Files[] | null): Files[] {
   if (!files) return []; // undefined/null -> 빈 배열
   return Array.isArray(files) ? files : [files]; // 단일 -> [단일]
+=======
+>>>>>>> c808a00 (fix: 유저 쿠키 세션 인증방식으로 변경)
 }
 //normalizeFiles
 export function normalizeFiles(files?: Files | Files[] | null): Files[] {
