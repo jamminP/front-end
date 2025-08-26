@@ -39,6 +39,7 @@ export default function LikedPostsSection() {
         title: item.title,
         content: item.content,
         date: item.created_at,
+        category: item.category,
       }));
       setSkeletonCount(res.data.items.length);
       setLikedPosts((prev) => [...prev, ...posts]);

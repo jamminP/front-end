@@ -5,7 +5,7 @@ export default function ProtectedRoute() {
   const { isLoggedIn, isLoading } = useAuthStore();
   const location = useLocation();
   if (isLoading) {
-    return <div>로딩</div>;
+    return <div className="flex items-center justify-center text-[#d4d4d4]">Loading</div>;
   }
   if (!isLoggedIn) {
     if (location.pathname !== '/') {
