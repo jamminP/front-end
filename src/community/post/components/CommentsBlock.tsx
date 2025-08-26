@@ -20,16 +20,12 @@ export default function CommentsBlock({
   const qc = useQueryClient();
 
   const { tree, isLoading, isError, createRoot, createReply, reply_to, setReplyTo, creating } =
-    useComments(post_id, current_user_id);
+    useComments(post_id);
 
   // 댓글 수정 (PATCH)
   const { mutate: saveEdit, isPending: saving } = useMutation({
     mutationFn: (vars: { comment_id: number; content: string }) =>
-      patchComment(
-        post_id,
-        { comment_id: vars.comment_id, user: current_user_id },
-        { content: vars.content },
-      ),
+      patchComment(post_id, { comment_id: vars.comment_id }, { content: vars.content }),
     onSuccess: () => {
       setEditingId(null);
       setEditValue('');
@@ -75,7 +71,7 @@ export default function CommentsBlock({
       <div className=" bg-gray-200/10 mx-2">
         <div className="flex items-center gap-3 border-y-1 border-gray-400/50 bg-none px-2 py-1">
           <input
-            className="flex-1 outline-none text-sm"
+            className="flex-1 w-full outline-none text-sm"
             placeholder="댓글을 입력하세요."
             value={rootContent}
             onChange={(e) => setRootContent(e.target.value)}
@@ -150,7 +146,7 @@ export default function CommentsBlock({
             <div className="rounded-lg border-[0.8px] border-gray-200 bg-gray-100 p-2 text-sm shadow whitespace-pre-wrap">
               {editingId === c.id ? (
                 <textarea
-                  className="w-full resize-y border p-2 text-sm rounded"
+                  className="w-full  resize-y p-1 text-sm rounded"
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   rows={3}

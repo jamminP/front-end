@@ -22,6 +22,7 @@ import type {
   ApplyStudyPrams,
   StudyApplicationResponse,
   Badge,
+  Files,
 } from './types';
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
@@ -180,7 +181,6 @@ export function getComments(
 }
 
 export interface CreateCommentBody {
-  user: number;
   content: string;
   parent_comment_id: number | null;
 }
@@ -189,14 +189,12 @@ export async function createComment(
   post_id: number,
   payload: CreateCommentBody,
 ): Promise<CommentResponse> {
-  const qs = new URLSearchParams({ user: String(payload.user) }).toString();
-
   const body: Record<string, unknown> = { content: payload.content };
   if (payload.parent_comment_id != null && payload.parent_comment_id > 0) {
     body.parent_comment_id = payload.parent_comment_id;
   }
 
-  const res = await fetch(`/api/v1/community/post/${post_id}/comment?${qs}`, {
+  const res = await fetch(`/api/v1/community/post/${post_id}/comment`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json; charset=utf-8' },
     credentials: 'include',
@@ -221,7 +219,7 @@ export async function listComments(postId: number): Promise<CommentTreeItem[]> {
 
 //patch post / comment
 export const patchPost = (params: PatchPostParams, body: PatchPostRequest) =>
-  http<any>(`/api/v1/community/post/${params.post_id}?user=${params.user}`, {
+  http<any>(`/api/v1/community/post/${params.post_id}`, {
     method: 'PATCH',
     body: JSON.stringify(body),
   });
@@ -231,19 +229,19 @@ export const patchComment = (
   params: PatchCommentsParams,
   body: PatchCommentsRequest,
 ) =>
-  http<any>(`/api/v1/community/comment/${params.comment_id}?user=${params.user}`, {
+  http<any>(`/api/v1/community/comment/${params.comment_id}`, {
     method: 'PATCH',
     body: JSON.stringify(body),
   });
 
 //delete
 export const deletePost = (params: DeletePostParams) =>
-  http<void>(`/api/v1/community/post/${params.post_id}?user=${params.user}`, {
+  http<void>(`/api/v1/community/post/${params.post_id}`, {
     method: 'DELETE',
   });
 
 export const deleteComment = (params: DeleteCommentParams) =>
-  http<void>(`/api/v1/community/comment/${params.comment_id}?user=${params.user}`, {
+  http<void>(`/api/v1/community/comment/${params.comment_id}`, {
     method: 'DELETE',
   });
 
@@ -254,7 +252,7 @@ export const GetLike = (params: GetLikePrams) =>
   });
 
 export const PostLike = (params: PostLikeParams) =>
-  http<LikeStatus>(`/api/v1/community/post/${params.post_id}/like?user=${params.user}`, {
+  http<LikeStatus>(`/api/v1/community/post/${params.post_id}/like`, {
     method: 'POST',
   });
 
@@ -264,19 +262,17 @@ export async function getPostDetail(postId: number): Promise<PostDetail> {
 
 // study Apply
 
-function qsUser(user: number) {
-  return new URLSearchParams({ user: String(user) }).toString();
-}
-
 export async function applyStudy(params: ApplyStudyPrams) {
-  const { post_id, user } = params;
+  const { post_id } = params;
 
-  return http<StudyApplicationResponse>(
-    `/api/v1/community/post/${post_id}/study-application?${qsUser(user)}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-    },
-  );
+  return http<StudyApplicationResponse>(`/api/v1/community/post/${post_id}/study-application?`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+}
+//normalizeFiles
+export function normalizeFiles(files?: Files | Files[] | null): Files[] {
+  if (!files) return []; // undefined/null -> 빈 배열
+  return Array.isArray(files) ? files : [files]; // 단일 -> [단일]
 }

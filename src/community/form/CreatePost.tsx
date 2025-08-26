@@ -4,6 +4,7 @@ import PostForm, { PostFormValues } from './PostForm';
 import { useCreateFree, useCreateShare, useCreateStudy } from '../hook/useCommunityPosts';
 import { uploadWithPresignedJson } from '../api/presignedJson';
 import { PostRequest } from '../api/types';
+import useAuthStore from '@src/store/authStore';
 
 const toISODate = (d?: string) => (d ? new Date(`${d}T00:00:00`).toISOString() : '');
 
@@ -14,8 +15,7 @@ export default function CreatePost() {
   const [sp] = useSearchParams();
   const initialCategory = (sp.get('category') as Cat) ?? 'free';
 
-  // TODO: 실제 로그인 유저로 교체
-  const currentUserId = 18;
+  const currentUserId = useAuthStore((s) => s.user!.id);
 
   const freeMut = useCreateFree();
   const shareMut = useCreateShare();
