@@ -74,6 +74,7 @@ export default function CommentsBlock({
             className="flex-1 w-full outline-none text-sm"
             placeholder="댓글을 입력하세요."
             value={rootContent}
+            maxLength={50}
             onChange={(e) => setRootContent(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && rootContent.trim()) {
@@ -289,6 +290,7 @@ function InlineReplyEditor({
         className="pl-2 py-2 outline-none text-sm"
         placeholder="대댓글을 입력하세요."
         value={v}
+        maxLength={50}
         onChange={(e) => setV(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && v.trim()) {
