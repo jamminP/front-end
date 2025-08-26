@@ -88,7 +88,6 @@ export interface CreatePostBase {
   title: string;
   content: string;
   category: CreatePostCategory;
-  user_id: number;
 }
 
 export type FreePostRequest = Omit<CreatePostBase, 'category'>;
@@ -178,6 +177,7 @@ export function getComments(
   });
 }
 
+// community.ts
 export interface CreateCommentBody {
   content: string;
   parent_comment_id: number | null; // 호출부 타입은 유지
@@ -265,11 +265,15 @@ export async function getPostDetail(postId: number): Promise<PostDetail> {
 export async function applyStudy(params: ApplyStudyPrams) {
   const { post_id } = params;
 <<<<<<< HEAD
+<<<<<<< HEAD
   return http<StudyApplicationResponse>(`/api/v1/community/post/${post_id}/study-application`, {
 =======
 
   return http<StudyApplicationResponse>(`/api/v1/community/post/${post_id}/study-application?`, {
 >>>>>>> c808a00 (fix: 유저 쿠키 세션 인증방식으로 변경)
+=======
+  return http<StudyApplicationResponse>(`/api/v1/community/post/${post_id}/study-application`, {
+>>>>>>> b6a7092 (뭔갈 수정함)
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
