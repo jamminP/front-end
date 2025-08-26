@@ -195,7 +195,7 @@ export interface PostRequest {
   content: string;
   category?: 'study';
   user_id: number;
-  study_recruitment?: {
+  study?: {
     recruit_start?: string;
     recruit_end?: string;
     study_start?: string;

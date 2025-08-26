@@ -94,11 +94,13 @@ export interface CreatePostBase {
 export type FreePostRequest = Omit<CreatePostBase, 'category'>;
 export type SharePostRequest = Omit<CreatePostBase, 'category'>;
 export type StudyPostRequest = Omit<CreatePostBase, 'category'> & {
-  recruit_start: string;
-  recruit_end: string;
-  study_start: string;
-  study_end: string;
-  max_member: number;
+  study: {
+    recruit_start: string;
+    recruit_end: string;
+    study_start: string;
+    study_end: string;
+    max_member: number;
+  };
 };
 
 export interface CreatePostResult {
