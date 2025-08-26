@@ -282,7 +282,7 @@ export interface GetLikePrams {
 
 export interface PostLikeParams {
   post_id: number;
-  user: number;
+  user?: number;
 }
 
 export interface LikeStatus {
