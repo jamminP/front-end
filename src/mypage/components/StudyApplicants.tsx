@@ -90,9 +90,11 @@ export default function StudyApplicants() {
         {},
         { withCredentials: true },
       );
+
+      // 로컬 상태에서 삭제
+      setApplicants((prev) => prev.filter((a) => a.application_id !== applicationId));
+
       alert('처리되었습니다');
-      // 서버에서 최신 목록 받아오기
-      fetchApplicants();
     } catch (err) {
       console.error(err);
       alert('처리 중 오류가 발생했습니다.');
@@ -153,6 +155,7 @@ export default function StudyApplicants() {
                     <p className="text-[.8rem] text-[#c2c2c2]">
                       신청일 : {new Date(c.applied_at).toLocaleDateString()}
                     </p>
+                    <span>{c.status}</span>
                   </div>
                   {c.status === 'pending' && (
                     <div className="flex">
