@@ -16,10 +16,12 @@ export function MyPostCard({ id, title, views, date, category }: MyPost) {
       onClick={() => navigate(`/community/${category}/${id}`)}
     >
       <h4 className="text-[1.1rem] font-bold tracking-[-.03rem] truncate">{title}</h4>
-      <p className="text-[.8rem] text-[#c2c2c2] m-[5px_0] truncate">
-        {new Date(date).toLocaleDateString()}
-      </p>
-      <p className="text-[.9rem] truncate text-[#797979]">{views}</p>
+      <div className="flex justify-between items-center">
+        <p className="text-[.9rem] text-[#c2c2c2] m-[5px_0] truncate">
+          작성일 : {new Date(date).toLocaleDateString()}
+        </p>
+        <p className="text-[.9rem] text-[#c2c2c2] m-[5px_0] truncate">조회수 : {views}</p>
+      </div>
     </li>
   );
 }
