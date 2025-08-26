@@ -48,7 +48,7 @@ export default function MyPostsSection() {
       // nextCursor 없으면 새로 덮어쓰기, 있으면 이어붙이기
       setMyPosts((prev) => (nextCursor ? [...prev, ...posts] : posts));
       setCursor(res.data.next_cursor);
-      setHasMore(res.data.next_cursor !== 0);
+      setHasMore(!!res.data.next_cursor);
     } catch (err) {
       console.error('게시글을 불러오지 못했습니다', err);
     } finally {
@@ -109,14 +109,12 @@ export default function MyPostsSection() {
             </ul>
             {hasMore && (
               <div className="flex justify-center mt-5">
-                {cursor && (
-                  <button
-                    className="md:px-4 md:py-2 px-3 py-2 bg-[#1b3043] text-white md:text-[.9rem] text-[.8rem] rounded-full"
-                    onClick={() => fetchPosts(cursor, category)}
-                  >
-                    더보기
-                  </button>
-                )}
+                <button
+                  className="md:px-4 md:py-2 px-3 py-2 bg-[#1b3043] text-white md:text-[.9rem] text-[.8rem] rounded-full"
+                  onClick={() => fetchPosts(cursor, category)}
+                >
+                  더보기
+                </button>
               </div>
             )}
           </>

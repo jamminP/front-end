@@ -44,7 +44,7 @@ export default function LikedPostsSection() {
       setSkeletonCount(res.data.items.length);
       setLikedPosts((prev) => (nextCursor ? [...prev, ...posts] : posts));
       setCursor(res.data.next_cursor);
-      setHasMore(res.data.next_cursor !== 0);
+      setHasMore(!!res.data.next_cursor);
     } catch (err) {
       console.error('게시글을 불러오지 못했습니다', err);
     } finally {
@@ -104,14 +104,12 @@ export default function LikedPostsSection() {
             </ul>
             {hasMore && (
               <div className="flex justify-center mt-5">
-                {cursor && (
-                  <button
-                    className="md:px-4 md:py-2 px-3 py-2 bg-[#1b3043] text-white md:text-[.9rem] text-[.8rem] rounded-full"
-                    onClick={() => fetchLikedPosts(cursor, category)}
-                  >
-                    더보기
-                  </button>
-                )}
+                <button
+                  className="md:px-4 md:py-2 px-3 py-2 bg-[#1b3043] text-white md:text-[.9rem] text-[.8rem] rounded-full"
+                  onClick={() => fetchLikedPosts(cursor, category)}
+                >
+                  더보기
+                </button>
               </div>
             )}
           </>
