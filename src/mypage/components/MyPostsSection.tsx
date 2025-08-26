@@ -5,7 +5,7 @@ import { MyPostCard, SkeletonCard } from './MyPostCard';
 interface MyPost {
   id: number;
   title: string;
-  content: string;
+  views: number;
   date: string;
   category: 'free' | 'study' | 'share';
 }
@@ -38,17 +38,18 @@ export default function MyPostsSection() {
       const posts: MyPost[] = res.data.items.map((item: any) => ({
         id: item.id,
         title: item.title,
-        content: item.content,
+        views: item.views,
         date: item.created_at,
         category: item.category,
       }));
-
       setSkeletonCount(res.data.items.length);
 
       // nextCursor 없으면 새로 덮어쓰기, 있으면 이어붙이기
       setMyPosts((prev) => (nextCursor ? [...prev, ...posts] : posts));
       setCursor(res.data.next_cursor);
-      setHasMore(res.data.next_cursor !== 0);
+      setHasMore(
+        res.data.items.length === 6 && res.data.next_cursor !== null && res.data.next_cursor !== 0,
+      );
     } catch (err) {
       console.error('게시글을 불러오지 못했습니다', err);
     } finally {
@@ -68,7 +69,7 @@ export default function MyPostsSection() {
         <h3 className="text-[1.5rem] font-light tracking-[-0.05rem] pl-[5px]">작성한 글 보기</h3>
 
         {/* 카테고리 버튼 */}
-        <div className="flex md:gap-3 gap-2 mt-2">
+        <div className="flex md:gap-3 gap-2 m-[20px_0]">
           {['all', 'share', 'free', 'study'].map((cat) => (
             <button
               key={cat}

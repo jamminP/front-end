@@ -65,14 +65,21 @@ export interface BaseDetail {
   updated_at: string;
 }
 
+export interface Files {
+  id: number;
+  file_url: string;
+  mime_type: string;
+  size_bytes: number;
+  created_at: string;
+}
+export type ShareDetail = BaseDetail & {
+  category: 'share';
+  files?: Files;
+};
+
 export type FreeDetail = BaseDetail & {
   category: 'free';
   images?: string[];
-};
-
-export type ShareDetail = BaseDetail & {
-  category: 'share';
-  files?: string[];
 };
 
 export type StudyDetail = BaseDetail & {
@@ -188,7 +195,7 @@ export interface PostRequest {
   content: string;
   category?: 'study';
   user_id: number;
-  study_recruitment?: {
+  study?: {
     recruit_start?: string;
     recruit_end?: string;
     study_start?: string;
@@ -217,7 +224,7 @@ export interface GetCommentsParams {
 //Comment Patch
 export interface PatchCommentsParams {
   comment_id: number;
-  user: number;
+  user?: number;
 }
 
 export interface PatchCommentsRequest {
@@ -227,7 +234,7 @@ export interface PatchCommentsRequest {
 //Patch Post
 export interface PatchPostParams {
   post_id: number;
-  user: number;
+  user?: number;
 }
 
 export interface PatchPostRequest {
@@ -267,7 +274,7 @@ export interface PostDetailResponse {
 // delete
 export interface DeletePostParams {
   post_id: number;
-  user: number;
+  user?: number;
 }
 
 export interface DeleteCommentParams {
@@ -282,7 +289,7 @@ export interface GetLikePrams {
 
 export interface PostLikeParams {
   post_id: number;
-  user: number;
+  user?: number;
 }
 
 export interface LikeStatus {
@@ -294,7 +301,7 @@ export interface LikeStatus {
 
 export interface ApplyStudyPrams {
   post_id: number;
-  user: number;
+  user?: number;
 }
 
 export interface StudyApplicationResponse {

@@ -3,16 +3,14 @@ import { PiHeartStraightFill, PiHeartStraightLight } from 'react-icons/pi';
 
 export default function LikeButton({
   post_id,
-  current_user_id,
   stopPropagation = false,
   className,
 }: {
   post_id: number;
-  current_user_id: number;
   stopPropagation?: boolean;
   className?: string;
 }) {
-  const { liked, like_count, isPending, toggleLike } = usePostLike(post_id, current_user_id);
+  const { liked, like_count, isPending, toggleLike } = usePostLike(post_id);
 
   const onClick = (e: React.MouseEvent) => {
     if (stopPropagation) e.stopPropagation();

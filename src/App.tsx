@@ -20,6 +20,7 @@ import EditPost from './community/form/EditPost';
 import AppContent from './AppContent';
 import StudyApplicants from './mypage/components/StudyApplicants';
 import MyApplications from './mypage/components/MyApplications';
+import ProtectedRoute from './ProtectedRoute';
 
 export default function App() {
   return (
@@ -29,26 +30,29 @@ export default function App() {
       <main>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/community/create" element={<CreatePost />} />
-          <Route path="/community/:category/:id/edit" element={<EditPost />} />
-
-          <Route path="/community" element={<CommunityLayout />}>
-            <Route index element={<CommunityAll />} />
-            <Route path="free" element={<CommunityFree />} />
-            <Route path="share" element={<CommunityShare />} />
-            <Route path="study" element={<CommunityStudy />} />
-            <Route path=":category/:id" element={<PostDetail />} />
-          </Route>
-
           <Route path="/login" element={<Login />} />
-          <Route path="/mypage" element={<MyPage />}>
-            <Route index element={<MypageContent />} />
-            <Route path="calendar" element={<MyCalendar />} />
-            <Route path="challenge" element={<Challenge />} />
-            <Route path="applicants" element={<StudyApplicants />} />
-            <Route path="applications" element={<MyApplications />} />
+
+          <Route element={<ProtectedRoute />}>
+            <Route path="/community/create" element={<CreatePost />} />
+            <Route path="/community/:category/:id/edit" element={<EditPost />} />
+
+            <Route path="/community" element={<CommunityLayout />}>
+              <Route index element={<CommunityAll />} />
+              <Route path="free" element={<CommunityFree />} />
+              <Route path="share" element={<CommunityShare />} />
+              <Route path="study" element={<CommunityStudy />} />
+              <Route path=":category/:id" element={<PostDetail />} />
+            </Route>
+
+            <Route path="/mypage" element={<MyPage />}>
+              <Route index element={<MypageContent />} />
+              <Route path="calendar" element={<MyCalendar />} />
+              <Route path="challenge" element={<Challenge />} />
+              <Route path="applicants" element={<StudyApplicants />} />
+              <Route path="applications" element={<MyApplications />} />
+            </Route>
+            <Route path="/ai" element={<AiPage />} />
           </Route>
-          <Route path="/ai" element={<AiPage />} />
         </Routes>
       </main>
     </BrowserRouter>

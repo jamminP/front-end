@@ -1,6 +1,6 @@
 import { FaPaperPlane } from 'react-icons/fa';
 import type { RefObject } from 'react';
-import { minLen, useInputGate, notMeaningless } from '@src/ai/hook/useInputGate';
+import { minLen, useInputGate } from '@src/ai/hook/useInputGate';
 
 type Props = {
   inputRef: RefObject<HTMLInputElement | null>;
@@ -18,7 +18,7 @@ export default function InputBar({
   const { value, onChange, onKeyDown, trySend, reasons, canSend } = useInputGate({
     inputRef,
     onSend,
-    validators: summaryMode ? [minLen(10), notMeaningless] : [minLen(1)],
+    validators: summaryMode ? [minLen(10)] : [minLen(1)],
   });
 
   return (

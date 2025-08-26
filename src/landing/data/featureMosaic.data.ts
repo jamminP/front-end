@@ -20,7 +20,7 @@ const raw = [
     description: '협업할 스터디를 커뮤니티에서 찾아보세요.',
     image: studyCommunity,
     imageAlt: 'AI와 사람이 스터디를 논의하는 그림',
-    cta: { label: '스터디 찾기', to: '/community/all' },
+    cta: { label: '스터디 찾기', to: '/community/study' },
   },
   {
     id: 'community',
@@ -29,7 +29,7 @@ const raw = [
     description: '다른 사람들과 함께 소통하며 넓혀가보세요.',
     image: communityMosaic,
     imageAlt: '커뮤니티 대화 일러스트',
-    cta: { label: '커뮤니티로 이동하기', to: '/community/all' },
+    cta: { label: '커뮤니티로 이동하기', to: '/community' },
   },
 ] as const;
 

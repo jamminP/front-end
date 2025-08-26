@@ -1,55 +1,35 @@
+import axios from 'axios';
 import { useEffect, useState } from 'react';
 
 interface Applicant {
-  id: number;
-  user_id: number;
-  output_data: string;
-  start_date: string;
-  end_date: string;
+  application_id: number;
+  post_id: number;
+  post_title?: string;
+  post_category: string;
+  owner_id: number;
+  owner_nickname?: string;
   status: 'approved' | 'rejected' | 'pending';
+  applied_at: string;
+  updated_at: string;
 }
-//더미데이터
-const dummyApplicants: Applicant[] = [
-  {
-    id: 1,
-    user_id: 101,
-    output_data: JSON.stringify({
-      title: '리액트 스터디 모집',
-      description: '초보자 환영! 매주 토요일 온라인 진행',
-    }),
-    start_date: '2025-09-01',
-    end_date: '2025-09-30',
-    status: 'approved',
-  },
-  {
-    id: 2,
-    user_id: 102,
-    output_data: JSON.stringify({
-      title: '알고리즘 스터디',
-      description: '백준 골드 목표, 디스코드 진행',
-    }),
-    start_date: '2025-09-05',
-    end_date: '2025-10-05',
-    status: 'rejected',
-  },
-];
 
 export default function MyApplications() {
   const [applicants, setApplicants] = useState<Applicant[]>([]);
 
-  // const fetchApplications = async () => {
-  //   try {
-  //     const res = await axios.get(`/api/v1/community/post/주소바꿔야됑`, {
-  //       withCredentials: true,
-  //     });
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
+  const fetchApplications = async () => {
+    try {
+      const res = await axios.get<{ items: Applicant[] }>(
+        `https://backend.evida.site/api/v1/users/myinfo/applications`,
+        { withCredentials: true },
+      );
+      setApplicants(res.data.items);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
-    //fetchApplications();
-    setApplicants(dummyApplicants);
+    fetchApplications();
   }, []);
 
   return (
@@ -67,27 +47,20 @@ export default function MyApplications() {
         <>
           <ul>
             {applicants.map((c) => {
-              const parsedOutput = (() => {
-                try {
-                  return JSON.parse(c.output_data);
-                } catch {
-                  return '데이터 오류';
-                }
-              })();
               return (
                 <li
-                  key={c.id}
+                  key={c.application_id}
                   className="flex justify-between md:items-center flex-col md:flex-row w-[100%] text-[#252525] bg-[#ffffff] rounded-2xl mb-[5%] md:mb-[2%] p-[25px] border-[1px] border-[#e9e9e9] transform transition-transform duration-300 hover:translate-y-[-5px]"
                 >
                   <div className="w-full md:w-[80%]">
                     <h4 className="text-[1.1rem] font-bold tracking-[-.03rem] leading-[1.3]">
-                      {parsedOutput.title}
+                      {c.post_title}
                     </h4>
                     <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
-                      {parsedOutput.description}
+                      카테고리 : {c.post_category} / 스터디장 : {c.owner_nickname}
                     </p>
                     <span className="text-[.8rem] text-[#c2c2c2]">
-                      {c.start_date.slice(0, 10)}~{c.end_date.slice(0, 10)}
+                      신청일 : {new Date(c.applied_at).toLocaleDateString()}
                     </span>
                   </div>
                   <div

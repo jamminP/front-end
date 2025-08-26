@@ -3,7 +3,6 @@ import type { Cat } from '../utils/mime';
 
 export interface PresignedParams {
   post_id: number;
-  user: number;
 }
 export interface PresignedBody {
   filename: string;
@@ -16,7 +15,6 @@ export interface PresignedResp {
 
 export interface AttachParams {
   post_id: number;
-  user: number;
 }
 export interface AttachBody {
   key: string;
@@ -27,8 +25,8 @@ export async function getPresigned(
   params: PresignedParams,
   body: PresignedBody,
 ): Promise<PresignedResp> {
-  const { post_id, user } = params;
-  const url = `/api/v1/community/post/${cat}/${post_id}/attachments/presigned?user=${user}`;
+  const { post_id } = params;
+  const url = `/api/v1/community/post/${cat}/${post_id}/attachments/presigned`;
   return http<PresignedResp>(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -42,8 +40,8 @@ export async function attachUploaded(
   params: AttachParams,
   body: AttachBody,
 ): Promise<void> {
-  const { post_id, user } = params;
-  const url = `/api/v1/community/post/${cat}/${post_id}/attachments/attach?user=${user}`;
+  const { post_id } = params;
+  const url = `/api/v1/community/post/${cat}/${post_id}/attachments/attach`;
   return http<void>(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

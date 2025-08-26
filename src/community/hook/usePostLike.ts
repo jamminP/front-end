@@ -3,7 +3,7 @@ import { GetLike, PostLike } from '../api/community';
 
 type LikeStatus = { liked: boolean; like_count: number };
 
-export function usePostLike(post_id: number, currentUserId: number) {
+export function usePostLike(post_id: number) {
   const qc = useQueryClient();
   const likeKey = ['community', 'like', post_id] as const;
   const postKey = ['community', 'post', post_id] as const;
@@ -15,7 +15,7 @@ export function usePostLike(post_id: number, currentUserId: number) {
   });
 
   const { mutate: toggleLike, isPending } = useMutation({
-    mutationFn: () => PostLike({ post_id, user: currentUserId }),
+    mutationFn: () => PostLike({ post_id }),
     onMutate: async () => {
       await qc.cancelQueries({ queryKey: likeKey });
 

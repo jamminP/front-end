@@ -21,7 +21,6 @@ const resolveId = (it: any): number | null => {
 export default function CommunityShare() {
   const [q] = useState('');
   const navigate = useNavigate();
-  const currentUserId = 18;
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteCursor('share', q);
@@ -81,7 +80,6 @@ export default function CommunityShare() {
               >
                 <PostCard
                   post={toPost(item, id ?? -1)}
-                  currentUserId={currentUserId}
                   onClick={(clickedId) => {
                     const target = id ?? clickedId;
                     if (typeof target === 'number' && target > 0) {
