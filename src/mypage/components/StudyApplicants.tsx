@@ -83,18 +83,16 @@ export default function StudyApplicants() {
     }
   }, [myPosts, loading, nextCursor, hasMore]);
 
-  const handleAction = async (
-    applicationId: number,
-    applicantId: number,
-    action: 'approve' | 'reject',
-  ) => {
+  const handleAction = async (applicationId: number, action: 'approve' | 'reject') => {
     try {
       await axios.post(
         `https://backend.evida.site/api/v1/community/study-application/${applicationId}/${action}`,
         {},
         { withCredentials: true },
       );
-      setApplicants((prev) => prev.filter((a) => a.application_id !== applicationId));
+      alert('처리되었습니다');
+      // 서버에서 최신 목록 받아오기
+      fetchApplicants();
     } catch (err) {
       console.error(err);
       alert('처리 중 오류가 발생했습니다.');
@@ -147,26 +145,25 @@ export default function StudyApplicants() {
                 >
                   <div className="w-full md:w-[80%]">
                     <h4 className="text-[1.1rem] font-bold tracking-[-.03rem] leading-[1.3]">
-                      {c.applicant_nickname ?? '알 수 없음'}
+                      신청자 : {c.applicant_nickname ?? '알 수 없음'}
                     </h4>
                     <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
                       신청한 글: {c.post_title}
                     </p>
-                    <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
+                    <p className="text-[.8rem] text-[#c2c2c2]">
                       신청일 : {new Date(c.applied_at).toLocaleDateString()}
                     </p>
-                    <span className="text-[.8rem] text-[#c2c2c2]">상태 : {c.status}</span>
                   </div>
                   {c.status === 'pending' && (
                     <div className="flex">
                       <button
-                        onClick={() => handleAction(c.application_id, c.applicant_id, 'approve')}
+                        onClick={() => handleAction(c.application_id, 'approve')}
                         className="flex justify-center items-center text-[.9rem] mr-[5px] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[60px] md:h-[40px] rounded-4xl text-[#ffffff] bg-[#1b3043] cursor-pointer"
                       >
                         승인
                       </button>
                       <button
-                        onClick={() => handleAction(c.application_id, c.applicant_id, 'reject')}
+                        onClick={() => handleAction(c.application_id, 'reject')}
                         className="flex justify-center items-center text-[.9rem] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[60px] md:h-[40px] rounded-4xl text-[#364153] bg-[#ebe6e7] cursor-pointer"
                       >
                         거절
