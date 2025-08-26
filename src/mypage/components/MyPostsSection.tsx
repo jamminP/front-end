@@ -109,12 +109,14 @@ export default function MyPostsSection() {
             </ul>
             {hasMore && (
               <div className="flex justify-center mt-5">
-                <button
-                  className="md:px-4 md:py-2 px-3 py-2 bg-[#1b3043] text-white md:text-[.9rem] text-[.8rem] rounded-full"
-                  onClick={() => fetchPosts(cursor, category)}
-                >
-                  더보기
-                </button>
+                {cursor && (
+                  <button
+                    className="md:px-4 md:py-2 px-3 py-2 bg-[#1b3043] text-white md:text-[.9rem] text-[.8rem] rounded-full"
+                    onClick={() => fetchPosts(cursor, category)}
+                  >
+                    더보기
+                  </button>
+                )}
               </div>
             )}
           </>
