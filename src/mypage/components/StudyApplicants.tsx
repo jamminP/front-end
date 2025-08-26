@@ -43,6 +43,7 @@ export default function StudyApplicants() {
       );
       const posts = res.data.items.filter((p) => p.author_id === user.id && p.category === 'study');
       setMyPosts(posts);
+      if (posts.length === 0) setInitialLoading(false);
     } catch (err) {
       console.error('내 글 조회 실패', err);
     }
