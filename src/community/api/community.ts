@@ -19,6 +19,9 @@ import type {
   GetLikePrams,
   PostLikeParams,
   LikeStatus,
+  ApplyStudyPrams,
+  StudyApplicationResponse,
+  Badge,
 } from './types';
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
@@ -43,7 +46,7 @@ export interface GetPostListParams {
   author_id?: string | number;
   date_from?: string;
   date_to?: string;
-  badge?: string;
+  badge?: Badge;
 }
 
 export async function getPostList(params: GetPostListParams): Promise<CursorPage<ListItem>> {
@@ -257,4 +260,23 @@ export const PostLike = (params: PostLikeParams) =>
 
 export async function getPostDetail(postId: number): Promise<PostDetail> {
   return http<PostDetail>(DETAIL_ENDPOINT(postId));
+}
+
+// study Apply
+
+function qsUser(user: number) {
+  return new URLSearchParams({ user: String(user) }).toString();
+}
+
+export async function applyStudy(params: ApplyStudyPrams) {
+  const { post_id, user } = params;
+
+  return http<StudyApplicationResponse>(
+    `/api/v1/community/post/${post_id}/study-application?${qsUser(user)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    },
+  );
 }

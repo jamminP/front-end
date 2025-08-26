@@ -102,17 +102,12 @@ function CommentNode({
 
   return (
     <li>
-      <article className="rounded-lg border border-gray-200 p-3">
+      <article className="rounded-lg border border-gray-200/30 p-3">
         <div className="flex items-baseline justify-between gap-3">
           <div className="text-sm font-medium">{comment.author_nickname}</div>
           <time className="text-xs text-gray-500">{ts}</time>
         </div>
         <p className="mt-2 text-sm whitespace-pre-wrap break-words">{comment.content}</p>
-
-        {/* 답글/기능 버튼 자리 (원하면 연결) */}
-        {/* <div className="mt-2">
-          <button className="text-xs text-gray-600 hover:underline">답글</button>
-        </div> */}
       </article>
 
       {children.length > 0 && (

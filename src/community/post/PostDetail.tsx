@@ -7,7 +7,7 @@ import recruiting from '../img/recruiting.png';
 import completed from '../img/completed.png';
 import type { FreeDetail, ShareDetail, StudyDetail } from '../api/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deletePost } from '../api/community';
+import { applyStudy, deletePost } from '../api/community';
 import LikeButton from './components/LikeButton';
 
 type Category = 'free' | 'share' | 'study';
@@ -39,7 +39,7 @@ export default function PostDetailPage() {
   const category = raw;
   const postId = Number(id);
 
-  const { data, isLoading, isError } = usePostDetail(category, postId);
+  const { data, isLoading, isError, refetch } = usePostDetail(category, postId);
 
   const current_user_id = 18;
   const isAdmin = false;
@@ -109,6 +109,7 @@ export default function PostDetailPage() {
         isAdmin={isAdmin}
         loading={isLoading}
         layoutKey={postId}
+        refetchDetail={refetch}
       />
     );
   }
@@ -220,7 +221,7 @@ export default function PostDetailPage() {
         animate="show"
         exit={{ opacity: 0, y: 8 }}
         transition={{ layout: { duration: 0.25 } }}
-        className="rounded-2xl bg-gray-100 p-5 shadow-md"
+        className="rounded-2xl border-[0.8px] border-gray-200 bg-white p-5 shadow-lg"
       >
         <HeaderBar
           nickname={post.author_nickname}
@@ -265,7 +266,7 @@ export default function PostDetailPage() {
           {shareFiles.length > 0 && (
             <motion.div
               variants={appearItem}
-              className="mt-4 rounded-xl border bg-white p-4 text-sm"
+              className="my-1 border-t border-gray-300 bg-white text-sm"
             >
               첨부 파일 {shareFiles.length}개
             </motion.div>
@@ -288,12 +289,14 @@ export default function PostDetailPage() {
     isAdmin,
     loading,
     layoutKey,
+    refetchDetail,
   }: {
     post: StudyDetail;
     current_user_id: number;
     isAdmin: boolean;
     loading: boolean;
     layoutKey: number;
+    refetchDetail: () => Promise<any>;
   }) {
     const canEdit = isAdmin || post.author_id === current_user_id;
 
@@ -309,6 +312,9 @@ export default function PostDetailPage() {
     const meta = post.study_recruitment;
     const badgeIcon =
       post.badge === '모집중' ? recruiting : post.badge === '모집완료' ? completed : null;
+    const isAuthor = post.author_id === current_user_id;
+    const badgeAllows = !loading && post.badge?.trim() === '모집중';
+    const canApply = badgeAllows && !isAuthor;
 
     return (
       <motion.section
@@ -319,7 +325,7 @@ export default function PostDetailPage() {
         animate="show"
         exit={{ opacity: 0, y: 8 }}
         transition={{ layout: { duration: 0.25 } }}
-        className="rounded-xl bg-gray-100 px-2 py-4 shadow-md"
+        className="rounded-xl bg-white border-[0.8px] border-gray-200 px-2 py-4 shadow-lg"
       >
         <HeaderBar
           nickname={post.author_nickname}
@@ -367,6 +373,36 @@ export default function PostDetailPage() {
             </div>
             <div>
               스터디 기간 : {formatDate(meta.study_start)} ~ {formatDate(meta.study_end)}
+            </div>
+            <div className="flex justify-center py-2">
+              <button
+                type="button"
+                className={`px-3 py-1 w-60 rounded ${
+                  canApply
+                    ? 'bg-black text-white hover:opacity-80'
+                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                }`}
+                // disabled={loading || !canApply}
+                onClick={async () => {
+                  const r = await refetchDetail();
+                  const fresh = (r?.data ?? post) as StudyDetail;
+
+                  if (fresh.badge?.trim() !== '모집중' || fresh.author_id === current_user_id) {
+                    alert('지금은 신청할 수 없는 상태예요.');
+                    return;
+                  }
+
+                  try {
+                    await applyStudy({ post_id: fresh.id, user: current_user_id });
+                    alert('신청이 접수되었어요.');
+                    await refetchDetail();
+                  } catch (e: any) {
+                    alert('신청에 실패했어요.');
+                  }
+                }}
+              >
+                참여하기
+              </button>
             </div>
           </motion.div>
 

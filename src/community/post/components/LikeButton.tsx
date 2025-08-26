@@ -1,5 +1,5 @@
-// /src/Community/components/LikeButton.tsx
 import { usePostLike } from '../../hook/usePostLike';
+import { PiHeartStraightFill, PiHeartStraightLight } from 'react-icons/pi';
 
 export default function LikeButton({
   post_id,
@@ -26,9 +26,9 @@ export default function LikeButton({
       title={liked ? '좋아요 취소' : '좋아요'}
       onClick={onClick}
       disabled={isPending}
-      className={className ?? 'flex items-center gap-1 text-sm'}
+      className={className ?? 'flex text-[10px] items-center gap-1 text-sm'}
     >
-      <span aria-hidden>{liked ? '❤️' : '🤍'}</span>
+      <span aria-hidden>{liked ? <PiHeartStraightFill /> : <PiHeartStraightLight />}</span>
       <span>{like_count}</span>
     </button>
   );

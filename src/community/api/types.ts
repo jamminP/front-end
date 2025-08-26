@@ -289,3 +289,15 @@ export interface LikeStatus {
   liked: boolean;
   like_count: number;
 }
+
+//study application
+
+export interface ApplyStudyPrams {
+  post_id: number;
+  user: number;
+}
+
+export interface StudyApplicationResponse {
+  application_id: number;
+  status: 'pending' | 'approved' | 'rejected';
+}
