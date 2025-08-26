@@ -26,7 +26,7 @@ interface Post {
 
 export default function StudyApplicants() {
   const user = useAuthStore((state) => state.user);
-  const [applicants, setApplicants] = useState<Applicant[]>([]);
+  const [applicants, setApplicants] = useState<Applicant[] | null>(null);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -92,7 +92,7 @@ export default function StudyApplicants() {
       );
       alert('처리되었습니다');
       // 로컬에서 바로 제거
-      setApplicants((prev) => prev.filter((a) => a.application_id !== applicationId));
+      setApplicants((prev) => prev?.filter((a) => a.application_id !== applicationId) ?? []);
     } catch (err) {
       console.error(err);
       alert('처리 중 오류가 발생했습니다.');
@@ -107,7 +107,7 @@ export default function StudyApplicants() {
   // 내 글이 준비되면 신청자 가져오기
   useEffect(() => {
     if (myPosts.length) fetchApplicants();
-  }, [myPosts]);
+  }, [myPosts, fetchApplicants]);
 
   // 스크롤 이벤트로 추가 로딩
   useEffect(() => {
@@ -128,12 +128,12 @@ export default function StudyApplicants() {
       <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">
         신청자 목록
       </h2>
-      {applicants.length === 0 && !loading ? (
-        <>
-          <p className="text-[1.2rem] text-[#999] font-light tracking-[-0.03rem] mt-5 pl-[5px]">
-            등록된 신청이 없습니다.
-          </p>
-        </>
+      {applicants === null ? (
+        <p className="text-gray-500 mt-2">로딩 중...</p>
+      ) : applicants.length === 0 ? (
+        <p className="text-[1.2rem] text-[#999] font-light tracking-[-0.03rem] mt-5 pl-[5px]">
+          등록된 신청이 없습니다.
+        </p>
       ) : (
         <>
           <ul>
