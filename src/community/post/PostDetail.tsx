@@ -273,17 +273,13 @@ export default function PostDetailPage() {
             <motion.div variants={appearItem} className="mt-4 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {freeImages.map((img) => (
-                  <div key={img.id} className="overflow-hidden rounded-lg border">
+                  <div key={img.id} className="overflow-hidden rounded-sm">
                     <img
                       src={img.image_url}
                       alt="첨부 이미지"
                       className="w-full h-auto block"
                       loading="lazy"
                     />
-                    <div className="px-3 py-2 text-xs text-gray-500 flex justify-between">
-                      <span>{img.mime_type}</span>
-                      <span>{formatBytes(img.size_bytes)}</span>
-                    </div>
                   </div>
                 ))}
               </div>
@@ -293,7 +289,7 @@ export default function PostDetailPage() {
           {post.category === 'share' && shareFiles.length > 0 && (
             <motion.div variants={appearItem} className="mt-4 space-y-2">
               <div className="text-sm text-gray-600">첨부 파일 {shareFiles.length}개</div>
-              <ul className="divide-y rounded-lg border">
+              <ul className="divide-y rounded-lg">
                 {shareFiles.map((f) => {
                   const isPdf =
                     f.mime_type === 'application/pdf' || f.file_url.toLowerCase().endsWith('.pdf');
@@ -301,7 +297,7 @@ export default function PostDetailPage() {
                     <li key={f.id} className="p-3 flex items-center justify-between">
                       <div className="min-w-0 pr-3">
                         <div className="truncate text-sm">
-                          {isPdf ? '📄 PDF' : '📎 파일'}&nbsp;
+                          {isPdf ? 'PDF' : '파일'}&nbsp;
                           <a
                             href={f.file_url}
                             target="_blank"
