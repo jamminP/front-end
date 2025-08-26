@@ -11,6 +11,7 @@ interface Applicant {
   post_title?: string;
   post_id: number;
 }
+
 interface ApplicantList {
   count: number;
   next_cursor: number;
@@ -26,9 +27,9 @@ interface Post {
 
 export default function StudyApplicants() {
   const user = useAuthStore((state) => state.user);
-  const [applicants, setApplicants] = useState<Applicant[] | null>(null);
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [myPosts, setMyPosts] = useState<Post[]>([]);
 
@@ -52,7 +53,7 @@ export default function StudyApplicants() {
     setLoading(true);
 
     try {
-      let allItems: Applicant[] = [];
+      let newItems: Applicant[] = [];
 
       for (const post of myPosts) {
         const res = await axios.get<ApplicantList>(
@@ -68,14 +69,18 @@ export default function StudyApplicants() {
           post_id: post.id,
         }));
 
-        allItems = [...allItems, ...itemsWithTitle];
+        newItems = [...newItems, ...itemsWithTitle];
 
-        // next_cursor는 마지막 포스트 기준으로 갱신
         setNextCursor(res.data.next_cursor || null);
         setHasMore(res.data.next_cursor !== 0);
       }
 
-      setApplicants(allItems);
+      // 중복 없이 추가
+      setApplicants((prev) => {
+        const ids = new Set(prev.map((a) => a.application_id));
+        const filteredNew = newItems.filter((a) => !ids.has(a.application_id));
+        return [...prev, ...filteredNew];
+      });
     } catch (err) {
       console.error('신청자 조회 실패', err);
     } finally {
@@ -91,8 +96,7 @@ export default function StudyApplicants() {
         { withCredentials: true },
       );
       alert('처리되었습니다');
-      // 로컬에서 바로 제거
-      setApplicants((prev) => prev?.filter((a) => a.application_id !== applicationId) ?? []);
+      setApplicants((prev) => prev.filter((a) => a.application_id !== applicationId));
     } catch (err) {
       console.error(err);
       alert('처리 중 오류가 발생했습니다.');
@@ -123,62 +127,60 @@ export default function StudyApplicants() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [fetchApplicants]);
 
+  const pendingApplicants = applicants.filter((c) => c.status === 'pending');
+
   return (
     <>
       <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">
         신청자 목록
       </h2>
-      {applicants === null ? (
+
+      {loading ? (
         <p className="text-gray-500 mt-2">로딩 중...</p>
-      ) : applicants.length === 0 ? (
+      ) : pendingApplicants.length === 0 ? (
         <p className="text-[1.2rem] text-[#999] font-light tracking-[-0.03rem] mt-5 pl-[5px]">
           등록된 신청이 없습니다.
         </p>
       ) : (
-        <>
-          <ul>
-            {applicants
-              .filter((c) => c.status === 'pending')
-              .map((c) => {
-                return (
-                  <li
-                    key={c.application_id}
-                    className="flex justify-between md:items-center flex-col md:flex-row w-[100%] text-[#252525] bg-[#ffffff] rounded-2xl mb-[5%] md:mb-[2%] p-[25px] border-[1px] border-[#e9e9e9] transform transition-transform duration-300 hover:translate-y-[-5px]"
-                  >
-                    <div className="w-full md:w-[80%]">
-                      <h4 className="text-[1.1rem] font-bold tracking-[-.03rem] leading-[1.3]">
-                        신청자 : {c.applicant_nickname ?? '알 수 없음'}
-                      </h4>
-                      <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
-                        신청한 글: {c.post_title}
-                      </p>
-                      <p className="text-[.8rem] text-[#c2c2c2]">
-                        신청일 : {new Date(c.applied_at).toLocaleDateString()}
-                      </p>
-                      <span>{c.status}</span>
-                    </div>
+        <ul>
+          {pendingApplicants.map((c) => (
+            <li
+              key={c.application_id}
+              className="flex justify-between md:items-center flex-col md:flex-row w-[100%] text-[#252525] bg-[#ffffff] rounded-2xl mb-[5%] md:mb-[2%] p-[25px] border-[1px] border-[#e9e9e9] transform transition-transform duration-300 hover:translate-y-[-5px]"
+            >
+              <div className="w-full md:w-[80%]">
+                <h4 className="text-[1.1rem] font-bold tracking-[-.03rem] leading-[1.3]">
+                  신청자 : {c.applicant_nickname ?? '알 수 없음'}
+                </h4>
+                <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
+                  신청한 글: {c.post_title}
+                </p>
+                <p className="text-[.8rem] text-[#c2c2c2]">
+                  신청일 : {new Date(c.applied_at).toLocaleDateString()}
+                </p>
+              </div>
 
-                    <div className="flex">
-                      <button
-                        onClick={() => handleAction(c.application_id, 'approve')}
-                        className="flex justify-center items-center text-[.9rem] mr-[5px] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[60px] md:h-[40px] rounded-4xl text-[#ffffff] bg-[#1b3043] cursor-pointer"
-                      >
-                        승인
-                      </button>
-                      <button
-                        onClick={() => handleAction(c.application_id, 'reject')}
-                        className="flex justify-center items-center text-[.9rem] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[60px] md:h-[40px] rounded-4xl text-[#364153] bg-[#ebe6e7] cursor-pointer"
-                      >
-                        거절
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-          </ul>
-          {loading && <p className="text-gray-500 mt-2">로딩 중...</p>}
-          {!hasMore && <p className="text-gray-500 mt-2">더 이상 신청자가 없습니다.</p>}
-        </>
+              <div className="flex">
+                <button
+                  onClick={() => handleAction(c.application_id, 'approve')}
+                  className="flex justify-center items-center text-[.9rem] mr-[5px] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[60px] md:h-[40px] rounded-4xl text-[#ffffff] bg-[#1b3043] cursor-pointer"
+                >
+                  승인
+                </button>
+                <button
+                  onClick={() => handleAction(c.application_id, 'reject')}
+                  className="flex justify-center items-center text-[.9rem] mt-[15px] md:mt-[0] p-[3px_10px] md:p-[5px] w-fit md:w-[60px] md:h-[40px] rounded-4xl text-[#364153] bg-[#ebe6e7] cursor-pointer"
+                >
+                  거절
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {!hasMore && pendingApplicants.length > 0 && (
+        <p className="text-gray-500 mt-2">더 이상 신청자가 없습니다.</p>
       )}
     </>
   );
