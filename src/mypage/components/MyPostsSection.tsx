@@ -42,7 +42,7 @@ export default function MyPostsSection() {
         date: item.created_at,
         category: item.category,
       }));
-
+      console.log(res.data.items[0]); //테스트
       setSkeletonCount(res.data.items.length);
 
       // nextCursor 없으면 새로 덮어쓰기, 있으면 이어붙이기
@@ -70,7 +70,7 @@ export default function MyPostsSection() {
         <h3 className="text-[1.5rem] font-light tracking-[-0.05rem] pl-[5px]">작성한 글 보기</h3>
 
         {/* 카테고리 버튼 */}
-        <div className="flex md:gap-3 gap-2 mt-2">
+        <div className="flex md:gap-3 gap-2 m-[15px 0]">
           {['all', 'share', 'free', 'study'].map((cat) => (
             <button
               key={cat}
