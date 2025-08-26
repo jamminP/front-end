@@ -301,7 +301,7 @@ export interface LikeStatus {
 
 export interface ApplyStudyPrams {
   post_id: number;
-  user?: number;
+  user: number;
 }
 
 export interface StudyApplicationResponse {

@@ -275,3 +275,8 @@ export function normalizeFiles(files?: Files | Files[] | null): Files[] {
   if (!files) return []; // undefined/null -> 빈 배열
   return Array.isArray(files) ? files : [files]; // 단일 -> [단일]
 }
+//normalizeFiles
+export function normalizeFiles(files?: Files | Files[] | null): Files[] {
+  if (!files) return []; // undefined/null -> 빈 배열
+  return Array.isArray(files) ? files : [files]; // 단일 -> [단일]
+}
