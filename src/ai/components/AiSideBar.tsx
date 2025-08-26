@@ -5,6 +5,8 @@ import { FaRegFileLines } from 'react-icons/fa6';
 import ChatList from './aiside/ChatList';
 import type { ActionId } from '../types/types';
 import { useResolvedNickname } from '../hook/useUserProfile';
+import useAuthStore from '@src/store/authStore';
+import profileImage from '@src/login/img/profile.jpg';
 
 type Props = {
   collapsed: boolean;
@@ -17,6 +19,7 @@ const PANEL = 'bg-white rounded-2xl ring-1 ring-slate-200 shadow-sm';
 
 export default function AiSideBar({ collapsed, onToggle, onSelectAction }: Props) {
   const nickname = useResolvedNickname();
+  const user = useAuthStore((state) => state.user);
 
   return (
     <div className={`${PANEL} relative flex flex-col w-full h-full`}>
@@ -60,7 +63,13 @@ export default function AiSideBar({ collapsed, onToggle, onSelectAction }: Props
           collapsed ? 'justify-center' : 'px-3 gap-3',
         ].join(' ')}
       >
-        <div className="w-8 h-8 rounded-full bg-slate-200" />
+        <div className="w-8 h-8 rounded-full overflow-hidden">
+          <img
+            src={user?.profile_image || profileImage}
+            alt="프로필"
+            className="w-full h-full object-cover"
+          />
+        </div>
         {!collapsed && <p className="text-sm font-medium text-slate-800">{nickname}</p>}
       </div>
     </div>

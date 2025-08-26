@@ -42,7 +42,7 @@ export default function StudyApplicants() {
     } finally {
       setLoading(false);
     }
-  }, [postIdNum, nextCursor, loading]);
+  }, [postIdNum, nextCursor]);
 
   const handleAction = async (
     applicationId: number,
@@ -79,7 +79,7 @@ export default function StudyApplicants() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [fetchApplicantList]);
 
   return (
     <>

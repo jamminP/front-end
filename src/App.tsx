@@ -48,7 +48,7 @@ export default function App() {
               <Route index element={<MypageContent />} />
               <Route path="calendar" element={<MyCalendar />} />
               <Route path="challenge" element={<Challenge />} />
-              <Route path="applicants" element={<StudyApplicants />} />
+              <Route path="applicants/:post_id" element={<StudyApplicants />} />
               <Route path="applications" element={<MyApplications />} />
             </Route>
             <Route path="/ai" element={<AiPage />} />
