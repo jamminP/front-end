@@ -10,11 +10,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { applyStudy, deletePost, normalizeFiles } from '../api/community';
 import LikeButton from './components/LikeButton';
 import useAuthStore from '@src/store/authStore';
+import { useMyApplication } from '../hook/useMyApplication';
 
 type Category = 'free' | 'share' | 'study';
 const isCategory = (v: string): v is Category => v === 'free' || v === 'share' || v === 'study';
 
-/** 상세 카드 등장(컨테이너) + 내부 순차 등장을 위한 variants */
 const appearContainer: Variants = {
   hidden: { opacity: 0, y: 10 },
   show: {
@@ -45,7 +45,6 @@ export default function PostDetailPage() {
   const current_user_id = useAuthStore((s) => s.user!.id);
   const isAdmin = false;
 
-  // 삭제 mutation (HEAD 쪽 로직 유지)
   const qc = useQueryClient();
   const { mutate: onDeletePost, isPending: deletingPost } = useMutation({
     mutationFn: () => deletePost({ post_id: postId, user: current_user_id }),
@@ -57,7 +56,6 @@ export default function PostDetailPage() {
     },
   });
 
-  // 리스트에서 넘겨준 프리뷰가 있으면 로딩 동안 사용 (dev 쪽 유지)
   const preview = state?.post ?? {};
   const base = {
     id: postId,
@@ -127,7 +125,6 @@ export default function PostDetailPage() {
     />
   );
 
-  // ───────────────── helpers ─────────────────
   function HeaderBar(props: {
     nickname?: string;
     created_at: string;
@@ -308,10 +305,10 @@ export default function PostDetailPage() {
     };
 
     const meta = post.study_recruitment;
-    const badgeIcon =
-      post.badge === '모집중' ? recruiting : post.badge === '모집완료' ? completed : null;
+    post.badge === '모집중' ? recruiting : post.badge === '모집완료' ? completed : null;
     const isAuthor = post.author_id === current_user_id;
-    const canApply = post.badge === '모집중' && !isAuthor;
+    const { app, isLoading: appLoading, invalidate: invalidateApp } = useMyApplication(post.id);
+    const isApplied = !!app && app.user_id === current_user_id;
 
     return (
       <motion.section
@@ -374,30 +371,23 @@ export default function PostDetailPage() {
               <button
                 type="button"
                 className={`px-3 py-1 w-60 rounded ${
-                  canApply
+                  !isApplied && post.badge === '모집중' && post.author_id !== current_user_id
                     ? 'bg-black text-white hover:opacity-80'
                     : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                 }`}
-                disabled={loading || !canApply}
+                disabled={loading || appLoading || isApplied}
                 onClick={async () => {
-                  const r = await refetchDetail();
-                  const fresh = (r?.data ?? post) as StudyDetail;
-
-                  if (fresh.badge?.trim() !== '모집중' || fresh.author_id === current_user_id) {
-                    alert('지금은 신청할 수 없는 상태예요.');
-                    return;
-                  }
-
+                  if (isApplied) return;
                   try {
-                    await applyStudy({ post_id: fresh.id, user: current_user_id });
+                    await applyStudy({ post_id: post.id, user: current_user_id });
+                    await Promise.all([invalidateApp(), refetchDetail()]);
                     alert('신청이 접수되었어요.');
-                    await refetchDetail();
-                  } catch (e: any) {
+                  } catch {
                     alert('신청에 실패했어요.');
                   }
                 }}
               >
-                참여하기
+                {isApplied ? '신청완료' : '신청하기'}
               </button>
             </div>
           </motion.div>

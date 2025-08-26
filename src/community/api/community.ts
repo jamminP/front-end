@@ -23,6 +23,7 @@ import type {
   StudyApplicationResponse,
   Badge,
   Files,
+  StudyApplication,
 } from './types';
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
@@ -275,3 +276,9 @@ export function normalizeFiles(files?: Files | Files[] | null): Files[] {
   if (!files) return []; // undefined/null -> 빈 배열
   return Array.isArray(files) ? files : [files]; // 단일 -> [단일]
 }
+
+export const getMyStudyApplication = (post_id: number) =>
+  http<StudyApplication | null>(`/api/v1/community/post/${post_id}/study-application`, {
+    method: 'GET',
+    credentials: 'include',
+  });
