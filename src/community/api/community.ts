@@ -105,13 +105,12 @@ export interface CreatePostResult {
   post_id: number;
 }
 
-async function postCreate(user: number, body: Record<string, any>): Promise<CreatePostResult> {
-  const qs = new URLSearchParams({ user: String(user) }).toString();
-  const res = await http<any>(`${CREATE_POST}?${qs}`, {
+async function postCreate(body: Record<string, any>): Promise<CreatePostResult> {
+  const res = await http<any>(CREATE_POST, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ ...body, user_id: user }),
+    credentials: 'include', // ✅ 세션 쿠키
+    body: JSON.stringify(body), // body에 user_id 포함 (서버가 요구)
   });
   const data = res as any;
   const pid: unknown = data?.post_id ?? data?.id ?? data?.postId;
@@ -129,10 +128,9 @@ export function createFreePost(
 export function createFreePost(
   a: number | (FreePostRequest & { user_id: number }),
   b?: FreePostRequest,
-): Promise<CreatePostResult> {
-  const user = typeof a === 'number' ? a : a.user_id;
-  const payload = (typeof a === 'number' ? b! : a) as FreePostRequest;
-  return postCreate(user, { ...payload, category: 'free' as const });
+) {
+  const payload = typeof a === 'number' ? { ...b!, user_id: a } : a;
+  return postCreate({ ...payload, category: 'free' as const });
 }
 
 // create Share
@@ -143,10 +141,9 @@ export function createSharePost(
 export function createSharePost(
   a: number | (SharePostRequest & { user_id: number }),
   b?: SharePostRequest,
-): Promise<CreatePostResult> {
-  const user = typeof a === 'number' ? a : a.user_id;
-  const payload = (typeof a === 'number' ? b! : a) as SharePostRequest;
-  return postCreate(user, { ...payload, category: 'share' as const });
+) {
+  const payload = typeof a === 'number' ? { ...b!, user_id: a } : a;
+  return postCreate({ ...payload, category: 'share' as const });
 }
 
 // create Study
@@ -157,10 +154,9 @@ export function createStudyPost(
 export function createStudyPost(
   a: number | (StudyPostRequest & { user_id: number }),
   b?: StudyPostRequest,
-): Promise<CreatePostResult> {
-  const user = typeof a === 'number' ? a : a.user_id;
-  const payload = (typeof a === 'number' ? b! : a) as StudyPostRequest;
-  return postCreate(user, { ...payload, category: 'study' as const });
+) {
+  const payload = typeof a === 'number' ? { ...b!, user_id: a } : a;
+  return postCreate({ ...payload, category: 'study' as const });
 }
 
 export function getComments(
@@ -194,6 +190,7 @@ export async function createComment(
     body.parent_comment_id = payload.parent_comment_id;
   }
 
+  // ✅ ?user= 제거, 세션 쿠키로 인증
   const res = await fetch(`/api/v1/community/post/${post_id}/comment`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json; charset=utf-8' },
@@ -221,6 +218,8 @@ export async function listComments(postId: number): Promise<CommentTreeItem[]> {
 export const patchPost = (params: PatchPostParams, body: PatchPostRequest) =>
   http<any>(`/api/v1/community/post/${params.post_id}`, {
     method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(body),
   });
 
@@ -231,6 +230,8 @@ export const patchComment = (
 ) =>
   http<any>(`/api/v1/community/comment/${params.comment_id}`, {
     method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(body),
   });
 
@@ -243,29 +244,31 @@ export const deletePost = (params: DeletePostParams) =>
 export const deleteComment = (params: DeleteCommentParams) =>
   http<void>(`/api/v1/community/comment/${params.comment_id}`, {
     method: 'DELETE',
+    credentials: 'include',
   });
 
 //like
 export const GetLike = (params: GetLikePrams) =>
   http<LikeStatus>(`/api/v1/community/post/${params.post_id}/likes`, {
     method: 'GET',
+    credentials: 'include',
   });
 
 export const PostLike = (params: PostLikeParams) =>
   http<LikeStatus>(`/api/v1/community/post/${params.post_id}/like`, {
     method: 'POST',
+    credentials: 'include',
   });
 
 export async function getPostDetail(postId: number): Promise<PostDetail> {
-  return http<PostDetail>(DETAIL_ENDPOINT(postId));
+  return http<PostDetail>(DETAIL_ENDPOINT(postId), { credentials: 'include' });
 }
 
 // study Apply
 
 export async function applyStudy(params: ApplyStudyPrams) {
   const { post_id } = params;
-
-  return http<StudyApplicationResponse>(`/api/v1/community/post/${post_id}/study-application?`, {
+  return http<StudyApplicationResponse>(`/api/v1/community/post/${post_id}/study-application`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
