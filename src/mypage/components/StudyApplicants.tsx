@@ -30,6 +30,7 @@ export default function StudyApplicants() {
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [myPosts, setMyPosts] = useState<Post[]>([]);
 
@@ -85,6 +86,7 @@ export default function StudyApplicants() {
       console.error('신청자 조회 실패', err);
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   }, [myPosts, loading, nextCursor, hasMore]);
 
@@ -135,9 +137,9 @@ export default function StudyApplicants() {
         신청자 목록
       </h2>
 
-      {loading ? (
+      {initialLoading ? (
         <p className="text-gray-500 mt-2">로딩 중...</p>
-      ) : pendingApplicants.length === 0 ? (
+      ) : applicants.length === 0 ? (
         <p className="text-[1.2rem] text-[#999] font-light tracking-[-0.03rem] mt-5 pl-[5px]">
           등록된 신청이 없습니다.
         </p>
