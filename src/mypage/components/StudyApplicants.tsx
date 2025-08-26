@@ -1,4 +1,3 @@
-import useAuthStore from '@src/store/authStore';
 import axios from 'axios';
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -17,21 +16,19 @@ interface ApplicantList {
 }
 
 export default function StudyApplicants() {
-  const { postId } = useParams<{ postId: string }>();
-  const postIdNum = postId ? Number(postId) : null;
+  const { post_id } = useParams<{ post_id: string }>();
+  const postIdNum = post_id ? Number(post_id) : null;
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const { user } = useAuthStore();
-  const userId = user?.id;
 
   const fetchApplicantList = useCallback(async () => {
-    if (!userId || loading) return;
+    if (!postIdNum || loading) return;
     setLoading(true);
     try {
       const res = await axios.get<ApplicantList>(
-        `https://backend.evida.site/api/v1/users/myinfo/${userId}/applications?limit=5${
+        `https://backend.evida.site/api/v1/users/myinfo/${postIdNum}/applications?limit=5${
           nextCursor ? `&cursor=${nextCursor}` : ''
         }`,
         { withCredentials: true },
@@ -45,7 +42,7 @@ export default function StudyApplicants() {
     } finally {
       setLoading(false);
     }
-  }, [userId, nextCursor, loading]);
+  }, [postIdNum, nextCursor, loading]);
 
   const handleAction = async (
     applicationId: number,
@@ -66,10 +63,10 @@ export default function StudyApplicants() {
   };
 
   useEffect(() => {
-    if (userId) {
+    if (postIdNum) {
       fetchApplicantList();
     }
-  }, [userId]);
+  }, [postIdNum]);
 
   useEffect(() => {
     const handleScroll = () => {
