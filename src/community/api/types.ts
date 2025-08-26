@@ -65,21 +65,30 @@ export interface BaseDetail {
   updated_at: string;
 }
 
-export interface Files {
+export interface FilesItem {
   id: number;
   file_url: string;
   mime_type: string;
   size_bytes: number;
   created_at: string;
 }
+
+export interface ImageItem {
+  id: number;
+  image_url: string;
+  mime_type: string;
+  size_bytes: number;
+  created_at: string;
+}
+
 export type ShareDetail = BaseDetail & {
   category: 'share';
-  files?: Files;
+  files?: FilesItem[];
 };
 
 export type FreeDetail = BaseDetail & {
   category: 'free';
-  images?: string[];
+  images?: ImageItem[];
 };
 
 export type StudyDetail = BaseDetail & {
