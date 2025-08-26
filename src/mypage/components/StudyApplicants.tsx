@@ -75,7 +75,7 @@ export default function StudyApplicants() {
         setHasMore(res.data.next_cursor !== 0);
       }
 
-      setApplicants((prev) => [...prev, ...allItems]);
+      setApplicants(allItems);
     } catch (err) {
       console.error('신청자 조회 실패', err);
     } finally {
@@ -90,11 +90,9 @@ export default function StudyApplicants() {
         {},
         { withCredentials: true },
       );
-
-      // 로컬 상태에서 삭제
-      setApplicants((prev) => prev.filter((a) => a.application_id !== applicationId));
-
       alert('처리되었습니다');
+      // 로컬에서 바로 제거
+      setApplicants((prev) => prev.filter((a) => a.application_id !== applicationId));
     } catch (err) {
       console.error(err);
       alert('처리 중 오류가 발생했습니다.');
@@ -139,25 +137,27 @@ export default function StudyApplicants() {
       ) : (
         <>
           <ul>
-            {applicants.map((c) => {
-              return (
-                <li
-                  key={c.application_id}
-                  className="flex justify-between md:items-center flex-col md:flex-row w-[100%] text-[#252525] bg-[#ffffff] rounded-2xl mb-[5%] md:mb-[2%] p-[25px] border-[1px] border-[#e9e9e9] transform transition-transform duration-300 hover:translate-y-[-5px]"
-                >
-                  <div className="w-full md:w-[80%]">
-                    <h4 className="text-[1.1rem] font-bold tracking-[-.03rem] leading-[1.3]">
-                      신청자 : {c.applicant_nickname ?? '알 수 없음'}
-                    </h4>
-                    <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
-                      신청한 글: {c.post_title}
-                    </p>
-                    <p className="text-[.8rem] text-[#c2c2c2]">
-                      신청일 : {new Date(c.applied_at).toLocaleDateString()}
-                    </p>
-                    <span>{c.status}</span>
-                  </div>
-                  {c.status === 'pending' && (
+            {applicants
+              .filter((c) => c.status === 'pending')
+              .map((c) => {
+                return (
+                  <li
+                    key={c.application_id}
+                    className="flex justify-between md:items-center flex-col md:flex-row w-[100%] text-[#252525] bg-[#ffffff] rounded-2xl mb-[5%] md:mb-[2%] p-[25px] border-[1px] border-[#e9e9e9] transform transition-transform duration-300 hover:translate-y-[-5px]"
+                  >
+                    <div className="w-full md:w-[80%]">
+                      <h4 className="text-[1.1rem] font-bold tracking-[-.03rem] leading-[1.3]">
+                        신청자 : {c.applicant_nickname ?? '알 수 없음'}
+                      </h4>
+                      <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
+                        신청한 글: {c.post_title}
+                      </p>
+                      <p className="text-[.8rem] text-[#c2c2c2]">
+                        신청일 : {new Date(c.applied_at).toLocaleDateString()}
+                      </p>
+                      <span>{c.status}</span>
+                    </div>
+
                     <div className="flex">
                       <button
                         onClick={() => handleAction(c.application_id, 'approve')}
@@ -172,10 +172,9 @@ export default function StudyApplicants() {
                         거절
                       </button>
                     </div>
-                  )}
-                </li>
-              );
-            })}
+                  </li>
+                );
+              })}
           </ul>
           {loading && <p className="text-gray-500 mt-2">로딩 중...</p>}
           {!hasMore && <p className="text-gray-500 mt-2">더 이상 신청자가 없습니다.</p>}
