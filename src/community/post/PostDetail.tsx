@@ -293,6 +293,7 @@ export default function PostDetailPage() {
     layoutKey: number;
     refetchDetail: () => Promise<any>;
   }) {
+    const navigate = useNavigate();
     const canEdit = isAdmin || post.author_id === current_user_id;
 
     const handleEditClick = (e: React.MouseEvent) => {
@@ -305,14 +306,20 @@ export default function PostDetailPage() {
     };
 
     const meta = post.study_recruitment;
-    post.badge === '모집중' ? recruiting : post.badge === '모집완료' ? completed : null;
-    const isAuthor = post.author_id === current_user_id;
-    const { app, isLoading: appLoading, invalidate: invalidateApp } = useMyApplication(post.id);
+    const badgeIcon =
+      post.badge === '모집중' ? recruiting : post.badge === '모집완료' ? completed : null;
 
+    const { app, isLoading: appLoading, refetch: refetchApp } = useMyApplication(post.id);
+
+    const appUserId = Number(app?.user_id ?? -1);
+    const status = (app?.status ?? '').toLowerCase().trim();
     const isApplied =
       !!app &&
-      app.user_id === current_user_id &&
-      (app.status === 'pending' || app.status === 'approved');
+      appUserId === Number(current_user_id) &&
+      (status === 'pending' || status === 'approved');
+
+    const canApply = !isApplied && post.badge === '모집중' && post.author_id !== current_user_id;
+
     return (
       <motion.section
         layout
@@ -362,6 +369,7 @@ export default function PostDetailPage() {
             <div className="flex items-center gap-2">
               <span>모집 상태 :</span>
               <span>{post.badge}</span>
+              {badgeIcon && <img src={badgeIcon} alt={post.badge} className="h-5 w-5" />}
             </div>
             <div>모집 인원 : {meta.max_member}명</div>
             <div>
@@ -374,16 +382,16 @@ export default function PostDetailPage() {
               <button
                 type="button"
                 className={`px-3 py-1 w-60 rounded ${
-                  !isApplied && post.badge === '모집중' && post.author_id !== current_user_id
+                  canApply
                     ? 'bg-black text-white hover:opacity-80'
                     : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                 }`}
-                disabled={loading || appLoading || isApplied}
+                disabled={loading || appLoading || !canApply}
                 onClick={async () => {
-                  if (isApplied) return;
+                  if (!canApply) return;
                   try {
                     await applyStudy({ post_id: post.id, user: current_user_id });
-                    await Promise.all([invalidateApp(), refetchDetail()]);
+                    await Promise.all([refetchApp(), refetchDetail()]);
                     alert('신청이 접수되었어요.');
                   } catch {
                     alert('신청에 실패했어요.');

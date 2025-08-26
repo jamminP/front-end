@@ -95,6 +95,11 @@ export default function CommentsBlock({
           >
             <img src={squarePen} alt="comment button" className="w-4 h-4" />
           </button>
+          {rootContent.length >= 50 && (
+            <p className="px-2 text-[11px] text-red-500">
+              댓글은 최대 50자까지 입력할 수 있습니다.
+            </p>
+          )}
         </div>
       </div>
 
