@@ -50,7 +50,7 @@ export default function StudyApplicants() {
 
   // 신청자 리스트 가져오기 (페이징)
   const fetchApplicants = useCallback(async () => {
-    if (!myPosts.length || !hasMore) return;
+    if (loading || !hasMore) return;
     setLoading(true);
 
     try {
