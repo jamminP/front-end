@@ -156,7 +156,6 @@ export default function StudyApplicants() {
                       <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
                         신청일 : {new Date(c.applied_at).toLocaleDateString()}
                       </p>
-                      <span className="text-[.8rem] text-[#c2c2c2]">상태 : {c.status}</span>
                     </div>
                     <div className="flex">
                       <button
