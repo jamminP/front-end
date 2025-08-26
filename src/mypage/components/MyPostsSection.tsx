@@ -5,7 +5,7 @@ import { MyPostCard, SkeletonCard } from './MyPostCard';
 interface MyPost {
   id: number;
   title: string;
-  content: string;
+  views: number;
   date: string;
   category: 'free' | 'study' | 'share';
 }
@@ -38,11 +38,10 @@ export default function MyPostsSection() {
       const posts: MyPost[] = res.data.items.map((item: any) => ({
         id: item.id,
         title: item.title,
-        content: item.content,
+        views: item.views,
         date: item.created_at,
         category: item.category,
       }));
-      console.log(res.data.items[0]); //테스트
       setSkeletonCount(res.data.items.length);
 
       // nextCursor 없으면 새로 덮어쓰기, 있으면 이어붙이기

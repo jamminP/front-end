@@ -5,7 +5,7 @@ import { MyPostCard, SkeletonCard } from './MyPostCard';
 interface MyPost {
   id: number;
   title: string;
-  content: string;
+  views: number;
   date: string;
   category: 'free' | 'study' | 'share';
 }
@@ -37,7 +37,7 @@ export default function LikedPostsSection() {
       const posts: MyPost[] = res.data.items.map((item: any) => ({
         id: item.id,
         title: item.title,
-        content: item.content,
+        views: item.views,
         date: item.created_at,
         category: item.category,
       }));
