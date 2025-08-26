@@ -90,7 +90,7 @@ export default function StudyApplicants() {
   ) => {
     try {
       await axios.post(
-        `https://backend.evida.site/api/v1/community/study-application/${applicationId}/${action}?user=${applicantId}`,
+        `https://backend.evida.site/api/v1/community/study-application/${applicationId}/${action}`,
         {},
         { withCredentials: true },
       );
