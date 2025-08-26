@@ -308,8 +308,11 @@ export default function PostDetailPage() {
     post.badge === '모집중' ? recruiting : post.badge === '모집완료' ? completed : null;
     const isAuthor = post.author_id === current_user_id;
     const { app, isLoading: appLoading, invalidate: invalidateApp } = useMyApplication(post.id);
-    const isApplied = !!app && app.user_id === current_user_id;
 
+    const isApplied =
+      !!app &&
+      app.user_id === current_user_id &&
+      (app.status === 'pending' || app.status === 'approved');
     return (
       <motion.section
         layout
