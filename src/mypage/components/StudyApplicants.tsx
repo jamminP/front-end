@@ -24,7 +24,7 @@ export default function StudyApplicants() {
   const [hasMore, setHasMore] = useState(true);
 
   const fetchApplicantList = useCallback(async () => {
-    if (!postIdNum || loading || !hasMore) return;
+    if (!postIdNum || loading) return;
     setLoading(true);
     try {
       const res = await axios.get<ApplicantList>(
