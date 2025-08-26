@@ -180,7 +180,7 @@ export function getComments(
 
 export interface CreateCommentBody {
   content: string;
-  parent_comment_id: number | null;
+  parent_comment_id: number | null; // 호출부 타입은 유지
 }
 
 export async function createComment(

@@ -1,8 +1,11 @@
 import Robo from '../img/Logo.png';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import useAuthStore from '@src/store/authStore';
 
 export default function HeroLanding() {
+  const user = useAuthStore((s) => s.user);
+  const isLoggedIn = !!user;
   return (
     <section className="relative overflow-hidden bg-white min-h-[85dvh] flex items-center pb-20">
       <div
@@ -46,7 +49,7 @@ export default function HeroLanding() {
 
           <div className="mt-9 flex flex-wrap justify-center md:justify-start gap-3">
             <Link
-              to="/login"
+              to={isLoggedIn ? '/ai' : '/login'}
               className="rounded-xl px-6 py-3 font-semibold text-white bg-[var(--accent)] hover:opacity-90 transition shadow-sm"
             >
               시작하기
