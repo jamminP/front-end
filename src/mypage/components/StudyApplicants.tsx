@@ -1,6 +1,6 @@
+import useAuthStore from '@src/store/authStore';
 import axios from 'axios';
 import { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 
 interface Applicant {
   application_id: number;
@@ -8,6 +8,8 @@ interface Applicant {
   applicant_nickname?: string;
   status: 'pending' | 'approved' | 'rejected';
   applied_at: string;
+  post_title?: string;
+  post_id: number;
 }
 interface ApplicantList {
   count: number;
@@ -15,33 +17,71 @@ interface ApplicantList {
   items: Applicant[];
 }
 
+interface Post {
+  id: number;
+  category: string;
+  title: string;
+  author_id: number;
+}
+
 export default function StudyApplicants() {
-  const { post_id } = useParams<{ post_id: string }>();
-  const postIdNum = post_id ? Number(post_id) : null;
+  const user = useAuthStore((state) => state.user);
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [myPosts, setMyPosts] = useState<Post[]>([]);
 
-  const fetchApplicantList = useCallback(async () => {
-    if (!postIdNum || loading) return;
-    setLoading(true);
+  // 내 글 가져오기
+  const fetchMyPosts = useCallback(async () => {
+    if (!user) return;
     try {
-      const res = await axios.get<ApplicantList>(
-        `https://backend.evida.site/api/v1/users/myinfo/${postIdNum}/applications?limit=5`,
-        { withCredentials: true },
+      const res = await axios.get<{ items: Post[] }>(
+        `https://backend.evida.site/api/v1/community/post/list`,
       );
-      console.log(post_id, postIdNum);
-      console.log('post_id:', post_id, 'postIdNum:', postIdNum);
-      setApplicants((prev) => [...prev, ...res.data.items]);
-      setNextCursor(res.data.next_cursor || null);
-      setHasMore(res.data.next_cursor !== 0);
+      const posts = res.data.items.filter((p) => p.author_id === user.id && p.category === 'study');
+      setMyPosts(posts);
     } catch (err) {
-      console.error(err);
+      console.error('내 글 조회 실패', err);
+    }
+  }, [user]);
+
+  // 신청자 리스트 가져오기 (페이징)
+  const fetchApplicants = useCallback(async () => {
+    if (loading || !myPosts.length || !hasMore) return;
+    setLoading(true);
+
+    try {
+      let allItems: Applicant[] = [];
+
+      for (const post of myPosts) {
+        const res = await axios.get<ApplicantList>(
+          `https://backend.evida.site/api/v1/users/myinfo/${post.id}/applications?limit=5${
+            nextCursor ? `&cursor=${nextCursor}` : ''
+          }`,
+          { withCredentials: true },
+        );
+
+        const itemsWithTitle = res.data.items.map((a) => ({
+          ...a,
+          post_title: post.title,
+          post_id: post.id,
+        }));
+
+        allItems = [...allItems, ...itemsWithTitle];
+
+        // next_cursor는 마지막 포스트 기준으로 갱신
+        setNextCursor(res.data.next_cursor || null);
+        setHasMore(res.data.next_cursor !== 0);
+      }
+
+      setApplicants((prev) => [...prev, ...allItems]);
+    } catch (err) {
+      console.error('신청자 조회 실패', err);
     } finally {
       setLoading(false);
     }
-  }, [postIdNum, nextCursor]);
+  }, [myPosts, loading, nextCursor, hasMore]);
 
   const handleAction = async (
     applicationId: number,
@@ -61,31 +101,36 @@ export default function StudyApplicants() {
     }
   };
 
+  // 초기 로딩
   useEffect(() => {
-    if (postIdNum) {
-      fetchApplicantList();
-    }
-  }, [postIdNum]);
+    fetchMyPosts();
+  }, [fetchMyPosts]);
 
+  // 내 글이 준비되면 신청자 가져오기
+  useEffect(() => {
+    if (myPosts.length) fetchApplicants();
+  }, [myPosts]);
+
+  // 스크롤 이벤트로 추가 로딩
   useEffect(() => {
     const handleScroll = () => {
       if (
         window.innerHeight + document.documentElement.scrollTop + 100 >=
         document.documentElement.scrollHeight
       ) {
-        fetchApplicantList();
+        fetchApplicants();
       }
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [fetchApplicantList]);
+  }, [fetchApplicants]);
 
   return (
     <>
       <h2 className="text-3xl md:text-4xl text-[#242424] tracking-[-.05rem] mb-[30px]">
         신청자 목록
       </h2>
-      {applicants.length === 0 ? (
+      {applicants.length === 0 && !loading ? (
         <>
           <p className="text-[1.2rem] text-[#999] font-light tracking-[-0.03rem] mt-5 pl-[5px]">
             등록된 신청이 없습니다.
@@ -104,6 +149,9 @@ export default function StudyApplicants() {
                     <h4 className="text-[1.1rem] font-bold tracking-[-.03rem] leading-[1.3]">
                       {c.applicant_nickname ?? '알 수 없음'}
                     </h4>
+                    <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
+                      신청한 글: {c.post_title}
+                    </p>
                     <p className="text-[.9rem] text-[#797979] m-[10px_0] truncate">
                       신청일 : {new Date(c.applied_at).toLocaleDateString()}
                     </p>
