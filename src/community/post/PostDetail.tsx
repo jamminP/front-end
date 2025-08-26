@@ -1,4 +1,3 @@
-// src/community/post/PostDetail.tsx
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import { usePostDetail } from '../hook/usePostDetail';
@@ -10,7 +9,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { applyStudy, deletePost, normalizeFiles } from '../api/community';
 import LikeButton from './components/LikeButton';
 import useAuthStore from '@src/store/authStore';
-import { useMyApplication } from '../hook/useMyApplication';
+import { useEffect, useState } from 'react';
 
 type Category = 'free' | 'share' | 'study';
 const isCategory = (v: string): v is Category => v === 'free' || v === 'share' || v === 'study';
@@ -309,16 +308,13 @@ export default function PostDetailPage() {
     const badgeIcon =
       post.badge === '모집중' ? recruiting : post.badge === '모집완료' ? completed : null;
 
-    const { app, isLoading: appLoading, refetch: refetchApp } = useMyApplication(post.id);
+    const { applied, markApplied } = useAppliedPersistence(post.id);
 
-    const appUserId = Number(app?.user_id ?? -1);
-    const status = (app?.status ?? '').toLowerCase().trim();
-    const isApplied =
-      !!app &&
-      appUserId === Number(current_user_id) &&
-      (status === 'pending' || status === 'approved');
+    const { mutateAsync: doApply, isPending: applying } = useMutation({
+      mutationFn: () => applyStudy({ post_id: post.id, user: current_user_id }),
+    });
 
-    const canApply = !isApplied && post.badge === '모집중' && post.author_id !== current_user_id;
+    const canApply = !applied && post.badge === '모집중' && post.author_id !== current_user_id;
 
     return (
       <motion.section
@@ -369,7 +365,6 @@ export default function PostDetailPage() {
             <div className="flex items-center gap-2">
               <span>모집 상태 :</span>
               <span>{post.badge}</span>
-              {badgeIcon && <img src={badgeIcon} alt={post.badge} className="h-5 w-5" />}
             </div>
             <div>모집 인원 : {meta.max_member}명</div>
             <div>
@@ -386,19 +381,20 @@ export default function PostDetailPage() {
                     ? 'bg-black text-white hover:opacity-80'
                     : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                 }`}
-                disabled={loading || appLoading || !canApply}
+                disabled={loading || applying || !canApply}
                 onClick={async () => {
                   if (!canApply) return;
+                  markApplied();
                   try {
-                    await applyStudy({ post_id: post.id, user: current_user_id });
-                    await Promise.all([refetchApp(), refetchDetail()]);
+                    await doApply();
+                    await refetchDetail();
                     alert('신청이 접수되었어요.');
                   } catch {
-                    alert('신청에 실패했어요.');
+                    saveAppliedToStorage(post.id, false);
                   }
                 }}
               >
-                {isApplied ? '신청완료' : '신청하기'}
+                {applied ? '신청완료' : '신청하기'}
               </button>
             </div>
           </motion.div>
@@ -422,4 +418,64 @@ export default function PostDetailPage() {
       </motion.section>
     );
   }
+}
+
+const APPLIED_KEY = 'community:study-applied';
+
+function loadAppliedFromStorage(postId: number): boolean {
+  try {
+    const raw = localStorage.getItem(APPLIED_KEY);
+    if (!raw) return false;
+    const map = JSON.parse(raw) as Record<string, boolean>;
+    return !!map[String(postId)];
+  } catch {
+    return false;
+  }
+}
+
+function saveAppliedToStorage(postId: number, val: boolean) {
+  try {
+    const raw = localStorage.getItem(APPLIED_KEY);
+    const map = raw ? (JSON.parse(raw) as Record<string, boolean>) : {};
+    if (val) map[String(postId)] = true;
+    else delete map[String(postId)];
+    localStorage.setItem(APPLIED_KEY, JSON.stringify(map));
+  } catch {}
+}
+
+function useAppliedPersistence(postId: number) {
+  const [applied, setApplied] = useState<boolean>(() => loadAppliedFromStorage(postId));
+
+  useEffect(() => {
+    let aborted = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/v1/community/post/${postId}/study-application`, {
+          credentials: 'include',
+        });
+        if (aborted) return;
+        if (res.status === 200) {
+          if (!applied) {
+            setApplied(true);
+            saveAppliedToStorage(postId, true);
+          }
+        } else if (res.status === 404) {
+          if (applied) {
+            setApplied(false);
+            saveAppliedToStorage(postId, false);
+          }
+        }
+      } catch {}
+    })();
+    return () => {
+      aborted = true;
+    };
+  }, [postId]);
+
+  const markApplied = () => {
+    setApplied(true);
+    saveAppliedToStorage(postId, true);
+  };
+
+  return { applied, markApplied };
 }
