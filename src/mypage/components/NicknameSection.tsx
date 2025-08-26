@@ -49,6 +49,7 @@ export default function NicknameSection() {
         withCredentials: true,
       });
       logout();
+      alert('탈퇴 되었습니다');
       navigate('/');
     } catch (err) {
       console.error('실패하였습니다', err);
@@ -83,7 +84,7 @@ export default function NicknameSection() {
             <div className="md:flex items-center justify-between">
               <input
                 type="text"
-                maxLength={10}
+                maxLength={8}
                 value={nicknameInput}
                 onChange={(e) => setNicknameInput(e.target.value)}
                 className="w-full md:w-[82%] border-[1px] border-[#d1d1d1] rounded-[10px] p-[10px] mr-[10px] mb-[10px] md:mb-[0px]"

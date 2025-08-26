@@ -94,6 +94,7 @@ export default function StudyApplicants() {
         {},
         { withCredentials: true },
       );
+      alert('처리되었습니다');
       setApplicants((prev) => prev.filter((a) => a.application_id !== applicationId));
     } catch (err) {
       console.error(err);
