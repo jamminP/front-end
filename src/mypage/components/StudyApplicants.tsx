@@ -50,7 +50,7 @@ export default function StudyApplicants() {
 
   // 신청자 리스트 가져오기 (페이징)
   const fetchApplicants = useCallback(async () => {
-    if (loading || !myPosts.length || !hasMore) return;
+    if (!myPosts.length || !hasMore) return;
     setLoading(true);
 
     try {
@@ -88,7 +88,7 @@ export default function StudyApplicants() {
       setLoading(false);
       setInitialLoading(false);
     }
-  }, [myPosts, loading, nextCursor, hasMore]);
+  }, [myPosts, nextCursor, hasMore]);
 
   const handleAction = async (applicationId: number, action: 'approve' | 'reject') => {
     try {
@@ -139,7 +139,7 @@ export default function StudyApplicants() {
 
       {initialLoading ? (
         <p className="text-gray-500 mt-2">로딩 중...</p>
-      ) : applicants.length === 0 ? (
+      ) : pendingApplicants.length === 0 ? (
         <p className="text-[1.2rem] text-[#999] font-light tracking-[-0.03rem] mt-5 pl-[5px]">
           등록된 신청이 없습니다.
         </p>
