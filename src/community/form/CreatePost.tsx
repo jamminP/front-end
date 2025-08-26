@@ -17,10 +17,14 @@ export default function CreatePost() {
   const initialCategory = (sp.get('category') as Cat) ?? 'free';
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   const currentUserId = useAuthStore((s) => s.user!.id);
 =======
   // TODO: 실제 로그인 유저로 교체
 >>>>>>> c808a00 (fix: 유저 쿠키 세션 인증방식으로 변경)
+=======
+  const currentUserId = useAuthStore((s) => s.user!.id);
+>>>>>>> 5c2a18f (또  뭔갈 수정 했음)
 
   const freeMut = useCreateFree();
   const shareMut = useCreateShare();
@@ -47,6 +51,7 @@ export default function CreatePost() {
           const created = await freeMut.mutateAsync({
             title: v.title,
             content: v.content,
+            user_id: currentUserId,
             category: 'free',
           });
 
@@ -66,6 +71,7 @@ export default function CreatePost() {
           const created = await shareMut.mutateAsync({
             title: v.title,
             content: v.content,
+            user_id: currentUserId,
             category: 'share',
           });
 
@@ -84,6 +90,9 @@ export default function CreatePost() {
         // ───────── 스터디 ─────────
         if (v.category === 'study') {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 5c2a18f (또  뭔갈 수정 했음)
           const sr = compact({
             recruit_start: toISOWithOffset(v.recruit_start),
             recruit_end: toISOWithOffset(v.recruit_end),
@@ -99,6 +108,7 @@ export default function CreatePost() {
             category: 'study',
             study_recruitment: Object.keys(sr).length ? (sr as any) : undefined,
           });
+<<<<<<< HEAD
 =======
           const body: PostRequest = {
             title: v.title,
@@ -113,6 +123,8 @@ export default function CreatePost() {
             },
           };
 >>>>>>> c808a00 (fix: 유저 쿠키 세션 인증방식으로 변경)
+=======
+>>>>>>> 5c2a18f (또  뭔갈 수정 했음)
 
           const res = await studyMut.mutateAsync(body);
           const id = (res as any).post_id ?? (res as any).id;
@@ -124,7 +136,7 @@ export default function CreatePost() {
         alert((e as Error)?.message || '저장 중 오류가 발생했어요.');
       }
     },
-    [freeMut, shareMut, studyMut, navigate],
+    [currentUserId, freeMut, shareMut, studyMut, navigate],
   );
 
   return (

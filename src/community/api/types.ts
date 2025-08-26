@@ -157,10 +157,8 @@ export interface TopWeeklyResponse {
   items: TopWeeklyItem[];
 }
 
-export interface CommentRequest {
-  user?: number;
-  content: string;
-  parent_comment_id: number;
+export interface CommentRequestPrams {
+  post_id: number;
 }
 export interface CommentResponse {
   id: number;
