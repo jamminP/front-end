@@ -306,3 +306,12 @@ export interface StudyApplicationResponse {
   application_id: number;
   status: 'pending' | 'approved' | 'rejected';
 }
+
+export interface StudyApplication {
+  id: number;
+  post_id: number;
+  user_id: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}

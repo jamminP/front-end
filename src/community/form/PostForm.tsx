@@ -341,23 +341,6 @@ export default function PostForm({
               >
                 인원수 제한
               </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setLimitMembers(false);
-                  setValues((v) => ({ ...v, max_members: undefined }));
-                }}
-                onBlur={onBlur('limitMembers')}
-                className={`px-1 py-1 w-20 text-sm rounded-md border ${
-                  !limitMembers
-                    ? 'bg-[#1B3043] text-white border-black'
-                    : 'bg-white text-black border-slate-300'
-                }`}
-                disabled={disabled}
-              >
-                무제한
-              </button>
             </div>
 
             {limitMembers && (

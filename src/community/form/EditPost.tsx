@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import PostForm, { PostFormValues } from './PostForm';
 import { getPostDetail, patchPost } from '../api/community';
@@ -61,6 +61,8 @@ export default function EditPost() {
     return base;
   }, [post]);
 
+  const qc = useQueryClient();
+
   const handleSubmit = useCallback(
     async (v: PostFormValues) => {
       setSaving(true);
@@ -76,11 +78,13 @@ export default function EditPost() {
         body.study_end = toISODate(v.study_end);
         body.max_member = typeof v.max_members === 'number' ? v.max_members : undefined;
       }
-
-      await patchPost({ post_id: numericId }, body);
-
-      navigate(`/community/${v.category}/${numericId}`);
       try {
+        await patchPost({ post_id: numericId }, body);
+
+        qc.invalidateQueries({ queryKey: ['community', 'post', numericId] });
+
+        navigate(`/community/${v.category}/${numericId}`);
+
         await patchPost({ post_id: numericId }, body);
         navigate(`/community/${v.category}/${numericId}`);
       } catch (e: any) {
