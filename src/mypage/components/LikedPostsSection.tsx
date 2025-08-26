@@ -65,7 +65,7 @@ export default function LikedPostsSection() {
         <h3 className="text-[1.5rem] font-light tracking-[-0.05rem] pl-[5px]">찜한 글 보기</h3>
 
         {/* 카테고리 버튼 */}
-        <div className="flex md:gap-3 gap-2 m-[15px_0]">
+        <div className="flex md:gap-3 gap-2 m-[20px_0]">
           {['all', 'share', 'free', 'study'].map((cat) => (
             <button
               key={cat}
