@@ -48,7 +48,9 @@ export default function MyPostsSection() {
       // nextCursor 없으면 새로 덮어쓰기, 있으면 이어붙이기
       setMyPosts((prev) => (nextCursor ? [...prev, ...posts] : posts));
       setCursor(res.data.next_cursor);
-      setHasMore(res.data.next_cursor !== null && res.data.next_cursor !== 0);
+      setHasMore(
+        res.data.items.length === 6 && res.data.next_cursor !== null && res.data.next_cursor !== 0,
+      );
     } catch (err) {
       console.error('게시글을 불러오지 못했습니다', err);
     } finally {
