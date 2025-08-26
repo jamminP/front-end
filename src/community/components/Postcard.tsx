@@ -99,7 +99,7 @@ const PostCard: FC<PostCardProps> = ({ post, isAdmin = false, onClick }) => {
             <IoChatboxEllipsesOutline className="mt-[3px] mr-0.5" />
             {post.comment_count ?? 0}
           </span>
-          <LikeButton post_id={post.id} />
+          <LikeButton post_id={post.id} stopPropagation />
           <span className="flex">
             <HiMiniEye className="mt-[3px] mr-0.5" />
             {post.views ?? 0}
