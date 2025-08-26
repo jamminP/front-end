@@ -28,12 +28,11 @@ export default function StudyApplicants() {
     setLoading(true);
     try {
       const res = await axios.get<ApplicantList>(
-        `https://backend.evida.site/api/v1/users/myinfo/${postIdNum}/applications?limit=5${
-          nextCursor ? `&cursor=${nextCursor}` : ''
-        }`,
+        `https://backend.evida.site/api/v1/users/myinfo/${postIdNum}/applications?limit=5`,
         { withCredentials: true },
       );
-
+      console.log(post_id, postIdNum);
+      console.log('post_id:', post_id, 'postIdNum:', postIdNum);
       setApplicants((prev) => [...prev, ...res.data.items]);
       setNextCursor(res.data.next_cursor || null);
       setHasMore(res.data.next_cursor !== 0);
