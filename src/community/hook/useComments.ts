@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getComments, createComment } from '../api/community';
 import type { CommentResponse } from '../api/types';
@@ -41,17 +41,35 @@ export function useComments(post_id: number) {
     }));
   }, [items]);
 
+  const submittingRef = useRef(false);
+
   const mutation = useMutation({
     mutationFn: (payload: { content: string; parent_id: number | null }) =>
       createComment(post_id, {
         content: payload.content,
         parent_comment_id: payload.parent_id ?? null,
       }),
+    retry: 0,
     onSuccess: () => {
       setReplyTo(null);
       qc.invalidateQueries({ queryKey: ['community', 'comments', post_id] });
     },
+    onSettled: () => {
+      submittingRef.current = false;
+    },
   });
+
+  const submitOnce = async (content: string, parent_id: number | null) => {
+    const text = content.trim();
+    if (!text) return;
+    if (submittingRef.current || mutation.isPending) return;
+    submittingRef.current = true;
+    try {
+      await mutation.mutateAsync({ content: text, parent_id });
+    } finally {
+      submittingRef.current = false;
+    }
+  };
 
   return {
     tree,
@@ -60,7 +78,7 @@ export function useComments(post_id: number) {
     reply_to,
     setReplyTo,
     creating: mutation.isPending,
-    createRoot: (content: string) => mutation.mutate({ content, parent_id: null }),
-    createReply: (parent_id: number, content: string) => mutation.mutate({ content, parent_id }),
+    createRoot: (content: string) => submitOnce(content, null),
+    createReply: (parent_id: number, content: string) => submitOnce(content, parent_id),
   };
 }
