@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
@@ -27,9 +27,6 @@ export default function EditPost() {
     return <div className="p-6 text-red-600">잘못된 경로입니다.</div>;
   }
 
-  // TODO: 실제 로그인 사용자 ID로 교체
-  const currentUserId = 18;
-
   const {
     data: post,
     isLoading,
@@ -38,6 +35,7 @@ export default function EditPost() {
     queryKey: ['community', 'post', numericId],
     queryFn: () => getPostDetail(numericId),
   });
+  const [saving, setSaving] = useState(false);
 
   const initialValues: Partial<PostFormValues> | undefined = useMemo(() => {
     if (!post) return undefined;
@@ -65,6 +63,7 @@ export default function EditPost() {
 
   const handleSubmit = useCallback(
     async (v: PostFormValues) => {
+      setSaving(true);
       const body: any = {
         title: v.title,
         content: v.content,
@@ -78,20 +77,27 @@ export default function EditPost() {
         body.max_member = typeof v.max_members === 'number' ? v.max_members : undefined;
       }
 
-      await patchPost({ post_id: numericId, user: currentUserId }, body);
+      await patchPost({ post_id: numericId }, body);
 
-      // 저장 후 상세로 이동
       navigate(`/community/${v.category}/${numericId}`);
+      try {
+        await patchPost({ post_id: numericId }, body);
+        navigate(`/community/${v.category}/${numericId}`);
+      } catch (e: any) {
+        if (e?.status === 403 || /403/.test(String(e?.message))) {
+          alert('수정 권한이 없어요.');
+          return;
+        }
+        alert('수정에 실패했어요.');
+      } finally {
+        setSaving(false);
+      }
     },
-    [numericId, currentUserId, navigate],
+    [numericId, navigate],
   );
 
   if (isLoading) return <div className="p-6">불러오는 중…</div>;
   if (error || !post) return <div className="p-6 text-red-600">게시물을 불러오지 못했어요.</div>;
-
-  if ((post as any).author_id !== currentUserId) {
-    return <div className="p-6 text-red-600">수정 권한이 없어요.</div>;
-  }
 
   return (
     <div className="p-6 max-w-[720px] mx-auto space-y-4">
@@ -99,7 +105,7 @@ export default function EditPost() {
         initialValues={initialValues}
         submitLabel="수정 저장"
         onSubmit={handleSubmit}
-        disabled
+        disabled={isLoading || saving}
       />
     </div>
   );

@@ -23,7 +23,6 @@ const resolveId = (it: any): number | null => {
 export default function CommunityFree() {
   const [q] = useState('');
   const navigate = useNavigate();
-  const currentUserId = 18;
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteCursor('free', q);
@@ -84,7 +83,6 @@ export default function CommunityFree() {
               >
                 <PostCard
                   post={toPost(item, id ?? -1)}
-                  currentUserId={currentUserId}
                   onClick={(clickedId) => {
                     const target = id ?? clickedId;
                     if (typeof target === 'number' && target > 0) {

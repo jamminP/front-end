@@ -2,13 +2,13 @@ import { NavLink, Outlet } from 'react-router-dom';
 
 export default function MyPage() {
   return (
-    <div className="flex flex-col md:flex-row w-full h-full max-w-[1400px] m-auto p-[100px_0_0_0] md:p-[150px_0_50px_0]">
+    <div className="flex flex-col justify-between md:flex-row w-full h-full max-w-[1400px] m-auto p-[100px_0_0_0] md:p-[150px_50px_50px_50px]">
       <nav className="flex flex-wrap md:flex-col justify-center md:justify-start gap-[20px] md:gap-[30px] md:w-[20%] mt-[5px]">
         <NavLink
           to="/mypage"
           end
           className={({ isActive }) =>
-            `text-[16px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
+            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] text-nowrap w-fit ${
               isActive ? 'text-[#0180F5]' : 'text-[#878787]'
             }`
           }
@@ -19,7 +19,7 @@ export default function MyPage() {
           to="/mypage/calendar"
           end
           className={({ isActive }) =>
-            `text-[16px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
+            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] text-nowrap w-fit ${
               isActive ? 'text-[#0180F5]' : 'text-[#878787]'
             }`
           }
@@ -30,7 +30,7 @@ export default function MyPage() {
           to="/mypage/challenge"
           end
           className={({ isActive }) =>
-            `text-[16px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
+            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] text-nowrap w-fit ${
               isActive ? 'text-[#0180F5]' : 'text-[#878787]'
             }`
           }
@@ -41,7 +41,7 @@ export default function MyPage() {
           to="/mypage/applicants"
           end
           className={({ isActive }) =>
-            `text-[16px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
+            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] text-nowrap w-fit ${
               isActive ? 'text-[#0180F5]' : 'text-[#878787]'
             }`
           }
@@ -52,7 +52,7 @@ export default function MyPage() {
           to="/mypage/applications"
           end
           className={({ isActive }) =>
-            `text-[16px] md:text-[20px] font-bold tracking-[-.03rem] w-fit ${
+            `text-[15px] md:text-[20px] font-bold tracking-[-.03rem] text-nowrap w-fit ${
               isActive ? 'text-[#0180F5]' : 'text-[#878787]'
             }`
           }
@@ -60,7 +60,7 @@ export default function MyPage() {
           스터디 신청 현황
         </NavLink>
       </nav>
-      <section className="w-[90%] m-[50px_auto] md:m-[0] md:w-[80%]">
+      <section className="w-[90%] m-[50px_auto] md:m-[0] md:w-[75%]">
         <Outlet />
       </section>
     </div>

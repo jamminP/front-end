@@ -7,8 +7,9 @@ import recruiting from '../img/recruiting.png';
 import completed from '../img/completed.png';
 import type { FreeDetail, ShareDetail, StudyDetail } from '../api/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { applyStudy, deletePost } from '../api/community';
+import { applyStudy, deletePost, normalizeFiles } from '../api/community';
 import LikeButton from './components/LikeButton';
+import useAuthStore from '@src/store/authStore';
 
 type Category = 'free' | 'share' | 'study';
 const isCategory = (v: string): v is Category => v === 'free' || v === 'share' || v === 'study';
@@ -41,7 +42,7 @@ export default function PostDetailPage() {
 
   const { data, isLoading, isError, refetch } = usePostDetail(category, postId);
 
-  const current_user_id = 18;
+  const current_user_id = useAuthStore((s) => s.user!.id);
   const isAdmin = false;
 
   // 삭제 mutation (HEAD 쪽 로직 유지)
@@ -207,10 +208,7 @@ export default function PostDetailPage() {
       if (window.confirm('게시글을 삭제할까요?')) onDeletePost();
     };
 
-    const shareFiles =
-      post.category === 'share' && Array.isArray((post as ShareDetail).files)
-        ? ((post as ShareDetail).files as NonNullable<ShareDetail['files']>)
-        : [];
+    const shareFiles = post.category === 'share' ? normalizeFiles((post as ShareDetail).files) : [];
 
     return (
       <motion.section
@@ -227,7 +225,7 @@ export default function PostDetailPage() {
           nickname={post.author_nickname}
           created_at={post.created_at}
           views={post.views}
-          rightExtra={<LikeButton post_id={post.id} current_user_id={current_user_id} />}
+          rightExtra={<LikeButton post_id={post.id} />}
         />
 
         {canEdit && (
@@ -313,8 +311,7 @@ export default function PostDetailPage() {
     const badgeIcon =
       post.badge === '모집중' ? recruiting : post.badge === '모집완료' ? completed : null;
     const isAuthor = post.author_id === current_user_id;
-    const badgeAllows = !loading && post.badge?.trim() === '모집중';
-    const canApply = badgeAllows && !isAuthor;
+    const canApply = post.badge === '모집중' && !isAuthor;
 
     return (
       <motion.section
@@ -331,7 +328,7 @@ export default function PostDetailPage() {
           nickname={post.author_nickname}
           created_at={post.created_at}
           views={post.views}
-          rightExtra={<LikeButton post_id={post.id} current_user_id={current_user_id} />}
+          rightExtra={<LikeButton post_id={post.id} />}
         />
 
         {canEdit && (
@@ -374,7 +371,7 @@ export default function PostDetailPage() {
             <div>
               스터디 기간 : {formatDate(meta.study_start)} ~ {formatDate(meta.study_end)}
             </div>
-            <div className="flex justify-center py-2">
+            <div>
               <button
                 type="button"
                 className={`px-3 py-1 w-60 rounded ${

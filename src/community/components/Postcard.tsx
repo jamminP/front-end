@@ -28,13 +28,12 @@ export interface Post {
 
 export interface PostCardProps {
   post: Post;
-  currentUserId: number;
   isAdmin?: boolean;
   onClick: (id: number) => void;
 }
 
-const PostCard: FC<PostCardProps> = ({ post, currentUserId, isAdmin = false, onClick }) => {
-  const canEdit = isAdmin || post.author_id === currentUserId;
+const PostCard: FC<PostCardProps> = ({ post, isAdmin = false, onClick }) => {
+  const canEdit = isAdmin || post.author_id;
 
   const handleCardClick = () => onClick(post.id);
   const navigate = useNavigate();
@@ -100,7 +99,7 @@ const PostCard: FC<PostCardProps> = ({ post, currentUserId, isAdmin = false, onC
             <IoChatboxEllipsesOutline className="mt-[3px] mr-0.5" />
             {post.comment_count ?? 0}
           </span>
-          <LikeButton post_id={post.id} current_user_id={currentUserId} />
+          <LikeButton post_id={post.id} />
           <span className="flex">
             <HiMiniEye className="mt-[3px] mr-0.5" />
             {post.views ?? 0}

@@ -18,9 +18,9 @@ type CreateBody =
       max_member?: number;
     };
 
+/** ?user= 제거, 서버는 세션 쿠키로 인증 */
 export async function createPostJSON(body: CreateBody) {
-  const qs = new URLSearchParams({ user: String(body.user_id) }).toString();
-  return http<any>(`/api/v1/community/post?${qs}`, {
+  return http<any>(`/api/v1/community/post`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -80,15 +80,14 @@ async function uploadWithPresignedPOST(
   return { key, objectUrl };
 }
 
+/**  user, userId 제거. 세션 쿠키로 백엔드가 식별 */
 export async function uploadWithPresignedJson(
   cat: Cat,
   post_id: number,
   files: File[],
   onProgress?: (file: File, loaded: number, total: number) => void,
-  userId?: number,
 ): Promise<UploadResult[]> {
   const results: UploadResult[] = [];
-  const user = 18; // 필요 시 파라미터화
 
   for (const file of files) {
     const valid = validateByCategory(cat, file);
@@ -102,19 +101,18 @@ export async function uploadWithPresignedJson(
     try {
       const presigned = await getPresigned(
         cat,
-        { post_id, user },
+        { post_id },
         { filename: uploadName, content_type },
       );
 
-      let key: string;
-      if (presigned.fields) {
-        const r = await uploadWithPresignedPOST(file, presigned, onProgress);
-        key = r.key;
-      } else {
+      if (!presigned?.fields || !presigned?.url) {
         throw new Error('유효하지 않은 presign 응답');
       }
 
-      await attachUploaded(cat, { post_id, user }, { key });
+      const r = await uploadWithPresignedPOST(file, presigned, onProgress);
+      const key = r.key;
+
+      await attachUploaded(cat, { post_id }, { key });
 
       results.push({ file, ok: true, key, uploadName });
     } catch (e: any) {

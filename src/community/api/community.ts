@@ -22,6 +22,7 @@ import type {
   ApplyStudyPrams,
   StudyApplicationResponse,
   Badge,
+  Files,
 } from './types';
 
 export const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://backend.evida.site';
@@ -93,24 +94,25 @@ export interface CreatePostBase {
 export type FreePostRequest = Omit<CreatePostBase, 'category'>;
 export type SharePostRequest = Omit<CreatePostBase, 'category'>;
 export type StudyPostRequest = Omit<CreatePostBase, 'category'> & {
-  recruit_start: string;
-  recruit_end: string;
-  study_start: string;
-  study_end: string;
-  max_member: number;
+  study: {
+    recruit_start: string;
+    recruit_end: string;
+    study_start: string;
+    study_end: string;
+    max_member: number;
+  };
 };
 
 export interface CreatePostResult {
   post_id: number;
 }
 
-async function postCreate(user: number, body: Record<string, any>): Promise<CreatePostResult> {
-  const qs = new URLSearchParams({ user: String(user) }).toString();
-  const res = await http<any>(`${CREATE_POST}?${qs}`, {
+async function postCreate(body: Record<string, any>): Promise<CreatePostResult> {
+  const res = await http<any>(CREATE_POST, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ ...body, user_id: user }),
+    credentials: 'include', // ✅ 세션 쿠키
+    body: JSON.stringify(body), // body에 user_id 포함 (서버가 요구)
   });
   const data = res as any;
   const pid: unknown = data?.post_id ?? data?.id ?? data?.postId;
@@ -128,10 +130,9 @@ export function createFreePost(
 export function createFreePost(
   a: number | (FreePostRequest & { user_id: number }),
   b?: FreePostRequest,
-): Promise<CreatePostResult> {
-  const user = typeof a === 'number' ? a : a.user_id;
-  const payload = (typeof a === 'number' ? b! : a) as FreePostRequest;
-  return postCreate(user, { ...payload, category: 'free' as const });
+) {
+  const payload = typeof a === 'number' ? { ...b!, user_id: a } : a;
+  return postCreate({ ...payload, category: 'free' as const });
 }
 
 // create Share
@@ -142,10 +143,9 @@ export function createSharePost(
 export function createSharePost(
   a: number | (SharePostRequest & { user_id: number }),
   b?: SharePostRequest,
-): Promise<CreatePostResult> {
-  const user = typeof a === 'number' ? a : a.user_id;
-  const payload = (typeof a === 'number' ? b! : a) as SharePostRequest;
-  return postCreate(user, { ...payload, category: 'share' as const });
+) {
+  const payload = typeof a === 'number' ? { ...b!, user_id: a } : a;
+  return postCreate({ ...payload, category: 'share' as const });
 }
 
 // create Study
@@ -156,10 +156,9 @@ export function createStudyPost(
 export function createStudyPost(
   a: number | (StudyPostRequest & { user_id: number }),
   b?: StudyPostRequest,
-): Promise<CreatePostResult> {
-  const user = typeof a === 'number' ? a : a.user_id;
-  const payload = (typeof a === 'number' ? b! : a) as StudyPostRequest;
-  return postCreate(user, { ...payload, category: 'study' as const });
+) {
+  const payload = typeof a === 'number' ? { ...b!, user_id: a } : a;
+  return postCreate({ ...payload, category: 'study' as const });
 }
 
 export function getComments(
@@ -180,34 +179,26 @@ export function getComments(
 }
 
 export interface CreateCommentBody {
-  user: number;
   content: string;
-  parent_comment_id: number | null;
+  parent_comment_id: number | null; // 호출부 타입은 유지
 }
 
 export async function createComment(
   post_id: number,
   payload: CreateCommentBody,
 ): Promise<CommentResponse> {
-  const qs = new URLSearchParams({ user: String(payload.user) }).toString();
-
   const body: Record<string, unknown> = { content: payload.content };
+
   if (payload.parent_comment_id != null && payload.parent_comment_id > 0) {
-    body.parent_comment_id = payload.parent_comment_id;
+    body.parent_id = payload.parent_comment_id;
   }
 
-  const res = await fetch(`/api/v1/community/post/${post_id}/comment?${qs}`, {
+  return http<CommentResponse>(`/api/v1/community/post/${post_id}/comment`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(body),
   });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`createComment failed: ${res.status} ${text}`);
-  }
-  return res.json() as Promise<CommentResponse>;
 }
 
 export async function listComments(postId: number): Promise<CommentTreeItem[]> {
@@ -221,8 +212,10 @@ export async function listComments(postId: number): Promise<CommentTreeItem[]> {
 
 //patch post / comment
 export const patchPost = (params: PatchPostParams, body: PatchPostRequest) =>
-  http<any>(`/api/v1/community/post/${params.post_id}?user=${params.user}`, {
+  http<any>(`/api/v1/community/post/${params.post_id}`, {
     method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(body),
   });
 
@@ -231,52 +224,54 @@ export const patchComment = (
   params: PatchCommentsParams,
   body: PatchCommentsRequest,
 ) =>
-  http<any>(`/api/v1/community/comment/${params.comment_id}?user=${params.user}`, {
+  http<any>(`/api/v1/community/comment/${params.comment_id}`, {
     method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(body),
   });
 
 //delete
 export const deletePost = (params: DeletePostParams) =>
-  http<void>(`/api/v1/community/post/${params.post_id}?user=${params.user}`, {
+  http<void>(`/api/v1/community/post/${params.post_id}`, {
     method: 'DELETE',
   });
 
 export const deleteComment = (params: DeleteCommentParams) =>
-  http<void>(`/api/v1/community/comment/${params.comment_id}?user=${params.user}`, {
+  http<void>(`/api/v1/community/comment/${params.comment_id}`, {
     method: 'DELETE',
+    credentials: 'include',
   });
 
 //like
 export const GetLike = (params: GetLikePrams) =>
   http<LikeStatus>(`/api/v1/community/post/${params.post_id}/likes`, {
     method: 'GET',
+    credentials: 'include',
   });
 
 export const PostLike = (params: PostLikeParams) =>
   http<LikeStatus>(`/api/v1/community/post/${params.post_id}/like`, {
     method: 'POST',
+    credentials: 'include',
   });
 
 export async function getPostDetail(postId: number): Promise<PostDetail> {
-  return http<PostDetail>(DETAIL_ENDPOINT(postId));
+  return http<PostDetail>(DETAIL_ENDPOINT(postId), { credentials: 'include' });
 }
 
 // study Apply
 
-function qsUser(user: number) {
-  return new URLSearchParams({ user: String(user) }).toString();
-}
-
 export async function applyStudy(params: ApplyStudyPrams) {
-  const { post_id, user } = params;
-
-  return http<StudyApplicationResponse>(
-    `/api/v1/community/post/${post_id}/study-application?${qsUser(user)}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-    },
-  );
+  const { post_id } = params;
+  return http<StudyApplicationResponse>(`/api/v1/community/post/${post_id}/study-application`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+  });
+}
+//normalizeFiles
+export function normalizeFiles(files?: Files | Files[] | null): Files[] {
+  if (!files) return []; // undefined/null -> 빈 배열
+  return Array.isArray(files) ? files : [files]; // 단일 -> [단일]
 }

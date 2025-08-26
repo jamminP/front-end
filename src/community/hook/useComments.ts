@@ -9,13 +9,14 @@ function sortByDateAsc(a: CommentResponse, b: CommentResponse) {
   return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
 }
 
-export function useComments(post_id: number, current_user_id: number) {
+export function useComments(post_id: number) {
   const qc = useQueryClient();
   const [reply_to, setReplyTo] = useState<number | null>(null);
 
   const listQ = useQuery({
     queryKey: ['community', 'comments', post_id],
     queryFn: () => getComments(post_id, { order: 'id', offset: 0, limit: 50 }),
+    enabled: Number.isFinite(post_id),
     staleTime: 15_000,
   });
 
@@ -43,7 +44,6 @@ export function useComments(post_id: number, current_user_id: number) {
   const mutation = useMutation({
     mutationFn: (payload: { content: string; parent_id: number | null }) =>
       createComment(post_id, {
-        user: current_user_id,
         content: payload.content,
         parent_comment_id: payload.parent_id ?? null,
       }),
