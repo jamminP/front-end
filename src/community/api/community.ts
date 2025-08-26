@@ -188,23 +188,17 @@ export async function createComment(
   payload: CreateCommentBody,
 ): Promise<CommentResponse> {
   const body: Record<string, unknown> = { content: payload.content };
+
   if (payload.parent_comment_id != null && payload.parent_comment_id > 0) {
-    body.parent_comment_id = payload.parent_comment_id;
+    body.parent_id = payload.parent_comment_id;
   }
 
-  // ✅ ?user= 제거, 세션 쿠키로 인증
-  const res = await fetch(`/api/v1/community/post/${post_id}/comment`, {
+  return http<CommentResponse>(`/api/v1/community/post/${post_id}/comment`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
     body: JSON.stringify(body),
   });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`createComment failed: ${res.status} ${text}`);
-  }
-  return res.json() as Promise<CommentResponse>;
 }
 
 export async function listComments(postId: number): Promise<CommentTreeItem[]> {
