@@ -44,7 +44,7 @@ export default function LikedPostsSection() {
       setSkeletonCount(res.data.items.length);
       setLikedPosts((prev) => (nextCursor ? [...prev, ...posts] : posts));
       setCursor(res.data.next_cursor);
-      setHasMore(!!res.data.next_cursor);
+      setHasMore(res.data.next_cursor !== null && res.data.next_cursor !== 0);
     } catch (err) {
       console.error('게시글을 불러오지 못했습니다', err);
     } finally {
