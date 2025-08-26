@@ -16,15 +16,7 @@ export default function CreatePost() {
   const [sp] = useSearchParams();
   const initialCategory = (sp.get('category') as Cat) ?? 'free';
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   const currentUserId = useAuthStore((s) => s.user!.id);
-=======
-  // TODO: 실제 로그인 유저로 교체
->>>>>>> c808a00 (fix: 유저 쿠키 세션 인증방식으로 변경)
-=======
-  const currentUserId = useAuthStore((s) => s.user!.id);
->>>>>>> 5c2a18f (또  뭔갈 수정 했음)
 
   const freeMut = useCreateFree();
   const shareMut = useCreateShare();
@@ -89,10 +81,6 @@ export default function CreatePost() {
 
         // ───────── 스터디 ─────────
         if (v.category === 'study') {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 5c2a18f (또  뭔갈 수정 했음)
           const sr = compact({
             recruit_start: toISOWithOffset(v.recruit_start),
             recruit_end: toISOWithOffset(v.recruit_end),
@@ -108,23 +96,6 @@ export default function CreatePost() {
             category: 'study',
             study_recruitment: Object.keys(sr).length ? (sr as any) : undefined,
           });
-<<<<<<< HEAD
-=======
-          const body: PostRequest = {
-            title: v.title,
-            content: v.content,
-            user_id: v.id, // ✅ v.id가 아니라 현재 유저
-            study_recruitment: {
-              recruit_start: toISODate(v.recruit_start),
-              recruit_end: toISODate(v.recruit_end),
-              study_start: toISODate(v.study_start),
-              study_end: toISODate(v.study_end),
-              max_member: Number(v.max_members ?? 0),
-            },
-          };
->>>>>>> c808a00 (fix: 유저 쿠키 세션 인증방식으로 변경)
-=======
->>>>>>> 5c2a18f (또  뭔갈 수정 했음)
 
           const res = await studyMut.mutateAsync(body);
           const id = (res as any).post_id ?? (res as any).id;
