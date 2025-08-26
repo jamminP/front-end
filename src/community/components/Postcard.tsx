@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import LikeButton from '../post/components/LikeButton';
 import { IoChatboxEllipsesOutline } from 'react-icons/io5';
 import { HiMiniEye } from 'react-icons/hi2';
+import useAuthStore from '@src/store/authStore';
 
 export interface Post {
   id: number;
@@ -33,7 +34,8 @@ export interface PostCardProps {
 }
 
 const PostCard: FC<PostCardProps> = ({ post, isAdmin = false, onClick }) => {
-  const canEdit = isAdmin || post.author_id;
+  const currentUserId = useAuthStore((s) => s.user?.id ?? null);
+  const canEdit = isAdmin || post.author_id === currentUserId;
 
   const handleCardClick = () => onClick(post.id);
   const navigate = useNavigate();
